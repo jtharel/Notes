@@ -1,0 +1,284 @@
+Compile C program on Mac to use on Windows:
+
+brew install mingw-w64
+x86_64-w64-mingw32-gcc -o hello.exe hello.c	#makes 64 bit exe file for windows
+i686-w64-mingw32-gcc -o hello.exe hello.c	#makes 32 bit exe file for windows
+
+*****************************************************************************************
+
+64 bit reversing:
+
+There are 8 main general purpose registers:
+
+RAX 	- Known as the accumulator register. Often used to store the return value of a 	
+	function.
+RBX 	- Sometimes known as the base register. Sometimes used as a base pointer for 	
+	memory access.
+RDX 	- Sometimes known as the data register.
+RCX 	- Sometimes known as the counter register. Used as a loop counter.
+RSI 	- Known as the source index. Used as the source pointer in string operations.
+RDI 	- Known as the destination index. Used as the destination pointer in string 
+	operations.
+RSP 	- The stack pointer. Holds the address of the top of the stack.
+RBP 	- The base pointer. Holds the address of the base (bottom) of the stack.
+
+All of these registers are used for holding data. Something I want to point out immediately is that these registers can be used for anything. Their "use" is just common practice. For example, RAX is often used to hold the return value of a function. It doesn't have to (and often doesn't), but imagine you were writing a program in Assembly. It would be extremely helpful to know where the return value of a function went, otherwise why call the function? Also, look at the Assembly example I gave earlier. It uses RAX to store the x variable.
+
+I should also note that while you can use these registers for anything, there are some registers that are best left alone when dealing with typical data. For example, ESP and EBP should almost always only be used for what they were designed for. They store the location of the current stack frame (we'll get into the stack soon) which is very important. You can use ESP and EBP to store normal data, but you'll want to save their previous values so you can restore them to their original state when you are finished with them.
+
+The Instruction Pointer
+RIP is probably the most important register. The RIP register is the "Instruction Pointer". It is the address of the next line of code to be executed. This register is read-only (kind of).
+
+What is the difference between "E" and "R"? The "E" stands for extended. The "R" stands for register. Remember, the "E registers" are 32-bit registers. When looking at x32 assembly you will see EAX instead of RAX (RAX doesn't exist on x32).
+
+To see how all registers are broken apart go here:
+https://docs.microsoft.com/en-us/windows-hardware/drivers/debugger/x64-architecture
+
+Big Endian 	- The most significant byte is stored first. This would be 0x41424344 from 
+		the example.
+Little Endian 	- The least significant byte is stored first. This would be 0x44434241 
+		from the example.
+
+
+An immediate value is something like the number 12 (the kind of number we humans use). 
+	- An immediate value is not a memory address or register, instead, it's some sort 
+	of constant.
+	- A register is referring to something like RAX, RBX, R12, AL, etc.
+	- Memory or a memory address refers to a location in memory (a memory address) 	
+	such as 0x7FFF842B.
+
+*****************************************************************************************
+
+It's important to know the format of instructions which is as follows:
+(Instruction/Opcode/Mnemonic) <Destination Operand>, <Source Operand>
+
+I will be referring to Instructions/Opcodes/Mnemonics as instructions. They all mean the same thing in Assembly.
+
+Example:
+	mov RAX, 5
+
+	This put the value of 5 in RAX, the equivalent to RAX = 5
+
+MOV 	is used to move/store the source operand into the destination.
+
+LEA	LEA is short for Load Effective Address. This is essentially the same as MOV 
+	except for addresses. It's also commonly used to compute addresses. In the 
+	following example, RAX will contain the memory address/location of num1.
+
+	lea RAX, num1
+
+
+PUSH	is used to push data onto the stack. Pushing refers to putting something on the 
+	top of the stack. In the following example, RAX is pushed onto the stack. Pushing 
+	will act as a copy so RAX will still contain the value it had before it was 	
+	pushed.
+
+	push RAX
+
+POP 	is used to take whatever is on the top of the stack and store it in the 
+	destination. In the following example whatever is on the top of the stack will be 	put into RAX.
+
+	pop RAX
+
+
+
+Arithmetic:
+
+INC 	will increment data by one. In the following example RAX is set to 8, then 	
+	incremented. RAX will be 9 by the end.
+
+	mov RAX, 8
+	inc RAX
+
+DEC 	decrements a value. In the following example, RAX ends with a value of 7.
+
+	mov RAX, 8
+	dec RAX
+
+ADD 	adds a source to a destination and stores the result in the destination. In the 
+	following example, 2 is moved into RAX, 3 into RBX, then they are added together. 
+	The result (5) is then stored in RAX.
+	Same as RAX = RAX + RBX or RAX += RBX.
+
+	mov RAX, 2
+	mov RBX, 3
+	add RAX, RBX
+
+SUB 	subtracts a source from a destination and stores the result in the destination. In 
+	the following example, RAX will end with a value of 2.
+	Same as RAX = RAX - RBX or RAX -= RBX.
+
+	mov RAX, 5
+	mov RBX, 3
+	sub RAX, RBX
+
+MUL 	(unsigned) or IMUL (signed) multiplies the destination by the source. The result 
+	is stored in the destination. IMUL is used for signed and MUL is used for 
+	unsigned. In the following example, RAX will end with a value of 15.
+
+	mov RAX, 5
+	mov RBX, 3
+	mul RAX, RBX
+
+DIV 	(unsigned) or IDIV (signed). - I'll put my own explanation here eventually 
+	(maybe). For now just follow these links:
+
+	DIV: https://www.felixcloutier.com/x86/div
+	IDIV: https://www.felixcloutier.com/x86/idiv
+
+
+FLOW:
+
+CMP 	compares two operands and sets the appropriate flags depending on the result. The 
+	following would set the Zero Flag (ZF) to 1 which means the comparison determined 
+	that RAX was equal to five. 
+
+	mov RAX, 5
+	cmp RAX, 5
+
+
+JCC 	instructions are conditional jumps that jump based on the flags that are currently 
+	set. JCC is not an instruction, but a set of instructions that includes JNE, JLE, 
+	JNZ, and many more. JNE is jump if not equal, and JLE is jump if less than or 
+	equal. This is often used in if statements. The following example will quit 
+	immediately if RAX isn't equal to 5. If it is equal to 5 then it will set RBX to 
+	10, then quit.
+
+	mov RAX, 5
+	cmp RAX, 5
+	jne 5       ; Jump to line 5 (ret) if not equal.
+	mov RBX, 10
+	ret
+
+RET 	is short for return. This will return execution to the previous function. The 
+	following example sets RAX to 10 then returns.
+
+	mov RAX, 10
+	ret
+
+NOP 	is short for No Operation. This instruction effectively does nothing. It's 
+	typically used for padding. Padding is done because some parts of code like to be 
+	on specific boundaries such as 16 bit boundaries, or 32 bit boundaries.
+
+
+JG	Jump if Greater
+JA	Jump if above is the same as JG (Jump if Greater)
+
+
+*****************************************************************************************
+
+Two of the most important things to know when working with pointers and addresses in Assembly are LEA and square brackets.
+
+	Square Brackets - Square brackets signify "address pointed to". For example, [var] 
+			is the address pointed to by var. In other words, when using [var] 			we want to access the memory address that var is holding.
+	LEA 		- Ignore literally everything about square brackets when working 
+			with LEA. LEA is short for Load Effective Address and it's used 
+			for calculating and loading addresses.
+
+-It's important to note that when working with the LEA instruction, square brackets do not dereference.
+-It's important to note that when working with the LEA instruction, square brackets do not dereference.
+-It's important to note that when working with the LEA instruction, square brackets do not dereference.
+
+Have I said it enough? Don't let this confuse you. People who don't know that LEA breaks the rules when working with square brackets get extremely confused very quickly. LEA is used to load and calculate addresses, NOT data. It doesn't matter if there are square brackets or not, it's dealing with addresses ONLY. LEA tends to mess with many peoples heads. Don't let her do that to you.
+
+Here is a simple example of dereferencing and a pointer in Assembly:
+
+	lea RAX, [var]
+	mov [RAX], 12 
+
+In the example above the address of var is loaded into RAX. This is LEA we are working with, there is no dereferencing. RAX is essentially a pointer now. Then 12 is moved into the address that RAX holds (often said as the address pointed to by RAX). The address pointed to by RAX is the var variable. If that Assembly was executed, var would be 12.
+
+
+Earlier I said that LEA can be used to calculate addresses, and it often is.
+
+	lea RAX, [RCX+8]    ;This will set RAX to the address of RCX+8.
+	mov RAX, [RCX+8]    ;This will set RAX to the value inside of RCX+8.
+
+*****************************************************************************************
+
+FLAGS
+
+Here are the flags you should know. Note that when I say a "flag is set" I mean the flag is set to 1 which is true/on. 0 is false/off.
+
+Zero Flag (ZF) 		- Set if the result of an operation is zero. Not set if the result 
+			of an operation is not zero.
+Carry Flag (CF) 	- Set if the last unsigned arithmetic operation carried (addition) 
+			or borrowed (subtraction) a bit beyond the register. It is also 
+			set if the operation is negative because this flag is for unsigned 
+			which is positive only. A negative could be a really big positive 
+			number.
+Overflow Flag (OF) 	- Set if a signed arithmetic operation is too big for the register 
+			to contain.
+Sign Flag (SF) 		- Set if the result of an operation is negative.
+Adjust/Auxiliary Flag (AF) - Same as the carry flag but for Binary Code Decimal (BCD) 
+			operations.
+Parity Flag (PF) 	- Set to 1 if the number of bits set in the last 8 bits is even. 
+			(10110100, PF=1; 10110101, PF=0)
+Trap Flag (TF) 		- Allows for single stepping of programs.
+
+For a full list of flags see: https://www.tech-recipes.com/rx/1239/assembly-flags/
+
+
+*****************************************************************************************
+
+
+Breakpoint - Pauses execution at the line of code the breakpoint is set on. When execution reaches a breakpoint that is known as "hitting a breakpoint". When a breakpoint is hit execution stops before the line of code the breakpoint is on is executed. In the following example, line 9 is not executed when the breakpoint is hit. Line 9 is executed when execution continues past the breakpoint.
+
+Stepping - Stepping is the act of running the line of code you are currently on. This allows you to slowly execute the program line-by-line and examine everything that the program is doing.
+
+Step Into or Over - When stepping you can choose whether to step into or over a function call. If you step into a function call you will follow the call and you can then step through that function. If you step over a function call you will not go into that function. In the code example above if I were to step into the function call on line 10 I would be able to debug and step through SayHello. If I step over the function call on line 10 I will not be brought into the SayHello function and I will instead step directly to line 11.
+
+Step Out - If you are in the middle of a function and you want to get out of it, you can step out. This will execute the rest of the function and return to where it was called.
+
+
+Dumpbin.exe:
+	dumpbin DLL.dll /EXPORTS
+
+C:>dumpbin DLL.dll /EXPORTS
+Microsoft (R) COFF/PE Dumper Version 14.24.28315.0
+Copyright (C) Microsoft Corporation.  All rights reserved.
+
+
+Dump of file DLL.dll
+
+File Type: DLL
+
+  Section contains the following exports for DLL.dll
+
+    00000000 characteristics
+    FFFFFFFF time date stamp
+        0.00 version
+           1 ordinal base
+           6 number of functions
+           6 number of names
+
+    ordinal hint RVA      name
+
+          1    0 00001F20 ?InitializePlayer@@YAXPEAVPlayer@@@Z
+          2    1 00001ED0 ?PrintArray@@YAXQEADH@Z
+          3    2 00001E80 ?PrintArray@@YAXQEAHH@Z
+          4    3 00002000 MysteryFunc
+          5    4 00001F50 PrintPlayerStats
+          6    5 00001E60 SayHello
+
+  Summary
+
+        3000 .data
+        3000 .pdata
+       17000 .rdata
+        1000 .reloc
+        1000 .rsrc
+       27000 .text
+        1000 _RDATA
+
+
+What's with the random characters in some of the function names, such as ?PrintArray@@YAXQEAD@Z This name mangling is done for function overriding. Function overriding allows for multiple functions of the same name that take different parameters. For example, you might want to have a function for addition. You'll probably want the ability to add integers or floats. 
+
+In the DLL (DLL.dll) we'll be reversing we can see two functions called "PrintArray@@YAXQEDH@Z" and "PrintArray@@YAXQEAHH@Z that are both decorated. This means that they are overrides and one takes different parameters than the other. They most likely do the same thing, although this isn't a guarantee.
+
+
+add x64dbg.exe to path
+run:
+x64dbg.exe "C:\myfiles\crackme.exe" Pass123
+	Must include full path to exe that is to be reversed/debugged then put parameters
+

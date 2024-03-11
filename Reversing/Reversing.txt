@@ -1,0 +1,92 @@
+
+Copy files to c:\tools
+add Serial number to WinAnalysis
+
+
+How to Get and Set Up a Free Windows VM for Malware Analysis:
+https://zeltser.com/free-malware-analysis-windows-vm/
+
+FLARE-VM -> Install script for installing Malware Analysis tools (debuggers, dcompilers, 
+	Disassemblers, Sniffers, etc):
+	https://github.com/fireeye/flare-vm
+
+
+Text Based Form fields in Applications:
+Create break points in OllyDBG on these Names:
+	View -> Executable Modules -> Right click USER32.dll -> View Names
+		GetDlgItemTextA
+		GetWindowTextA
+		GetDlgItemInt
+		SendDlgItemMessageA
+
+
+
+
+Malware Analysis -> My Methodology:
+
+dumpbin /RAWDATA:BYTES /SECTION:.data malware.exe > datasection.txt
+dumpbin /RAWDATA:BYTES /SECTION:.idata malware.exe > idatasection.txt
+dumpbin /RAWDATA:BYTES /SECTION:.rdata malware.exe > rdatasection.txt
+
+
+Winanalysis:
+	Serial Number: 678187685123821812321888
+
+	Click Snapshot button -> a window should appear
+	Click Snapshot button a second time -> Use Defaults
+	Click Start
+	Click Finish
+	Click the “Files” menu on the left and then click “Config”
+	Click Modify on the C: drive
+	Select all except “Add files to a .ZIP archive…”
+	Click Ok, Apply, Ok.
+	Click Snapshot
+	Click Start
+	Click Finish
+	
+	Run the malware
+
+	Click the Test button
+	Click Start
+
+
+Services and associated Ports:
+TCP Port 1025 -> Application Layer Gateway Service
+UDP Port 4500 -> IPSEC Services
+UDP Port 500  -> IPSEC Services
+UDP Port 1900 -> SSDP Discover Service
+UDP Port 123  -> Windows Time
+
+
+HKEY_CURRENT_USER and HKEY_LOCAL_MACHINE - two must commonly used in malware
+HKLM \Software\Microsoft\Windows\CurrentVersion\[something]
+	Run
+	RunOnce
+	RunOnce\Setup
+	RunOnceEx
+	RunServices
+	RunSericesOnce
+
+Runs when user logs in:
+HKLM\Software\Microsoft\Windows\CurrentVersion\Winlogin\[value]
+	Shell: contains Explorer
+	UIHost: contains logonui.exe
+	UserInit: contains %system32%\userinit.exe
+
+HKLM\System\CurrentControlSet\Services
+	starts at boot, before user logins
+
+
+
+Names in Ollydbg:
+	Button Click:
+		RegisterClass
+		RegisterClassEx
+
+	Text Box:
+		GetDlgItemTextA
+		GetWindowTextA
+		GetDlgItemInt
+		SendDlgItemMessage
+
+
