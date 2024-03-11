@@ -1,0 +1,62 @@
+iPhone Forensics White Paper
+http://viaforensics.com/education/white-papers/iphone-forensics/
+
+SQLite Database Browser:
+http://sourceforge.net/projects/sqlitebrowser/
+
+The first thing you want to do is put the device in airplane mode
+Then get the Model number and firmware version of the device
+
+3 Methods for acquiring data from an iPhone/iPad: 
+	backup acquisition
+	logical acquisition
+	physical acquisition
+
+******************************************************************************************
+Backup acquisition - data that has been backed up from the device onto a computer is 
+	retrieved
+	The main files you want from a backup acquisition are:
+		*.mddata, *.mdinfo and *.mdbackup
+		These files are not human readable and require a tool to view such as:
+			Paraben Device Seizure
+			Oxygen Forensic Suite
+			Mobilyze by BlackBag Tech
+			Mobile Sync Browser
+			iPhone Analyzer
+	Configuration files are:
+		status.plist
+		info.plist
+		manifest.plist
+
+iPhone Backup Extractor - Recovers lost iPhone Contacts, Calendar events, photos, SMS Messages, notes, location data, etc.
+	http://www.iphonebackupextractor.com
+	on OSX it requires Mono:
+		http://www.go-mono/mono-downloads/download.html
+	Once Mono is installed and iphonebackupextrator is unzipped run:
+		mono iPhoneBackupExtractor.exe
+
+iPhone Password Breaker for backups
+	Elcomsoft's iPhone Password Breaker - Windows Only:
+		http://www.elcomsoft.com/download.html
+		This will crack the encryption passcode on Manifest.plist file
+
+
+
+
+******************************************************************************************
+Logical acquisition - refers to copying the active file system from the device into another file.  Allocated data from the actual device is recovered and can be analyzed later.
+
+
+
+
+******************************************************************************************
+Physical acquisition - block by block copy of drive.  Unfortunately, iPhone security mechanisms prevent use from being able to extract a physical image from a stock device without first gaining privileged access.
+
+3 methods are available to perform physical acquisition on an iPhone as long as the
+firmware version is below 4.x:
+	Zdziarski method
+	FTS's iXAM software
+	jail broken device
+
+
+
