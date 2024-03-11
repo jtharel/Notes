@@ -1,0 +1,20 @@
+Backup using nc:
+	Start nc on the destination server you are backing up to:
+		nc -l 1234 > file.img
+			or depending on nc version:
+		nc -l -p 1234 > file.img
+
+	On the server to be backed up:
+		dd if=/dev/sda conv=sync,noerror bs=64k |nc 10.2.53.18 1234
+
+
+Restore using nc:
+	Start nc on the server to be restored to:
+		nc -l 1234 |dd of=/dev/sda conv=sync,noerror bs=64K 
+			or, depending on nc version:
+		nc -l -p 1234 |dd of=/dev/sda conv=sync,noerror bs=64K 
+
+	On the server with the image:
+		dd if=./file.img bs=64k |nc 10.0.52.86 1234
+
+	
