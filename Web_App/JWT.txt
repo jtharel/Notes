@@ -1,3 +1,20 @@
+Copy Authorization: Bearer header value or "token" cookie value and paste into:
+	https://jwt.io
+
+In the Decoded Header section change the "alg" value to "none"
+change the "email" address to something made up that doesn't exist in app.
+Remove the "signature" section which is the part AFTER the 2nd period
+
+Copy Encoded value back into request in burp and see if it works.
+
+
+Burp Extension: JSON Web Tokens -> will highlight JWT in proxy history and decode them 
+
+
+JWT Tool - is a toolkit for validating, forging and cracking JWTs (JSON Web Tokens).
+https://github.com/ticarpi/jwt_tool
+
+
 ******************************************************************************************
 JWT Issues:
 ******************************************************************************************
