@@ -1,0 +1,396 @@
+SANS_IOT Notes
+
+VM:
+	User: sec556
+	Pass: sec556
+
+
+PI:
+	User: 
+
+
+nmap sV --script vulners --script-args mincvss=5.0 192.168.1.5
+
+nmap -p8728 --script mikrotik-routeros-brute 192.168.1.5
+
+nmap -p22 --script ssh-brute --script-args userdb=user.lst,passdb=pass.lst 192.168.1.5
+
+
+
+steves_awesome_car@halborn.com
+i_wanna_go_fast
+
+
+
+****************************************************************************************************************
+Bus Pirate with JTAG:
+
+$ cat MyBuspirate.cfg
+	source [find interface/buspirate.cfg]
+	buspirate_vreg 0
+	buspirate_mode open-drain
+	buspirate_pullup 1
+	buspirate_port /dev/ttyUSB0
+ 
+$ sudo openocd -f MyBuspirate.cfg
+$ telnet localhost 4444
+
+In new terminal window:
+$ gdb extended-remote :3333
+	> halt; reset init			#halt command stops the processor and resets it to clean state
+	> halt; flash probe 0						#probes for flash
+	> halt; flash info 0						#info about flash
+	> halt; dump_image flashdump.bin 0x00000000 0xF90600		#dump the flash
+
+
+****************************************************************************************************************
+Bus Pirate for UART:
+
+HiZ> m		# to change the mode
+(1)> 3		# UART mode 
+(1)> 9		# 115200 bps
+(1)> 1		# 8 bits of data, no parity control
+(1)> 1		# 1 stop bit
+(1)> 1		# for Idel 1 receive polarity
+(1)> 2		# Normal output type
+UART> (0)	# UART list macros
+UART> (2)	# start UART monitor
+
+
+****************************************************************************************************************
+Raspberry PI for UART:
+
+$ screen /dev/ttyS0 115200
+
+
+****************************************************************************************************************
+Dump SPI flash with bus pirate:
+
+	Bus Pirate
+	 _________
+GND	| 1   1  | +3v3
++5V	| 1   1  | ADC
+VPU	| 1   1  | AUX
+CLK	| 1   1  | MOSI
+CS	| 1   1  | MISO
+	----------
+
+	SPI Flash
+	__________
+1 CS	| 1   8  | 8 VCC
+2 SO	| 2   7  | 7 HOLD
+3 WP	| 3   6  | 6 SCK
+4 VSS	| 4   5  | 5 SI
+	----------
+
+
+Connect Bus Pirate to Flash Chip:
+Bus Pirate	SPI Flash
+GND	->	4 VSS
++5V	->	8 VCC
+CLK	->	6 SCK
+CS	->	1 CS
++3V3	->	7 HOLD
+AUX	->	3 WP
+MOSI	->	5 SI
+MISO	->	2 SO
+
+flashrom -p buspirate_spi:dev=/dev/ttyUSB0,spispeed=1M -r spidump.bin
+
+
+****************************************************************************************************************
+Logic Analyzer connected to Raspberry PI TX/RX pins
+
+Connect Logic Analyzer CH0 and CH1 to Raspberry Pi pins 8 and 10 respectively and GND to GND
+
+sudo pulseview
+Connection to device: Saleae Logic #make sure you see the rainbow D0 -D7
+	1 M sample
+	1 MHz
+
+Click the "Show Cursors" button. Zoom in and Highlight the area in blue where there is transmissions
+
+Click the "Add Protocol Decoder" button
+	Double click on UART
+
+Click the UART button below D7
+	RX		D0
+	TX		D1
+	Baud Rate	115200
+	Data bits	8
+	Parity		none
+	Stop Bits	1
+	Bit order	lsb-first
+	Data format	ascii
+	Invert RX	no
+
+You should see linux boot up messages
+
+ 
+Logic analyzer command line:
+Connect Logic Analyzer CH0 and CH1 to Raspberry Pi pins 8 and 10 respectively and GND to GND
+$ sigrok-cli -d fx21afw --time 10000 --channels D0=RX --config samplerate=1m -P uart:baudrate=115200:format=ascii > serial_out.txt
+
+$ cat serial_out.txt
+$ cat serial_out.txt | grep -B 1 "Stop bit" | grep -v "Stop bit" | grep uart-1 | cut -d " " -f 2 | tr -d '\n'
+
+****************************************************************************************************************
+Extract Firmware file from a PCAP
+
+Use Wireshark tool:
+$ tshark -Q -r firmware-download.pcap -export-objects http,/home/jimmy
+		the ,/home/jimmy Is saying to save in my home dir
+
+	or
+
+In Wireshark:
+	File Menu -> Export Objects > HTTP -> Select file -> Save
+
+
+****************************************************************************************************************
+
+$ zip2john firmware.zip | cut -d ':' -f 2 > zip_hashes.txt
+$ hash cat -m 17200 -a 3 zip_hashes.txt "?a?a?a?a?a?a?a?a"
+
+
+$ dd if=firmware.bin of=jffs.bin bs=1 skip=808032656 count=17579298416239
+
+
+****************************************************************************************************************
+
+Convert firmware from Intel Hex to Binary format:
+
+$ objcopy -I ihex -O binary firmware.hex firmware.bin
+
+
+****************************************************************************************************************
+Put Wi-Fi card into Monitor Mode:
+
+$ iw dev wlan0 interface add mon0 type monitor
+$ ip link set mon0 up
+$ iw dev mon0 set channel 1
+$ iw dev mon0 info
+
+$ iw dev mon0 del 	#delete interface mon0 and put things back to normal
+
+
+Put Wi-Fi card into Monitor Mode with Aircrack-ng
+
+$ airmon-ng
+$ airmon-ng start wlan0
+
+$ iw dev wlan0 del
+$ iw dev mon0 set channel 1
+
+****************************************************************************************************************
+Wi-Fi Protected Setup (WPS) Cracking:
+
+Reaver:
+	https://github.com/t6x/reaver-wps-fork-t6x
+
+PixieWPS:
+	https://github.com/wiire-a/pixiewps
+
+
+
+****************************************************************************************************************
+Wi-Fi Hacking with Kismet
+
+$ kismet
+
+Goto http://loclahost:2501 in browser
+	Click Hamburger in upper left corner
+	Click Data Sources
+	Click wlan0 / wlan0mon
+
+	On the Devices tab the AP will turn red if a handshake is detected
+	Click the Red Bar
+	Expand Wi-Fi (802.11)
+		Scroll down to the WPA Key Exchange section
+		Download the 2 pcap files
+
+	Convert PCAP to hashcat format for cracking
+		hcxpcapngtool -o 4wayhandshake.hash 4wayhandshake.pcap
+
+	hashcat -m 22000 handshake.hash ./rockyou.txt
+
+
+****************************************************************************************************************
+Bluetooth low energy (BTLE)
+
+Discovery and Enumeration of BLE:
+
+hcitool
+	sudo btmgmt le on
+	sudo hcitool lescan
+
+bettercap
+
+nRF - Nordic nRF Connect (Mobile)
+
+
+ubertooth-btle -p -f			# puts ubertooth in promiscuis mode and displays capture to screen
+ubertooth-btle -p -f -c capture.pcap	# save to pcap
+crackle -I capture.pcap -o decrypted.pcap
+
+
+Gatttool - Good for identifying services in Bluetooth LE but must be manually mapped to determine read/write
+
+	gatttool -b 00:07:80:C5:F2:BA -I
+		> connect
+		> primary
+			attr handle: 0x0001, end gap handle: 0x0007 uuid: 00001800-0000-10000-8000-00805f9b34fb
+			<trimmed for brevity>
+		> characteristics
+		> char-desc 0x0007 0xffff
+			handle: 0x000b, uuid: 2901
+			<trimmed for brevity>
+		> char-read-hnd 0x000b
+			Characteristic value/descript: 4d 61 6e 75 66 61 63 74
+		> char-write-req 0x000b 00
+			Characteristic Write Request failed: ...<trimmed>
+
+
+	echo "4d 61 6e 75 66 61 63 74" | xxd -p -r
+
+Buttercup will replace gatttool and easier to use as it has a GUI
+
+****************************************************************************************************************
+
+Use two CC2531 System-on-Chip hardware devices and they are half duplex
+	use one to sniff and one to inject
+
+KillerBee - Zigbee tool
+
+	zbid - List available devices supported
+	zbdump - tcpdump clone
+	zbwireshark - exposes a named pipe for real-time capture and viewing in Wireshark
+	zbconvert - convert capture file formats
+	zbreplay - replay attack
+	zbdsniff - OTA crypto key sniffer
+	zbgoodfind - Recover keys from hardware
+	zbassocflood - proof-of-concept tool to flood the association table of a zigbee router or coordinator
+	zbstumbler - actively scan for Zigbee network devices
+
+
+$ zbid
+           Dev Product String       Serial Number
+           3:7 CC2531 USB Dongle          None
+
+$ zbstumbler
+	zbstumbler: Transmitting and receiving on interface '3:7'
+		New Network: PANID 0x4EC5 Source 0x0000
+			Ext PANID: 39:32:97:d2:38:df:B9
+			Stack Profile: Zigbee Enterprise
+			Stack Version: Zigbee 2006/2007
+			Channel: 15
+		New Network: PANID 0x858D Source 0x0000
+			Ext PANID: 00:00:00:00:00:00:00
+			Stack Profile: Zigbee Enterprise
+			Stack Version: Zigbee 2006/2007
+			Channel: 11
+
+$ sudo znbdump -i 3:7 -c 15 zigbee.pcap
+
+$ find . \(-name \*.dcf -o -name \*.pcap \) -print0 |xargs -0 zbdsniff
+	will show Zigbee Network Key if captured in the pcap
+
+
+$ sudo zbreplay -i 3:7 -f 20 -r out.dump
+
+
+Key Recovery with firmware, but we don't know where in the firmware the key is:
+	Convert hex file to binary with objcopy:
+		objcopy -I hex -O binary chipcon-2430-mem.hex chipcon-2430-mem.bin
+
+	Use zbgood find to apply firmware as decryption key:
+		zbgoodfind -R encdata.dcf -f chipcon-2430-mem.bin
+
+
+
+
+****************************************************************************************************************
+
+For a device to communicate it must register with the FCC who will assign an FCC ID. The devices label with 
+Contain that FCC ID. Goto https://www.fcc.gov/oet/ea/fccid
+
+
+rtl_433 -> Use with Antenna and NooElec R820T SDR & DVB-T adapter -> 433 is 433 MHz
+
+rtl_433 -> captures signals and demodulates and decors automatically based on all known, reliable decoding types
+
+rtl_433 -R -> lists supported known decoding types
+
+rtl_433 -a4 -> will attempt to locate and analyze unknown transmissions
+
+rtl_433 -X 'n-EV1527,m-OOK_PWM,s=160,1=472,r=4796,g=484,t=124,y=0' -> information retrieved from the capture us -a4
+
+
+Run through with a 433 MHz remote:
+	rtl_433 -d ""		-> use remote. Does the output show anything when the button is pressed on the remote?
+				   if not, the rtl_433 does not know how to decode the signal
+
+	rtl_433 -A -d ""	->  -A will cause rtl_433 to perform some of its own automatic analysis to see if 
+				   it can derive some data on its own
+				   Part of the response will contain something like this:
+					Use a flex decoder with -X 'n=name,m=OOK_PWM,s=160,l=472,r=4776,g=472,t=125,y=0'
+
+	rtl_433 -d "" -X 'n=name,m=OOK_PWM,s=160,l=472,r=4776,g=472,t=125,y=0'
+		
+
+hackrf_info -> information about HackRF One device and if it is connected
+
+hackrf_spiflash -w hackrf_one_usb_rom_to_ram.bin	-> write firmware to hackRF One
+hackrf_cpldjtag -x hackrf_cpld_default.xsvf		-> updates CPLD, must do this with firmware update
+
+
+Capture:
+hackrf_transfer -s 2000000 -f 433920000 -r EV1527.8s
+	-s 	sample rate
+	-f 	frequency
+	-r	output file EV1527.8s
+
+Replay:
+hackrf_transfer -s 2000000 -f 433920000 -t EV1527.8s -a 1 -x 24
+	-s 	sample rate
+	-f	frequency
+	-t	transmit file (EV1527.8s) as input
+	-a	enable amplification
+	-x 	set gain
+
+	
+URH - Universal Radio Hacker - GUI
+	urh 
+		File Menu -> Record Signal
+		Use buttons on remote
+		Stop Recording
+		Save and close the Save window
+		On the Interpretation Tab click "Autodetect Parameters"
+		Right click the Black Bar/Wave click zoom in. Can also do CTRL-Shift-+
+		
+		Click on the Analysis Tab -> Change "View data as" to "Hex"
+		Click the "Analyze Protocol" button.
+			The Hex display will be colorized, indicating some repeating patterns
+		Click the new Message Type 1.1 in the Message types window on the bottom left, 
+			we can see the results of the analysis, noting that various colors have 
+			been assigned to similar data for the repeating transmission for both 
+			preamble and synchronization. Thinking about what is left of a 
+			transmission, we see that the unlabeled portion is likely the 
+			individual commands to turn on and off the power outlet!
+
+
+Unoriginal Rice Patty -> Honda Key Fob attack
+
+
+GQRX - A Software defined Radio Receiver
+	gqrx
+
+Inspectrum - tool for analyzing captured signals from SDR
+	https://github.com/miek/inspectrum
+	
+	./inspectrum [filename]
+
+
+unblob -> alternative to binwalk when binwalk doesn’t work
+	https://unblob.org/
+

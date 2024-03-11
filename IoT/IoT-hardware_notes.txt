@@ -1,0 +1,264 @@
+Wireless N Dual Band Router - D-Link DIR-815 - Rev B
+Linksys WRT120N Wireless-N Home Router
+
+SALEAE Logic 8 -> protocol analyzer -> spy on the SPI bus
+https://www.saleae.com/ 
+
+Logic - protocol analyzer
+
+https://gchq.github.io/CyberChef -> Find/Replace; Swap endianness (raw, 8 bytes); From Binary (delimiter 'space')
+
+
+
+PCB Construction
+kicad
+eagle
+
+Common Designators
+C	Capacitor
+D	Diode
+J	Connector
+L	Inductor
+Q	Transistor
+R	Resistor
+S	Switch
+T	Transformer
+U	Integrated Circuit
+Y	Oscilator
+F	Fuse
+FL	Filter
+
+square solder point is usually pin one
+
+
+Passive Componetns - do not require power
+	Resistors, capacitors, inductors, potentiometer, switches
+
+	Resistors 
+		Carbon film - Tan
+		Metal film - Blue
+		Carbon composition - Brown
+
+
+	Capacitors - store energy, so votage won't drop
+		measured in Farads (F)
+		Ceramic Disc
+		Aluminum Electrolytic
+		Polypropylene
+	
+	Inductors - maintain a constant current, resests changes to current
+		measured in Henries (H)
+		rated current, AC and DC resistance
+
+
+Active Componeths - Require a power source
+	Diodes, transistors, amplifiers, CPUs
+
+	Diodes - allows current to flow in only one direction	
+		LED's are also diodes
+
+	
+
+SOIC - Small outline integrated cercuit
+
+
+Manufacturer Prefixes written on IC's
+	AT	Atmel	
+	MC	Motorola
+	N	Philips
+	I	Intel
+	PIC	Microchip
+	Z	Zilog
+	DM	Fairchild
+	Am	AMD
+	MC	Texas Instruments
+	IS	Integrated Silicon Solutions Inc
+
+Datasheet Sites:
+	Datasheet360
+	datasheetcatalog
+	alldatasheet
+	alibaba
+	Baidu - search tool
+
+
+Parallel vs. Serial bus
+	Parallel -> faster data transfers, used for RAM and ICs
+	Serial -> data rates are low, requires a serializer/deserializer
+		prefered comunnication method for long distances
+
+		Asynchronous serial
+			Typically 1-2 signal lines TX and RX
+			no external clock
+			Protocols: UART and RS232 
+				
+		Synchronous Serial Communication
+			Typically 2-5 singal lines
+			Shared exteral Clock
+			Protools: SPI, I2C, JTAG
+
+		I2C - Inter-Integrated Circuit
+			two wire serial bus
+
+
+Conventional vs. Electron current flow
+	Conventional -> positive to negative
+	Electron -> negative to positive -> don't use this
+
+	Two types of current:
+		Direct Current -> Postive to Negative
+		Alternating Current -> Positive to Negative and Neg to Pos
+	Measured in Ampere (A)
+
+
+Insulator -> extreme form of resistance
+	prevents transfer of energy
+	nothing is a perfect insulator
+
+Conductor -> opposite of resistance
+	provides a path for the transfer of energy
+	Everything has at least some resistance
+
+
+OHM's Law
+
+	I = V/R
+	Electric current = Voltage / Resistance
+
+OHM's Power Law
+
+	P = VI
+	P = I^2R
+	P = V^2 / R
+
+Voltage == pressure
+Current == rate of flow
+Resistance == friction
+
+
+Multimeter -> 
+	Measuring Resistance (Resistor) put in OHMs mode, make sure device is
+		turn off
+
+	Measuring Current put in DC amps mode (A), device is turned on
+
+	Measuring Continuity (Ground) put in continuity mode (sound), device 
+		is turned off
+
+	Measuring Voltage, put in Voltage mode (V), device is turned on
+
+
+Reading Flash Chips
+
+	EEPROM vs Flash
+	NOR vs NAND
+	Firmware Format
+
+	Read Only Memory
+		Masked ROM, PROM, EPROM
+
+	Random Access Memory
+		SRAM, DRAM
+
+	Hybrids
+		EEPROM -> SPI, I2C, 1-Wire, UNI/O and parallel
+		FLASH -> SPI or parallel
+			NOR and NAND
+
+Data Extraction over SPI
+	C232HM can handle up to 30Mbps over JTAG, SPI and I2C
+	Recommended tools:
+		libmpsse - driver for C232HM cable
+		binwalk
+
+MISO - Master In Slave Out
+MOSI - Master Out Slave In
+
+
+Diodes -> current flows in only one direction
+	LED -> short side is negative
+		long side is positive
+	Resisters can be placed in any direction
+	Resisters can be placed before or after LED since it is a 
+		connection loop
+
+Bit Bang and SPI clock -> send 3.3 volts to all pins
+	sudo python
+	>>> import pylibftdi
+	>>> dev = pylibftdi.BitBangDevice()
+	>>> dev.direction = 0xFF
+	>>> dev.port = 0xFF
+
+	Standard Logic Levels
+	   High range 2V - 3.3V
+		3.3V 	Vcc
+		2.4V	V out high
+		2V      V in high
+		
+	   Low range 0V - 0.8V
+		0.8V	V in low
+		0.5V	V out low
+		0V	GND
+
+Reset Pin goes by many names:
+	Reset
+	MCLR (Master Clear)
+	SRST (System Reset)
+
+JTAG - 
+	TDI - test data in
+	TDO - test data out
+	TMS - test mode select
+	TCK - test clock
+	TRST - Test reset
+
+
+OpenOCD - Open source on chip debugger
+	run with "transport select jtag" in openocd.cfg
+	run: sudo openocd   ^^after adding the above   
+           it will return output for building your target.cfg
+	   	jtag newtap auto0 tap -expected-id 0x50916053 -irlen 5
+	
+	then comment out "transport select jtag" after building target.cfg
+
+	take note of your "dotted TAP name", in this case auto0.tap from above
+
+	in target.cfg file:
+	   target create auto0.tap mips_m4k -endian little -chain-position auto0.tap
+		must define architecture (arm11, avr, cortex_m, mips_4mk) and endian
+
+
+	running openocd should now run without errors.
+
+	telnet localhost 4444
+		halt
+		
+
+OpenOCD commands:
+	reg
+	halt, resume
+	reset [run|halt|init]
+	bp [address length ['hw']]   #break point
+	rbp
+	step [address]
+	reg [(register_name)|(register_number)][value]]
+	mdb [wh] address [count]		#memory dump?
+	mwb [count] 				# memory write byte
+
+	dump "Kernel Unmapped Uncachable" section from processor
+		do NOT dump Cachable 
+		dump from KSEG1
+
+	dump flash to ascii:
+		mdb 0xbd000000 65535
+			size of flash area in datasheetA (0xbd00FFFF-0xbd000000=65535)
+		copy output to ASCII file
+	ASCII HEX to Binary:
+	ghex2bin.py dump.txt 2 32 > dump.bin	
+
+
+	other option: 
+		dump_image hexdump.bin 0xbd000000 65535
+
+chr(int(x,2))
+

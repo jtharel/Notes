@@ -1,0 +1,102 @@
+
+
+Chipsec:
+
+Run everything:
+python3 ./chipsec_main.py
+	look for items in Red color. Then run individual modules/scripts for those areas
+
+*****************************************************************************************
+
+Fuzz SMM
+python3 ./chipsec_main.py -m tools.smm.smm_ptr -a fuzz,0:0x40
+
+Test for SMM Memory Sinkhole Vulnerability:
+python3 ./chipsec_main.py -m tools.cpu.sinkhole
+
+
+*****************************************************************************************
+
+Test for S3 boot script vulnerabilities
+python3 ./chipsec_main.py -m common.uefi.s3bootscript
+
+python3 ./chipsec_main.py -m tools.uefi.s3script_modify
+
+*****************************************************************************************
+
+SPIFlash Permissions - Read or Write to areas of flash
+python3 ./chipsec_main.py -m common.spi_access
+
+
+Check if BIOS region is write protected:
+python3 ./chipsec_main.py  -m common.bios_wp
+
+
+*****************************************************************************************
+
+
+Extract EFI Executables from UEFI Binary
+python3 ./chipsec_util.py decode ./firmware.bin
+
+
+*****************************************************************************************
+
+Extract EFI Configuration on a live system
+python3 ./chipsec_util.py uefi var-list
+	efi_variables.dir directory is created
+	in here, look for files that start with PK, db, dbx and KEK
+
+
+
+Extracting UEFI Secure Boot Keys
+
+python3 ./chipsec_util.py uefi var-find PK
+python3 ./chipsec_util.py uefi var-find db 
+python3 ./chipsec_util.py uefi var-find dbx
+python3 ./chipsec_util.py uefi var-find KEK
+
+if found it creates a PK.bin, db.bin, dbx.bin or KEK.bin file respectively. Otherwise,
+	look at the output form the var-list for files that start with PK, db, dbx and KEK
+
+python3 ./chipsec_util.py uefi keys PK.bin
+python3 ./chipsec_util.py uefi keys db.bin
+python3 ./chipsec_util.py uefi keys dbx.bin
+python3 ./chipsec_util.py uefi keys KEK.bin
+	new directory will be created 
+
+
+*****************************************************************************************
+
+Dump UEFI System Table and Runtime Services
+python3 ./chipsec_util.py uefi tables
+
+
+*****************************************************************************************
+
+Extracting CMOS Settings
+python3 ./chipsec_util.py cmos dump
+
+
+
+*****************************************************************************************
+
+ACPI Tables
+python3 ./chipsec_util.py acpi list
+
+
+*****************************************************************************************
+
+
+Write to SPI Flash:
+python3 ./chipsec_util.py spi write 0x0 ./firmware.bin
+
+Dump SPI Flash:
+python3 ./chipsec_util.py spi dump firmware.bin
+
+ 
+Disable BIOS Write Protection 
+python3 ./chipsec_util.py spi disable-wp
+
+
+*****************************************************************************************
+
