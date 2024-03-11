@@ -1,1 +1,34 @@
-a
+SOAP Tools:
+	WebScarab
+	WebService Studio
+		http://webservicestudio.codeplex.com/ -> from Microsoft
+	SOAPUI
+		./soapui.sh
+		./java -jar ./burp  #turn off intercept mode
+		back to soapui
+		In File -> Preferences set up the burp proxy 127.0.0.1 port 8080
+		Click File-> New soapUI Project
+		The Project name should be "testing"
+		The Initial WSDL would be "http://www.site.org/scanners/webservice/ws-helloWorld.php?wsdl"
+		Check the box for  "Creates a Testsuite for the imported WSDL or WADL"
+		Click OK
+		A new window will open to generate the testsuite.
+		Click OK
+		In the main window, expand each of the tree items
+		Right click on the "Security Tests"
+		Click "New SecurityTest"
+		Click OK
+		A window will open
+		Right click on the "hello (0 scans)"
+		Select "Add SecurityScan"
+		Select XSS and then OK
+		Add parameters and explore the interfaces.
+		As you use SOAPUI, keep in mind that right-clicking the test cases is 
+			where you can add new cases.
+		After exploring the interface and building various cases, try the other 
+			web services.  To find them, the url is 
+			http://www.site.org/scanners/webservice/
+
+	WSDigger	->tool from foundstone
+
+
