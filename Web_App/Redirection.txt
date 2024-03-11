@@ -1,0 +1,5 @@
+www.site.com/?url=newsite.com
+	try adding a . to the end and the new domain. i.e.:
+		www.site.com/?url=newsite.com.myevilsite.com
+
+
