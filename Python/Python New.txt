@@ -1,0 +1,1298 @@
+
+www.letskodeit.com
+www.twitter.com/letskodeit
+
+
+Pip usage:
+	pip install wheel
+	pip show wheel
+	pip uninstall wheel
+	pip search selenium
+
+
+pip install ipython
+
+
+
+>>> help ('print')
+
+>>> print ("Hello World")
+Hello World
+
+>>> 10 + 10
+20
+
+
+>>> city = "Bailey"
+>>> print(city)
+Bailey
+>>> city
+'Bailey'
+
+
+
+Objects and References
+
+c = 'nyc'
+d = c
+print(c==d)
+true
+
+print(d is c)
+true
+
+**************************************************************************
+
+Variable rules
+
+Reserved keywords that can not be variable names:
+
+and	or	not	from	import	as
+if	elif	else	pass	yield	assert
+global	del	for	while	break	continue
+print	class	def	return	try	except
+finally	raise	in	is	lamba	with
+exec
+
+
+Star variable names with letter or underscore _
+	Do not start with a number
+ 
+
+
+**************************************************************************
+Arithmetic
+
+
+Exponentiation
+10 ** 20 is 10 to the 20th power
+
+10 ** 2 is 10 squared
+
+
+Modulo
+10 % 3    #returns the remainder of 100/3 which is 1
+
+
+a += 10  	#same as a = a + 10
+
+a *= 5		#same as a = a * 5
+
+
+
+**************************************************************************
+
+Boolean Data
+
+0 is always False; everything else is True except "" which is False
+
+>>> print(bool(0))
+False
+>>> print(bool(1))
+True
+>>> print(bool(2))
+True
+
+c = ""
+print(bool(c))
+False
+
+c = "some value"
+print(bool(c))
+True
+
+**************************************************************************
+
+Strings
+
+How to print single quotes
+
+>>> c = "Need to use 'quotes' inside a string"
+>>> c
+Need to use 'quotes' inside a string
+
+
+>>> d = "Need to use \"quotes\" inside a string"
+>>> d
+Need to use "quotes" inside a string
+
+
+
+String Methods
+
+If you want to access a certain character in a string:
+
+	first = "jimmy"[0]
+	print(first)
+	j
+
+
+len() 		length
+uppper()	convert to upper case
+lower()		convert to lower case
+str()		convert to string
+
+
+s = "This Is Mixed Case"
+print(s.lower())
+print(s.upper())
+print(len(s))
+print(s + str(2))
+
+this is mixed case
+THIS IS MIXED CASE
+18
+
+
+
+Replace characters in a string:
+
+	a = "abcaseabcabcabc"
+	print(a.replace('abc', 'ABC'))
+	ABCcaseABCABCABC
+	
+
+Replace only the fist two instaces of a string:
+	a = "abcaseabcabcabc"
+	print(a.replace('abc', 'ABC', 2))
+	ABCcaseABCabcabc
+
+	
+print certain characters from string
+	a = "abcaseabcabcabc"
+	sub = a[1:6]			#prints char 1 and up to but not including 6
+	print(sub)
+	bcase
+
+a = 'This is a string'
+print(a[::-1])
+gnirts a si sihT
+
+
+
+
+Same way to print variables in a sentence
+	city = "nyc"
+	event = "show"
+
+	print("Welcome to " + city + " and enjoy the " + event)
+
+	print("Welcome to %s and enjoy the %s" %(city,event))
+
+
+
+
+
+**************************************************************************
+
+and:
+True and True   --> True
+True and False  --> False
+False and False --> False
+
+or:
+True or True    --> True
+True or False   --> True
+False or False  --> False
+
+not:
+Not True  --> False
+Not False --> True
+
+Boolean Operator - Order of Precedence:
+not and or
+
+	not -> is always processed first
+	and -> is always processed second
+	or  -> is always processed third
+
+
+**************************************************************************
+
+
+value == 'red'
+
+if value == 'green':
+    print("go")
+elif value == 'yellow:
+    print("prepare to stop")
+else:
+    print("stop")
+
+
+
+x = 0
+while x < 10:
+    print("Value of x is " + str(x))
+    x += 1
+
+
+
+
+while x < 10:
+    print("value of x is: " + str(x))
+    x += 1
+    if x == 8:
+        break
+
+
+x = 0
+while x < 10:
+    print("value of x is: " + str(x))
+    x += 1
+    print("This example is cool")
+    print("*"*20)
+else:
+    print("X equals 10 so exit while loop")
+
+
+
+my_string = "abcabc"
+
+for X in my_string:
+    print(X, end=' ')		# end=' ' ->remove CRLF and replaces with a space
+
+
+
+cars = ['bmw', 'benz', 'honda']
+for car in cars:
+    print(car)			#will print cars individually on new lines
+
+
+
+d = {'one': 1, 'two': 2, 'three': 3}
+for k in d:
+    print(k)
+
+
+
+nums = [1, 2, 3]
+for n in nums:
+    print (n * 10)
+
+
+d = {'one': 1, 'two': 2, 'three': 3}
+for k in d:
+	print(k + ' ' + str(d[k]))
+
+
+d = {'one': 1, 'two': 2, 'three': 3}
+for k,v in d.items():
+    print(k)
+    print(v)
+
+
+
+zip function allows you to process multiple lists:
+list1 = [1, 2, 3]
+list2 = [6,7, 8, 20, 30, 40]
+
+for a, b in zip(list1, list2):
+    print(a)
+    print(b)
+
+1
+6
+2
+7
+3
+8
+
+# 20, 30 and 40 in list 2 are ignored.
+
+
+Range Function:
+print(list(range(0, 10)))
+[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+
+
+for num in range(5):
+    print(num)
+0
+1
+2
+3
+4
+
+
+
+**************************************************************************
+
+Methods:
+
+def sum_nums():
+	print(3 * 2)
+
+sum_nums()
+
+
+
+
+**************************************************************************
+Built-in-functions
+
+max() -> largest number in list
+ 
+min() -> smallest number in list
+
+abs() -> distance from zero
+
+type() -> will show what type a value is: integer, string, float, list, etc.
+
+
+
+**************************************************************************
+
+
+Objects and Classes:
+
+
+Example 1:
+class Car(object):
+	def __init__(self, make, model):
+		self.make = make
+		self.model = model
+
+c1 = Car('ford', 'mustang')
+c2 = Car('toyota', 'highlander')
+c3 = Car('chevy', 'camero')
+
+print(c1.make)
+print(c1.model)
+
+print(c2.make)
+print(c2.model)
+
+
+
+Example 2:
+class Car(object):
+	def __init__(self, make, model):
+		self.make = make
+		self.model = model
+
+	Def info(self):
+		print("Make of the car: " + self.make)
+		print("Model of the car: " + self.model)
+
+
+c1 = Car('ford', 'mustang')
+c1.info()
+
+c2 = Car('toyota', 'highlander')
+c2.info()
+
+c3 = Car('chevy', 'camero')
+c3.info()
+
+*********************************************************
+
+Class Inheritance:
+Example 1:
+class Car(object):
+    def __init__(self):
+        print("You just created the car instance")
+
+    def drive(self):
+        print("Car started...")
+
+    def stop(selfs):
+        print("car stopped")
+
+class BMW(Car):
+    def __init__(self):
+	Car.__init__(self)			#calls function above
+        print("you just created the BMW instance")
+
+c = Car()
+c.drive()
+c.stop()
+
+b = BMW()
+b.drive()
+b.stop()
+
+
+Example 2:
+
+class Car(object):
+    def __init__(self):
+        print("You just created the car instance")
+
+    def drive(self):
+        print("Car started...")
+
+    def stop(selfs):
+        print("car stopped")
+
+class BMW(Car):
+    def __init__(self):
+        Car.__init__(self)
+        print("you just created the BMW instance")
+
+    def drive(self):
+        super(BMW, self).drive()
+        print("You are driving a BMW, Enjoy...")
+
+    def headsup_display(self):
+        print("this is a unique feature")
+
+c = Car()
+c.drive()
+c.stop()
+
+print("*"*20)
+
+b = BMW()
+b.drive()
+b.stop()
+b.headsup_display()
+
+
+
+*********************************************************
+
+Exception Handling:
+
+Built-in Python Exceptions
+	https://docs.python.org/3/library/exceptions.html
+
+Example 1:			Better than example 2, all error conditions are covered 
+def exceptionHandling():
+    try:
+        a = 10
+        b = "any string"
+        c = 10
+
+        d = (a + b) / c
+        print(d)
+
+    except:
+        print("In the except block, this is not possible.")
+exceptionHandling()
+
+
+Example 2:
+def exceptionHandling():
+    try:
+        a = 10
+        b = "this is a string"
+        c = 0
+
+        d = (a + b) / c
+        print(d)
+
+    except ZeroDivisionError:
+        print("Divid by 0 error")
+    except TypeError:
+        print("Can't add string to integer")
+exceptionHandling()
+
+
+Example 3:
+def exceptionHandling():
+    try:
+        a = 10
+        b = 20
+        c = 0
+
+        d = (a + b) / c
+        print(d)
+
+    except ZeroDivisionError:
+        print("Divid by 0 error")
+    else:
+        print("there was no exception")
+    finally:
+	print("this will always get executed")
+exceptionHandling()
+
+
+*********************************************************
+
+
+Python 3 Libraries / Modules:
+https://docs.python.org/3/library/
+
+
+
+import math
+#from math import sqrt
+
+class ModulesDemo():
+    def builtin_modules(self):
+        print(math.sqrt(100))
+ #       print(sqrt(100))            #requires 'from math import sqrt' since math. was not used
+
+
+m = ModulesDemo()
+m.builtin_modules()
+
+
+
+
+
+
+*********************************************************
+
+File I/O
+
+4 modes when dealing with files:
+
+'w'	write-only
+'r'	read-only
+'r+'	read and write
+'a'	append
+
+
+Example Write to File:
+my_list = [1, 2, 4]
+
+my_file = open("firstfile.txt", "w")
+
+for item in my_list:
+    my_file.write(str(item) + "\n")
+
+my_file.close()
+
+
+
+Example Read from file:
+my_file = open("firstfile.txt", 'r')
+
+print(str(my_file.read()))
+
+my_file.close()
+
+
+
+Example Read a file line by line:
+my_file_line = open("firstfile.txt", 'r')
+print(str(my_file_line.readline()))
+print(str(my_file_line.readline()))
+print(str(my_file_line.readline()))
+
+my_file.close()
+
+
+
+Example Read a file line by line 2:
+with open('firstfile.txt', 'r') as X:
+    for line in X:
+        if 'str' in line:
+            break
+        line = line.rstrip()		#python adds blank lines, this removes them
+        print(line)
+
+    #X.write("write this text")
+		#write to a file
+
+
+
+
+*********************************************************
+
+Logging
+
+Levels:
+	Debug
+	Info
+	Warning
+	Error
+	Critical
+
+
+Example 1:
+
+import logging
+
+logging.warning("Warning Message")
+loggin.info("Info Message")
+
+
+Example 2 logging to a file:
+import logging
+
+logging.basicConfig(filename="test.log", level=logging.DEBUG)
+
+logging.info("Info Message")
+logging.warning("Warning Message:")
+logging.error("Error message:")
+
+
+
+Example 3 with date and time:
+import logging
+
+logging.basicConfig(format='%(asctime)s:%(levelname)s: %(message)s', level=logging.DEBUG)
+
+logging.info("Info Message")
+logging.warning("Warning Message:")
+logging.error("Error message:")
+
+
+Example 4 with logging.conf configuration file example:
+Python .py file:
+import logging
+import logging.config
+
+class LoggerDemoConf():
+    def testLog(self):
+
+        logging.config.fileConfig('logging.conf')
+        logger = logging.getLogger(LoggerDemoConf.__name__)
+
+        logger.debug('debug message')
+        logger.info('info message')
+        logger.warning('warning message')
+        logger.error('error message')
+        logger.critical('critical message')
+
+
+demo = LoggerDemoConf()
+demo.testLog()
+
+
+
+logging.conf file:
+
+[formatters]
+keys=simpleFormatter
+
+[logger_root]
+level=DEBUG
+handlers=fileHandler
+
+[logger_LoggerDemoConf]
+level=INFO
+handlers=fileHandler
+qualname=demoLogger
+propagate=0
+
+[handler_fileHandler]
+class=FileHandler
+Level=DEBUG
+formatter=simpleFormatter
+args=('test.log',)
+
+[formatter_simpleFormatter]
+format=%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+datefmt=%m/%d/%Y %I:%M:%S %p
+
+*********************************************************
+
+UnitTest
+
+Test Fixture - By using a test fixture, we can define the preparation needed to perform one or more tests and any cleanup actions. In simple language this is like @Before and @After methods of JUnit and TestNG, but we call them as setup() and teardown().
+
+Test Case - a test case is the smallest uint of testing in unittest. It checks for a response to a particular set of actions using various assert methods provided by the unittest library. JUnit / TestNG -> @Test
+
+Test Suite - A test suite is a collection of multiple tests or test cases to create groups of tests, which represent that, all these tests can be run together in a single execution.
+
+Test Runner - The test runner is responsible for execution of tests and provides results to the user.
+
+Test Report - A test report displays a summary of test results showing the pass or fail status of executed test cases.
+
+
+Assert Methods:
+
+Method				Checks that
+------				-----------
+assertEqual(a, b)		a == b
+assertNotEqual(a,b)		a! = b
+assertTrue(x)			x is True;
+asertFalse(x)			x is False
+assertIs(a, b)			a is b;
+assertIsNot(a, b)		a is not b
+assertIsNone(x)			x is None;
+assertIsNotNone(x)		x is not None
+assertIn(a, b)			a in b;
+assertNotIn(a, b)		a not in b
+assertGreateer(a, b)		a > b;
+assertGreaterEqual(a, b)	a >= b
+assertLess(a, b)		a < b
+assertLessEqual(a, b)		a <= b
+assertAlmostEqual(a, b)		round(a-b, 7) == 0
+assertNotAlmostEqual(a, b)	round(a-b, 7) != 0
+assertIsInstance(a, b)		isinstance(a, b)
+assertNotIsInstance(a, b)	not isinstance(a, b)
+
+
+
+
+*********************************************************
+
+Object Oriented Programming (OOP)
+
+
+class Program():
+    def __init__(self, *args, **kwargs):
+        self.lang = input("What Language?: ")
+        self.version = float(input("Version?: "))
+        self.skill = input("What skill level? ")
+
+    def upgrade(self):
+        new_version = float(input("What version?: "))
+        print("We have updated the version for ", self.lang)
+        self.version = new_version
+
+
+p1 = Program()
+
+p1.upgrade()
+
+#print(p1.lang)
+#print(p1.version)
+#print(p1.skill)
+
+
+*********************************************************
+
+SQLite Database:
+
+Create SQLite DB (jimmy) and Table (example):
+	import sqlite3
+
+	conn = sqlite3.connect('jimmy.db')
+
+	c = conn.cursor()
+
+	def create_table():
+		c.execute("CREATE TABLE example(Language VARCHAR, Version REAL, Skill TEXT)")
+			# Table columns Language, Version and Skill and the type of data it is
+	
+	create_table()
+	conn.close()
+
+
+Enter Data into the example table:
+
+	import sqlite3
+
+	conn = sqlite3.connect('tutorial.db')
+
+	c = conn.cursor()
+
+	def create_table():
+	    c.execute("CREATE TABLE example(Language VARCHAR, Version REAL, Skill TEXT)")
+
+	def enter_data():
+	    c.execute("INSERT INTO example VALUES('Python', '2.7', 'Beginner')")
+	    c.execute("INSERT INTO example VALUES('Python', '3.3', 'Advanced')")
+	    c.execute("INSERT INTO example VALUES('Python', '3.4', 'Expert')")
+	    conn.commit()
+
+
+	#create_table()
+
+	enter_data()
+
+	conn.close()
+
+
+
+Enter Dynamic Data into example table:
+	import sqlite3
+
+	conn = sqlite3.connect('tutorial.db')
+
+	c = conn.cursor()
+
+	def create_table():
+	    c.execute("CREATE TABLE example(Language VARCHAR, Version REAL, Skill TEXT)")
+
+	def enter_dynamic_data():
+	    lang = input("What Language? ")
+	    version = float(input("What version? "))
+	    skill = input("What skill level? ")
+
+	    c.execute("INSERT INTO example (Language, Version, Skill) VALUES (?, ? ,?)", (lang, version, skill))
+			# Language Version and Skill are columns in example table
+			# ?, ?, ? represents the 3 columns where to insert the data
+			# lang, version, skill are the variables defined above that contain the data to insert
+	    conn.commit()
+
+
+#create_table()
+
+enter_dynamic_data()
+
+conn.close()
+
+
+
+
+Read Data from example Table (assumes db and tables already created):
+	import sqlite3
+
+	conn = sqlite3.connect('tutorial.db')
+
+	c = conn.cursor()
+
+	def read_from_database():
+	    what_skill = input("What skill are you looking for?: ")
+	    what_language = input("What language?: ")
+	    sql = "SELECT * FROM example WHERE Skill = ? AND Language = ?"
+	    for row in c.execute(sql, [(what_skill), (what_language)]):
+	        print(row)
+	
+	    conn.commit()
+
+	read_from_database()
+
+	conn.close()
+
+
+
+Limit number of rows to be returned:
+
+	def read_from_database():
+	    sql = "SELECT * FROM example LIMIT 2"
+			#returns on the first 2 rows from the query
+	
+	    for row in c.execute(sql):
+	        print(row)
+	
+	    conn.commit()
+
+	read_from_database()
+
+
+
+
+Update records in DB:
+	def update_database():
+		sql = "UPDATE example SET Skill = 'Beginner' WHERE skill = 'beginner'"
+			replace all "beginner" entries with "Beginner" in the Skill column
+		c.execute(sql)
+
+		sql = "SELECT * FROM example"
+		for row in c.execute(sql):
+			print(row)
+
+
+
+Delete record in DB:
+	def delete_record():
+	    sql = "DELETE FROM example WHERE Skill = 'Expert'"
+	    c.execute(sql)
+
+
+
+Sample Script to show the table name if you don't know it and don't have sqlite3 installed
+	inport sqlite3
+	
+	conn = sqlite3.connect('session.sqlite')
+
+	c = conn.cursor()
+
+	def read_from_database():
+		sql = "SELECT name FROM sqlite_master WHERE type='table';"
+		for row in c.execute(sql):
+			print(row)
+		conn.commit()
+
+	def read_from_table():
+		sql = "SELECT * FROM storage;"	# storage is name returned from above
+		for row in c.execute(sql):
+			print(row)
+		conn.commit()
+
+	read_from_database()
+	read_from_table()
+	conn.close()
+
+
+Script to read all table names and then output their content:
+	import sqlite3
+
+	conn = sqlite3.connect('CoreDataSurveys.sqlite')		## CoreDataSurveys.sqlite is DB name
+
+	c = conn.cursor()
+	d = conn.cursor()
+
+	sql = "SELECT name FROM sqlite_master WHERE type='table';"
+	for row in c.execute(sql):
+		print("Table: " + str(row)[3:-3])
+		table_name = str(row)[3:-3]	
+
+		newsql = "SELECT * FROM " + table_name + ";"
+		print("SQL Statement = " + newsql)
+		for row in d.execute(newsql):
+			print(str(row))
+		conn.commit()
+		print("   ")
+		print("**********")
+		print(:"   ")
+	
+		
+	conn.commit()
+
+
+	conn.close()
+
+
+
+
+*********************************************************
+MySQL:
+
+
+Create a database:
+mysql -u root
+	CREATE DATABASE epicdb;
+	USE epicdb;
+	CREATE TABLE programmers (name VARCHAR(20), language VARCHAR(20), email VARCHAR(50));
+		# creates table "programmers" with 3 colums (name, Language and email). name and email are 20 characters long
+
+	CREATE TABLE links (time FLOAT(18,2), link VARCHAR(400));
+
+	DESCRIBE programmers;	#shows columns types, etc.
+
+	INSERT INTO programmers (name, language, email) VALUES ('Jay', 'Python', 'jag@g.com');
+
+	GRANT ALL PRIVILEGES ON epicdb TO 'epicuser'@'localhost' IDENTIFIED BY 'testpw';
+
+Python Connector already installed on Kali Linux
+
+
+
+#Install python connector in python:
+#pip install PyMySQL mysql-connector MySQLdb -> one of these may be needed on other distros
+	
+Script to connect to MySQL DB using Python:
+
+	import MySQLdb
+
+	def connection():
+		conn = MySQLdb.connect(host='10.1.1.1', user='epicuser', passwd='testpw', db='epicdb);
+		c = conn.cursor()
+		return c, conn
+	
+	c, conn = connection()
+
+	c.execute("INSERT INTO links (time, link) VALUES (%s, %s)", (time.time(), 'http://www.yahoo.com'))
+		#links is the table in the epicdb database
+		#(time, link) are the column names
+		#(%s, %s) is representing the columns to be written to
+		#(time.time() uses the time library to import current time into the time column
+		#'http://www.yahoo.com' is written to the link column
+
+	c.execute("SELECT * FROM links
+
+	conn.commit()
+
+	conn.close()
+
+
+
+Read from a table in a database:
+
+	import MySQLdb
+
+	def connection():
+		conn = MySQLdb.connect(host='10.1.1.1', user='epicuser', passwd='testpw', db='epicdb);
+		c = conn.cursor()
+		return c, conn
+	
+	c, conn = connection()
+
+	c.execute("SELECT * FROM links;")
+		#links is the table in the epicdb database
+	
+	rows = c.fetchall()
+	print(rows)
+	conn.commit()
+
+	conn.close()
+
+
+
+
+*********************************************************
+
+*********************************************************
+
+urllib
+
+GET Request:
+
+	import urllib.request
+	req = urllib.request.urlopen('https://www.google.com')
+	print(req.read())
+
+
+GET Request with URI (i.e. https://www.google.com/search?q=python%20programming%20tutorials):
+
+	import urllib.request
+	import urllib.parse
+
+	values = {'q':'python programming tutorials'}
+		# this is q=python programming tutorials -> see urlencode below for handling spaces
+	
+	data = urllib.parse.urlencode(values)
+		# this encodes the spaces in python programming tutorials
+	url = 'https://www.google.com/search?'+data
+
+	req = urllib.request.Request(url)
+	resp = urllib.request.urlopen(req)
+	resp_data = resp.read()
+	print(resp_data)
+
+	# response will be a 403 forbidden on Google since Google doesn't like scripts accessing their site
+
+
+
+Adding Headers to HTTP request:
+
+	import urllib.request
+	import urllib.parse
+
+	values = {'q':'python programming tutorials'}
+
+	data = urllib.parse.urlencode(values)
+	url = 'https://www.google.com/search?'+data
+
+	headers = {}
+	headers['User-Agent'] = "Mozilla/5.0 (X11; Linux i686)"
+
+	req = urllib.request.Request(url, headers=headers)
+	resp = urllib.request.urlopen(req)
+	resp_data = resp.read()
+	print(resp_data)
+
+
+
+
+XML and RSS feeds:
+
+pip install BeautifulSoup4
+
+	from bs4 import BeautifulSoup
+	import urllib.request
+
+	req = urllib.request.urlopen('http://www.nationaljournal.com/politics?rss=1')
+		# url of RSS feed which is in XML
+
+	xml = BeautifulSoup(req, 'xml')
+		# Must define the 'xml' type otherwise bs4 think HTML
+
+	for item in xml.findAll('link')[1:]:		# item is the script tag <link>bla</link> [1:] skip 1st
+		print(item.text)			# displays only the hyperlinks and not the tags
+		
+
+
+
+*********************************************************
+
+Creating WebSites with Python using the Flask framework
+
+	sudo apt-get install apache2 libapache2-mod-wsgi
+	sudo a2enmod wsgi
+
+	pip install virtualenv
+
+	cd /var/www/html
+	mkdir -p FlaskApp/FlaskApp/static
+	mkdir -p FlaskApp/FlaskApp/templates
+
+
+	cd FlaskApp/FlaskApp
+
+
+create __init__.py file in the FlaskApp/FlaskApp directory and put app info in this file:
+	from flask import Flask
+
+	app = Flask(__name__)
+
+	@app.route('/')
+	def homepage():
+		return "Hello World"
+
+	if __name__ == "__main__":
+		app.run()
+
+
+Create the virtual environment for the python application:
+	virtualenv venv
+
+Go into the vritual environment and install Flask in it:
+	source venv/bin/activate
+	pip install Flask
+	deactivate
+
+Create Apache config file (FlaskApp.conf) for use with app in /etc/apache2/sites-available/FlaskApp.conf:
+	<VirtualHost *:80>
+		ServerName 192.168.1.129
+		ServerAdmin user@aol.com
+		WSGIScriptAlias / /var/www/html/FlaskApp/flaskapp.wsgi
+		<Directory /var/www/html/FlaskApp/FlaskApp/>
+			Order allow,deny
+			Allow from all
+		</Directory
+		
+		Alias /staticA /var/www/html/FlaskApp/FlaskApp/static/>
+		<Directory /var/www/html/FlaskApp/FlaskApp/static/>
+			Order allow,deny
+			Allow from all
+		</Directory>
+
+		ErrorLog ${APACHE_LOG_DIR}/error.log
+		LogLevel warn
+		CustomLog ${APACHE_LOG_DIR}/access.log combined
+	</VirtualHost>
+
+
+Enable the FlaskApp site:
+	a2ensite FlaskApp
+	systemctl reload apache2
+
+
+Create the /var/www/html/FlaskApp/flaskapp.wsgi file and put the following in it:
+	#!/usr/bin/python
+	import sys
+	import logging
+
+	logging.basicConfig(stream=sys.stderr)
+	sys.path.insert(0,"/var/www/html/flaskApp"
+	
+	from FlaskApp import app as application
+
+	application.secret_key = 'alsjkefklajsefkl23r2f23'
+
+Restart apache:
+	systemctl reload apache2
+
+
+Open Browser and go to http://192.168.1.129 that was defined in the FlaskApp.conf file
+
+
+
+Using a template:
+modify the __init__.py file located at /var/www/html/FlaskApp/FlaskApp
+Change the import line to:
+	from flask import Flask, render_template
+
+Change the return line to:
+	return render_template('index.html')
+
+CD into /var/www/html/FlaskApp/FlaskApp/templates/ and create index.html file:
+	<html>
+	<p>This is a test</p>
+	</html>
+
+
+Open Browser and go to http://192.168.1.129 that was defined in the FlaskApp.conf file. 
+Should see "This is a test" instead of Hello World
+
+
+Passing Variables to HTML:
+Modify the __init__.py file so the def homepage() function looks like this:
+	def homepage():
+		name = "Python"
+		example_list = ["2.4", "2.5", "2.7", "3.6", "3.7"]
+		return render_template('index.html', name = name, example_list = example_list)
+
+
+
+Modify the index.html file so it looks like this:
+	<html>
+	<h4>{{name}}</h4>				# {{name}} is the variable name defined in __init__.py
+	<h5>Python Versions:</h5>			# double {{ indicates a variable
+	{% for ver in example_list %}
+		<p>{{ver}}</p>
+	{% endfor %}
+	</html
+
+
+Get the Boothstrap web template for building a web page.
+	http://getbootstrap.com
+
+Download bootstrap to /var/www/html/FlaskApp/FlaskApp/static 
+Unzip file. Should have a css and js directory under static now
+delete the zip file
+
+edit the /var/www/html/FlaskApp/FlaskApp/templates/index.html file so it looks like this:
+	<!DOCTYPE html>
+	<html lang="en">
+
+	<html>
+	<head>
+		<link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet" media="screen">
+			#{{ url_for }} is a variable in Flask for the web root
+			#('static', means to look in the static directory 
+			# filename= means to load the bootstrap.min.css in the css directory 
+	</head>
+	
+	<body>
+
+		<h4>{{name}}</h4>
+		<h5>Python version:</h5>
+		{% for ver in example_list  %}
+			<p>{{ver}}</p>
+		{% endfor %}
+	</body>
+	</html>
+
+Reload page in web browser and view source. You should see the bootstrap.min.css href			
+
+Goto https://getbootstrap.com/css or https://getbootstrap.com/docs/3.3/css for example code.
+Grab the code for "Forms" and paste it into the Body of the index.html file:
+
+<form>
+  <div class="form-group">
+    <label for="exampleInputEmail1">Email address</label>
+    <input type="email" class="form-control" id="exampleInputEmail1" placeholder="Email">
+  </div>
+  <div class="form-group">
+    <label for="exampleInputPassword1">Password</label>
+    <input type="password" class="form-control" id="exampleInputPassword1" placeholder="Password">
+  </div>
+  <div class="form-group">
+    <label for="exampleInputFile">File input</label>
+    <input type="file" id="exampleInputFile">
+    <p class="help-block">Example block-level help text here.</p>
+  </div>
+  <div class="checkbox">
+    <label>
+      <input type="checkbox"> Check me out
+    </label>
+  </div>
+  <button type="submit" class="btn btn-default">Submit</button>
+</form>
+
+
+Reload page in browser. You should see the forms.
+ Great Nav Bar: https://getbootstrap.com/docs/4.1/components/navbar/
+
+
+
+*********************************************************
+import sys		--> used for processing command line arguments
+
+	import sys
+	print(sys.argv)
+	print(sys.argv[2])
+
+
+*********************************************************
+Networking with Telnet:
+
+
+
+
+*********************************************************
+
+*********************************************************
+
+*********************************************************
+
+*********************************************************
+
+*********************************************************
+
+*********************************************************
+
+*********************************************************
+

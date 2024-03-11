@@ -1,0 +1,28 @@
+when running pip3 install xxx you receive the error message:
+	error: externally-managed-environment
+
+sudo apt install virtualenv
+
+#go into directory where you want to create a virtual environment
+cd tools
+
+#create virtual environment
+virtualenv CVE-2023-44487_ENV
+	a directory called 44487_ENV will be created
+
+#go into newly created directory
+cd CVE-2023-44487_ENV
+
+#activate the environment
+source bin/activate
+	to know it was successful you will see:
+		(44487_ENV)(jtharel@kalivm)-[~/CVE-2023-44487/44487_ENV]
+		$
+
+#install your software
+git clone https://github.com/bcdannyboy/CVE2023-44487.git
+python3 -m pip install -r requirements.txt
+	or
+pip3 install h2
+	
+

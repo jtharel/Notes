@@ -1,0 +1,969 @@
+n Python
+
+A comprehensive list of third-party packages is available at: 
+http://pypi.python.org/pypi/
+
+Comments:
+"""	Are multi line comments
+	""" bla bla bla
+	bla bla bla
+	bla bla bla """
+
+#	comment a single line
+
+
+Exponentation
+** raises the first number to the power of the base
+2 ** 3  would be 8     2 to the power of 3
+
+
+Modulo -> returns the remainder left over by integer division
+5 % 2 would return 1
+10 % 5 would return 0
+	X % 2 == 0 #This would return even numbers
+	X % 2 != 0 #This would return odd numbers
+
+
+\	escape character
+
+***************************************************************
+The string "PYTHON" has six characters,
+numbered 0 to 5, as shown below:
+
++---+---+---+---+---+---+
+| P | Y | T | H | O | N |
++---+---+---+---+---+---+
+  0   1   2   3   4   5
+
+So if you wanted "Y", you could just type
+"PYTHON"[1] (always start counting from 0!)
+
+Example program:
+fifth_letter = "MONTY"[4]
+print fifth_letter
+This will print T
+
+middle_letters = "ALPHABET"[2:5]
+print middle_letters
+this will print PHAB
+
+remaining_letters = "ALPHABET"[4:]
+print remaining_letters 
+this will print ABET
+
+***************************************************************
+
+
+len()		Count characters in a string
+		parrot= "Norwegian Blue"
+		print len(parrot)
+
+lower()		Convert string to all lower case letters
+		parrot = "Norwegian Blue"
+		print parrot.lower()
+
+upper()		Convert string to all upper case letters
+		parrot = "Norwegian Blue"
+		print parrot.upper()
+
+str()		returns a string containing a nicely printable representation of 
+		whatever you put between the parentheses. It makes strings out of 
+		non-strings! For example,
+			str(2)
+		would turn 2 into "2".
+		pi = 3.14
+		print str(pi)
+
+isalpha()	make sure it is alphabetic character only
+		parrot = "Norwegian Blue"
+		if parrot.isalpha():
+		    print parrot
+
+ 
+Dot notation works on string literals ("The Ministry of Silly Walks".upper()) and
+variables assigned to strings (ministry.upper()) because these methods are specific to 
+strings—that is, they don't work on anything else.
+
+By contrast, len() and str() can work on a whole bunch of different objects, so they 
+can't be tied just to strings with dot notation.
+***************************************************************
+print
+
+print "spam " + "eggs"
+	# returns "spam eggs" via concatenation
+
+
+print "The value of Pi is around " + str(3.14)
+	# converts the numeric value 3.14 to a string  
+
+
+print %s %s % (string1, string2)
+
+The % string formatter replaces the %s (the "s" is for "string") in our string with the 
+variables in parentheses. 
+
+The syntax went like this:
+
+print "%s" % (string_variable)
+You can have as many variables (or strings!) separated by commas between your parentheses 
+as you like:
+
+print "The %s who %s %s!" % ("Knights", "say", "Ni")
+prints "The Knights who say Ni!"
+
+***************************************************************
+Date and time
+
+from datetime import datetime
+now = datetime.now()
+print now
+
+or we can do:
+from datetime import datetime
+now = datetime.now()
+print now
+print now.year
+print now.month
+print now.day
+print now.hour
+print now.minute
+print now.second
+
+You might think to do something like:
+	print now.month, "/", now.day, "/", now.year
+
+However, this would incorrectly give you spaces between the slashes. Hence, the better
+solution is to use string concatenation (the + operator),
+	print str(now.month) + "/" + str(now.day) + "/" + str(now.year)
+	print str(now.hour) + ":" + str(now.minute) + ":" + str(now.second)
+
+***************************************************************
+If elif else
+if is always followed by an expression, which is followed by a colon (:). The code block 
+(the code to be executed if the expression evaluates to True) is indented four spaces.
+This is also true for elif and else
+
+***************************************************************
+Input
+
+original = raw_input("Enter an English word")
+
+
+
+**************************************************************
+Importing Modules
+import math
+print math.sqrt(25)
+"""import math loads the math module that supports the square root command sqrt"""
+
+from <module> import <function>  	#allows you to import only the function from the
+					module that you want
+
+from math import sqrt
+print sqrt(25)
+"""now we don't have to use the syntax print math.sqrt(25).  Only sqrt(25)!
+
+
+Further you can do this:
+from math import *			
+"""allows you to import all functions from math module **not recommended
+
+Sample program that prints all functions in the math module
+	import math
+	everything = dir(math)
+	print everything
+
+
+***************************************************************
+Functions
+
+def <function name>:		#def is define; must always end with a :
+
+Example 1:
+def square(n):
+    """Returns the square of a number."""
+    squared = n**2
+    print "%d squared is %d." % (n, squared)
+    return squared
+square(10)
+
+
+Example 2:
+def power(base, exponent):  # Add your parameters here!
+    result = base**exponent
+    print "%d to the power of %d is %d." % (base, exponent, result)
+power(37, 4)
+
+
+Example 3:
+def favorite_actors(*names):
+    """Prints out your favorite actorS (plural!) the * is good when you don't
+    know how many inputs you will have"""
+    print "Your favorite actors are:" , names
+favorite_actors("Michael Palin", "John Cleese", "Graham Chapman")
+
+
+
+More Functions:
+max()		takes any number of arguments and returns the largest one
+		max(1,2,3) will return 3
+
+min()		takes any number arguments and returns the smallest one
+		min(6, -3, 1) will return -3
+
+abs()		returns the absolute value of the number it takes as an argument
+		that is, that number's distance from 0
+		abs(-4) will return 4
+
+type()		returns the type of data received as an argument
+		print type(42) will return <type 'int'>
+		print type(4.2) will return <type 'float'>
+		print type('spam') will return <type 'str'>
+
+
+
+***************************************************************
+Lists
+
+Example 1:
+letters = ['a', 'b', 'c',]
+letters.append('d')
+letters[0] = 'z'
+print letters 	# returns:  z b c d
+
+Example 2:
+suitcase = [] 
+suitcase.append("sunglasses")
+suitcase.append("bathing suit")
+suitcase.append("suntan oil")
+suitcase.append("water")
+
+list_length = len(suitcase) # Set this to the length of suitcase
+
+print "There are %d items in the suitcase." % (list_length)
+print suitcase
+# returns "There are 4 items in the suitcase. sunglasses, bathing suit, oil, water
+
+
+-------------
+Example 3:
+letters = ['a', 'b', 'c', 'd', 'e']
+
+slice = letters[1:3]
+
+print slice
+print letters
+# print slice returns b c  the [1:3] is everything up to but not included in 3
+# print letters returns a b c d e
+
+
+-------------
+Example 4:
+animals = "catdogfrog"
+cat  = animals[:3]   # The first three characters of animals
+dog  = animals[3:6]  # The fourth through sixth characters
+frog = animals[6:]   # From the seventh character to the end
+
+
+-------------
+Example 5:  insert a record at a specific index
+animals = ["aardvark", "badger", "duck", "emu", "fennec fox"]
+
+duck_index = animals.index("duck")   
+
+animals.insert(duck_index, "cobra")
+
+print animals 
+# print animals returns ['aardvark', 'badger', 'cobra', 'duck', 'emu', 'fennec fox']
+
+Example 5a:
+n = [1, 3, 5]
+n[1] = n[1] * 5
+print n
+
+
+-------------
+Example 6:  For Loop
+my_list = [1,9,3,8,5,7]
+
+for number in my_list:
+    print 2 * number
+# returns 2 18 6 16 10 14
+
+
+-------------
+Example 7:  Sorting
+start_list = [5, 3, 1, 2, 4]
+square_list = []
+
+for X in start_list:
+    square_list.append(X ** 2)
+
+square_list.sort()
+
+print square_list
+# returns 1, 4, 9, 16, 25
+
+
+-------------
+Example 8:  Remove entry from list
+backpack = ['xylophone', 'dagger', 'tent', 'bread loaf']
+backpack.remove('dagger')
+
+
+
+
+n = [1, 3, 5]
+n.pop(1)	#Returns 3 (the item at index 1)
+print n		#print [1, 5]
+
+
+n = [1, 3, 5]
+n.remove(1)	#remote 1 from the list (NOT the item at index 1
+print n		#prints [3, 5]
+
+n = [1, 3, 5]
+del(n[1])	#will remove the item at index 1 but NOT return it
+print n		#prints [1, 5]
+
+***************************************************************
+Keys and Dictionary's
+
+Example 1:
+# Assigning a dictionary with three key-value pairs to residents:
+residents = {'Puffin' : 104, 'Sloth' : 105, 'Burmese Python' : 106}
+
+print residents['Puffin'] # Prints Puffin's room number
+
+print residents['Sloth']
+print residents['Burmese Python']
+
+#returns 104 105 106
+
+
+-------------
+Example 2: Deleting a key / updating a record via the key
+# key - animal_name : value - location 
+zoo_animals = { 'Unicorn' : 'Cotton Candy House',
+'Sloth' : 'Rainforest Exhibit',
+'Bengal Tiger' : 'Jungle House',
+'Atlantic Puffin' : 'Arctic Exhibit',
+'Rockhopper Penguin' : 'Arctic Exhibit'}
+# A dictionary (or list) declaration may break across multiple lines
+
+# deleting Unicorn, Sloth and Bengal Tiger
+del zoo_animals['Unicorn']
+del zoo_animals['Sloth']
+del zoo_animals['Bengal Tiger']
+
+# Changing Rockhopper Penguin to 'bla bla bla'
+zoo_animals['Rockhopper Penguin'] = 'Bla Bla Bla'
+
+print zoo_animals
+
+# returns {'Atlantic Puffin': 'Arctic Exhibit', 'Rockhopper Penguin': 'Bla Bla Bla'}
+
+
+
+-------------
+Example 3:
+inventory = {
+    'gold' : 500,
+    'pouch' : ['flint', 'twine', 'gemstone'], # Assigned a new list to 'pouch' key
+    'backpack' : ['xylophone','dagger', 'bedroll','bread loaf']
+}
+
+# Adding a key 'burlap bag' and assigning a list to it
+inventory['burlap bag'] = ['apple', 'small ruby', 'three-toed sloth']
+
+# Sorting the list found under the key 'pouch'
+inventory['pouch'].sort() 
+
+inventory['pocket'] = ['seashell','strange berry', 'lint']
+inventory['backpack'].sort()
+inventory['backpack'].remove('dagger')
+inventory['gold'] = inventory['gold'] + 50
+
+
+
+-------------
+Example 4:
+lloyd = {
+    "name": "Lloyd",
+    "homework": [90.0, 97.0, 75.0, 92.0],
+    "quizzes": [88.0, 40.0, 94.0],
+    "tests": [75.0, 90.0]
+}
+alice = {
+    "name": "Alice",
+    "homework": [100.0, 92.0, 98.0, 100.0],
+    "quizzes": [82.0, 83.0, 91.0],
+    "tests": [89.0, 97.0]
+}
+tyler = {
+    "name": "Tyler",
+    "homework": [0.0, 87.0, 75.0, 22.0],
+    "quizzes": [0.0, 75.0, 78.0],
+    "tests": [100.0, 100.0]
+}
+
+# Add your function below!
+def average(numbers):
+    total = float(sum(numbers)) 
+    average = total / len(numbers)
+    return average
+
+def get_average(student):
+    for X in student:
+        homework = average(student["homework"])
+        quizzes = average(student["quizzes"])
+        tests = average(student["tests"])
+    return 0.10 * homework + 0.30 * quizzes + 0.60 * tests
+    
+def get_letter_grade(score):
+    if score >= 90:
+        return "A"
+    elif score >= 80:
+        return "B"
+    elif score >= 70:
+        return "C"
+    elif score >= 60:
+        return "D"
+    else:
+        return "F"
+
+students = [lloyd, alice, tyler]    
+
+def get_class_average(students):
+    results = []
+    for X in students:
+        #print get_letter_grade(get_average(X))
+        results.append(get_average(X))
+    return average(results)
+
+print get_class_average(students)
+print get_letter_grade(get_class_average(students))
+
+
+
+
+    
+***************************************************************
+Range Function
+
+range() function is a shortcut for generating a list using "ranges"
+
+range(stop)			
+range(start, stop)		
+range(start, stop, step)	
+
+range(6)			=> [0,1,2,3,4,5]
+range(1, 6)			=> [1,2,3,4,5]
+range(1, 6, 3)			=> [1,4]
+
+
+For X in range(0,5):
+	print "X"
+#Returns 	X
+		X
+		X
+		X
+		X
+
+***************************************************************
+.join Function
+
+
+.join	can be used to join lists and gets rid of commas and brackets
+def print_board(board):
+    for X in board:
+        print X
+
+board = []
+for X in range(0, 5):
+    ocean = ["O"] * 5
+    board.append(ocean)
+    
+print_board(board)
+#returns ['O', 'O', 'O', 'O', 'O']
+
+
+
+def print_board(board):
+    for X in board:
+        print " ".join(X)		# the " " puts a space between output
+
+board = []
+for X in range(0, 5):
+    ocean = ["O"] * 5
+    board.append(ocean)
+    
+print_board(board)
+#returns O O O O O
+
+
+***************************************************************
+Random randint
+
+from random import randint
+
+coin = randint(0, 1)
+dice = randint(0, 6)
+
+
+break 	#breaks out of a for loop
+
+
+
+***************************************************************
+While Loop
+
+
+count = 0
+while count < 3:
+    num = random.randint(1, 6)
+    print num
+    if num == 5:
+        print "Sorry, you lose!"
+        break
+    count += 1
+else:
+    print "You win!"
+
+
+***************************************************************
+For Loop with Range
+
+
+Example 1:
+print "counting..."
+for i in range(10):
+	print i
+
+#returns 0 1 2 3 4 5 6 7 8 9 
+
+
+
+Example 2:
+hobbies = []
+
+# Add your code below!
+for i in range(3):
+    hobbies.append(raw_input("Hobbies: "))
+    
+
+Example 3: # for loop with else
+fruits = ['banana', 'apple', 'orange', 'tomato', 'pear', 'grape']
+
+print 'You have...'
+for f in fruits:
+    if f == 'tomato':
+        print 'A tomato is not a fruit!' # (It actually is.)
+        break
+    print 'A', f
+else:
+    print 'A fine selection of fruits!'
+
+
+
+Example 4:
+d = {'a': 'apple', 'b': 'berry', 'c': 'cherry'}
+
+for key in d:
+print key, d[key]
+
+#returns:
+#a apple
+#c cherry
+#b berry
+
+
+***************************************************************
+zip function
+
+# zip will create pairs of elements when passed two lists, and 
+# will stop at the end of the shorter list.
+
+
+Example 1:
+list_a = [3, 9, 17, 15, 19]
+list_b = [2, 4, 8, 10, 30, 40, 50, 60, 70, 80, 90]
+
+for a, b in zip(list_a, list_b):
+    # Add your code here!
+    if a > b:
+        print a
+    elif b > a:
+        print b
+#returns 3 9 17 15 30   #stops at the end of the shorter list (list_a)
+
+
+
+
+
+
+Example returns **** in place of words or replaces words with ****
+def censor(text, word):
+    text = text.split(" ")
+    list = []
+    length = len(word)
+    for x in text:
+        if x == word:
+            list.append("*" * length)
+        else:        
+            list.append(x)
+    return " ".join(list)
+
+print censor("this hack is a wack of a hack mack", "hack")
+
+
+Example detecting and removing duplicates from a list
+def remove_duplicates(numbers):
+    new_list = []
+    for x in numbers:
+        if x not in new_list:
+            new_list.append(x)
+    
+    return new_list
+    
+print remove_duplicates([1, 1, 2, 2])
+
+
+
+
+***************************************************************
+items, keys and values in Dictionary's:
+
+
+my_dict = {
+    "Name": "Guido",
+    "Age": 21,
+    "BDFL": True
+}
+
+print my_dict.items()
+print my_dict.keys()
+print my_dict.values()
+
+#my_dict.items prints 	[('BDFL', True), ('Age', 21), ('Name', 'Guido')]
+#my_dict.keys prints 	['BDFL', 'Age', 'Name']
+#my_dic.values prints	[True, 21, 'Guido']
+
+
+
+***************************************************************
+lambda
+
+lambda x: x % 3 == 0
+Is the same as
+
+def by_three(x):
+    return x % 3 == 0
+
+Only we don't need to actually give the function a name; it does 
+its work and returns a value without one. That's why the function 
+the lambda creates is an anonymous function.
+
+When we pass the lambda to filter, filter uses the lambda to 
+determine what to filter, and the second argument (my_list, which 
+is just the numbers 0 – 15) is the list it does the filtering on.
+
+
+Example 1:
+-----------
+my_list = range(16)
+print filter(lambda x: x % 3 == 0, my_list)
+#prints   	[0, 3, 6, 9, 12, 15]
+
+
+Example 2:
+------------
+languages = ["HTML", "JavaScript", "Python", "Ruby"]
+print filter(lambda x: x == "Python", languages)
+#prints 	['Python']
+
+
+Example 3:
+------------
+garbled = "IXXX aXXmX aXXXnXoXXXXXtXhXeXXXXrX sXXXXeXcXXXrXeXt mXXeXsXXXsXaXXXXXXgXeX!XX"
+message = filter(lambda x: x != "X", garbled)
+
+print message
+# prints 	I am another secret message!
+
+
+***************************************************************
+Bitwise Operations (binary)
+
+print 5 >> 4  # Right Shift		0
+print 5 << 1  # Left Shift		10
+print 8 & 5   # Bitwise AND		0
+print 9 | 4   # Bitwise OR		13
+print 12 ^ 42 # Bitwise XOR		38
+print ~88     # Bitwise NOT		-89
+
+0b -> write binary number in Python by starting them with 0b
+	0b1 is 1
+	0b111 is 7
+	0b1111 is 15
+
+bin()	- base 2 allows you to print an integer in its binary representation
+	print bin(100) #prints 0b1100100
+	
+	print bin(0b00101010 & 0b000111) #(Note the & -> AND)prints 0b1010 
+		(because the 8's and 2's bit place is the same in both 
+		binary numbers) AND &
+		     a:   00101010   42
+		     b:   00001111   15       
+		===================
+		 a & b:   00001010   10
+
+	print bin(0b00101010 | 0b00001111) #(Note the | -> OR) prints 0b101111
+		(because the 1, 2, 4, 8 and 32 are in 1st(a) OR 2nd(b) number) OR |
+		    a:  00101010  42
+		    b:  00001111  15       
+		================
+		a | b:  00101111  47
+
+	ping bin(0b00101010 ^ 0b00001111) #(Note the ^ Either XOR) prints 0b100101
+		(because the 1, 4 and 32 bit are on, 1 can't be on in both) Either XOR ^
+		    a:  00101010   42
+		    b:  00001111   15       
+		================
+		a ^ b:  00100101   37
+
+
+
+oct()	- base 8
+	print oct(100) #prints 0144
+
+hex()	- base 16	
+	print hex(100) #prints 0x64
+
+int() 	int("42") turns the string 42 into the integer value 42
+	int("110", 2) turns the binary string 110 (in base 2) into
+		the equivalent base 10 integer "6"
+
+
+# Left Bit Shift (<<)  
+0b000001 << 2 == 0b000100 (1 << 2 = 4)
+0b000101 << 3 == 0b101000 (5 << 3 = 40)       
+
+# Right Bit Shift (>>)
+0b0010100 >> 3 == 0b000010 (20 >> 3 = 2)
+0b0000010 >> 2 == 0b000000 (2 >> 2 = 0) 
+
+
+Example 1 bit shifting:
+------------
+shift_right = 0b1100
+shift_left = 0b1
+
+# Your code here!
+shift_right = shift_right >> 2
+shift_left = shift_left << 2
+
+print bin(shift_right)
+print bin(shift_left)
+#returns 0b11 and 0b100
+
+
+~ The bitwise NOT operator - equivalent to adding one to the number and
+	making it negative
+	print ~123	#prints -124
+	print ~-123	#print 122
+
+
+
+***************************************************************
+Classes
+
+class Animal(object):		#Must capitalize first letter of class
+    def __init__(self):	#This function is required for classes
+	bla
+
+
+Example 1:
+-----------
+class Animal(object):
+    """Makes cute animals."""
+    is_alive = True
+    def __init__(self, name, age):
+        self.name = name
+        self.age = age
+    # Add your method here!
+    
+    def description(self):
+        print self.name
+        print self.age
+
+hippo = Animal("Yeezy", 20)
+hippo.description()
+@prints Yeazy 20
+
+
+Example 2:
+------------
+class Animal(object):
+    """Makes cute animals."""
+    is_alive = True
+    health = "good"
+    def __init__(self, name, age):
+        self.name = name
+        self.age = age
+    
+    def description(self):
+        print self.name
+        print self.age
+        print self.health
+
+hippo = Animal("Yeezy", 20)
+sloth = Animal("ThreeToe", 10)
+ocelot = Animal("Kitty", 10)
+
+print hippo.health
+print sloth.health
+print ocelot.health
+#prints good good good
+
+
+Example 3:
+------------
+class ShoppingCart(object):
+    """Creates shopping cart objects
+    for users of our fine website."""
+    items_in_cart = {}
+    def __init__(self, customer_name):
+        self.customer_name = customer_name
+
+    def add_item(self, product, price):
+        """Add product to the cart."""
+        if not product in self.items_in_cart:
+            self.items_in_cart[product] = price
+            print product + " added."
+        else:
+            print product + " is already in the cart."
+
+    def remove_item(self, product):
+        """Remove product from the cart."""
+        if product in self.items_in_cart:
+            del self.items_in_cart[product]
+            print product + " removed."
+        else:
+            print product + " is not in the cart."
+
+my_cart = ShoppingCart("Jimmy")
+my_cart.add_item("Shit", 10)
+#Prints  Shit added
+
+
+***************************************************************
+Inheritance 	the process by which one class takes on the
+		attributes and methods of another
+
+Example 1:
+------------
+class Customer(object):
+    """Produces objects that represent customers."""
+    def __init__(self, customer_id):
+        self.customer_id = customer_id
+
+    def display_cart(self):
+        print "I'm a string that stands in for the contents of your shopping cart!"
+
+class ReturningCustomer(Customer):
+    """For customers of the repeat variety."""
+    def display_order_history(self):
+        print "I'm a string that stands in for your order history!"
+
+monty_python = ReturningCustomer("ID: 12345")
+monty_python.display_cart()
+monty_python.display_order_history()
+#Prints both strings from above
+
+
+
+Example 2:
+------------
+class Triangle(object):
+    number_of_sides = 3
+    def __init__(self, angle1, angle2, angle3):
+        self.angle1 = angle1
+        self.angle2 = angle2
+        self.angle3 = angle3
+    
+    def check_angles(self):
+        if self.angle1 + self.angle2 + self.angle3 == 180:
+            return True
+        else:
+            return False
+
+my_triangle = Triangle(90, 30, 60)
+print my_triangle.number_of_sides
+print my_triangle.check_angles()
+#Prints   3 True
+
+
+***************************************************************
+File Input/Output
+
+my_file = open("output.txt", "r+")
+	r+ means read and write
+	w means write
+	r means read
+
+my_file = open("output.txt", "r")
+
+
+Example 1 writing to a file:
+-----------
+my_list = [i**2 for i in range(1,11)]
+
+my_file = open("output.txt", "w")
+
+# Add your code below!
+for x in my_list:
+    my_file.write(str(x) + "\n") 
+my_file.close()
+
+#writes output to file output.txt 
+# \n is CRLF
+
+
+
+
+Example 2 reading from a file:
+-----------
+my_file = open("output.txt", "r")
+print my_file.read()
+my_file.close()
+
+
+Example 3 reading from a file line by line:
+-----------
+my_file = open("output.txt", "r")
+print my_file.readline()
+my_file.close()
+
+
+Example 4 writing to file, having it close automatically 
+-----------
+with open("text.txt", "w") as my_file:
+	my_file.write("Success!")
+
+
+Example 4 testing if a file is truly closed:
+-----------
+with open ("text.txt", "w") as my_file:
+    my_file.write("Howdy!")
+if my_file.closed == False:
+    print my_file.closed
+    my_file.close()
+print my_file.closed
+
+# my_file.closed returns True if file is closed; False if open
+# my_file.close() closes the file if it is open
+
+
+
+
