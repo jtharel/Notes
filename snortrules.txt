@@ -1,0 +1,284 @@
+jonathan.ham@sourcefire.com
+
+Start snort with multiple NICs:
+	-i eth0:eth1:eth2
+	/etc/sysconfig/snort when using init.d scripts
+
+incidents.org
+
+telnet www 80
+	get ../..
+
+snort -dev icmp and dst host 192.168.1.1 	--> does packet capture for 
+						    icmp destined for 192.168..
+
+snort -dev tcp port \(20 or 21)\) and dest 199.254.175.12
+	does packet capture for everything on port 20 or 21 destined for 
+		199.254.175.12.  If you add a -l it will log to tcpdump
+		format
+
+stick and snort	-->flood a snort sensor
+
+unified output used for barnyard2
+
+
+*******************************************************************************
+Packetcapture with Snort using the “tag” option
+
+You can do this with the tag option in Snort. If you want to know more, please read README.tag.
+
+I will present you with a signature that will log the first 1000 bytes or 100 seconds (What ever comes first!) after the packet that triggered the event. Im looking for a SYN flag in a TCP session and I start my logging from there (0,packets means that there are no limits on amount of packets).
+
+    alert tcp 85.19.221.54 any <> $HOME_NET any (msg:”GL Log Packet Evil-IP 85.19.221.54 (gamelinux.org)”; flags:S; tag:session,1000,bytes,100,seconds,0,packets; classtype:trojan-activity; sid:201102011; rev:1;)
+
+I use unified2 as output plugin for Snort (something that also Sourcefire 3D does IIRC), so I need to fetch the pcap from the unified log. Snort 2.9.0 and newer ships with a new tool that will help you here, u2boat. This will carve out the pcaps from the unified log:
+
+# u2boat /var/log/snort/<unified.log.timestamp> /tmp/snort.pcap
+
+*************************************************************************************
+
+
+
+install snort with flexresp
+	./configure --enable-flexresp --with-mysql
+
+Metadata Rule Options -info about rule, no effect on detection:
+sid             --snort id; number greater than 1,000,000 for custom rules
+rev             --revision number for rule
+msg             --Message you want to appear in Base; must modify sid-msg if
+                  using barnyard
+reference	--allows rules to include references to external attack
+		  identification systems
+classtype	--categorizes alerts to be attack classes
+priority	--assigns a severity level to rules
+
+
+
+Payload detection rule options:
+
+content		--search for specific content "root"
+nocase          --don't match case
+offset          --where to start searching in a payload.  Starts at 0
+distance        --identify subsequent content matches that occur a specified
+                  number of bytes after the previous content match
+depth           --specify the maximum search depth, in bytes, from the
+                  beginning of the offset value
+within          --the next content match must occur within the specified number
+                  of bytes after the end of the last content match
+flags           --TCP flags -   S -SYN
+                                F -FIN
+                                R -RST
+                                A -ACK
+                                U -URG
+                                P -PSH
+                                2 -indicates an ECN echo
+                                1 -indicates that an ECN congestion window
+                                   has been reduced
+                                0 -indicates that no TCP flags are set, which
+                                   should never occur in normal traffic
+                  The following modifier can be set to help match criteria:
+                        + match on the specifed bits, plus any others
+                        * match if any of the specified bits are set
+                        ! match if the specified bits are not set
+
+flow            --specify the direction of the traffic flow to which the rule
+                  applies:
+                  to_client     -triggers on server responses
+                  to_server     -triggers on client responses
+                  from_client   -triggers on client responses
+                  from_server   -triggers on server responses
+                  established   -triggers on established tcp connections
+                                 SYN,SYN ACK,ACK
+                  stateless     -triffers regardless of the state of the
+                                 stream preprocessor
+                  no_stream     -Does not trigger on rebuilt stream packets
+                  only_stream   -Triggers only on rebuilt stream packets
+rawbytes	--allows rules to look at the raw packet data, ignoring any
+		  decoding that was done by preprocessors
+		  alert tcp any any -> any 21 (msg: "telnet NOP"; \
+			content: "|FF F1|"; rawbyets;)
+isdataat	--(is data at) verify that the payload has data at a specified
+		  location, optionally looking for data relative to the end of
+		  the previous content match
+uricontent	--searchs the NORMALIZED request URI field.  (in the URL)
+		  /scripts/..%co%af../winnt/system32/cmd.exe/c+ver
+			would get normalized to
+		  /winnt/system32/cmd.exe?/c+ver
+pcre		--perl compatible regular expresion. Allows the use of Perl 
+		  pcre:"/ content / i"
+		  /get \.\.\/\.\./    	-->  get ../..
+		  /get \.\.\/\.\./ i	-->  get ../.. i is case insensitive
+		  /get +\.\.\/\.\./ i	-->  + means should occur 
+		  /\x22PCRE\x22/	-->  \x22 is the hex value of a
+			quote ".  So the sting is "PCRE"
+		  /server[^0-3]/	-->  negates sever0-3
+
+		  .		Matches any single character
+		  [...]		Matches any of the listed characters
+		  [^...]	Matches on any of the charaters not listed
+				in the class
+		  \		Escape Character - Used to convert the 
+				metacharacter to a literal
+		  ?		Matches any single item of what is in of it 
+				or none
+		  *		Matches any number of the item in front of it
+				or none
+		  +		Matches any number of the item in front of it
+				and must have at least one
+		  {min,max}	Allows you to limit the number of matches of 
+				the item in front of it by setting the minimum
+				number required for a match and a maximum value
+		  ^		Match from the beginning of a line
+		  $		Match must be at the end of a line
+		  \b		Word Boundry - When placed before an item,
+				there must be a whitespace delimiter before
+				the item.  When placed after the item, there 
+				must be a whitespace delimiter after the item.
+				When an item is enclosed in'\b' it is treated
+				as a word such that there must be a whitespace
+				delimiter before and after the item
+		  \d		can be used to represent a single digit from 
+				0-9
+		  \s		Can be used to represent any whitespace 
+				character such as space, tab or new line
+		  \w		Can be used to represent any single alpha
+				character, both upper and lower case, or any
+			   	single numeric character from 0-9 or an
+				underscore character
+		  |		Used to make items on either sied available
+				as options to match
+		  (...)		Allows you to group items so they may be 
+				treated as a single entity
+		  i		When specified outside of the regular 
+				expression delimiter, the text you are matching
+				with the regular expression is treated with 
+				case insensitivity
+		  \x<hexbyte>	allows you to reference a byte of data in hex
+ 		        	  " = \x22
+				  : = \x3a
+				  ; = \x3b
+				  \ = \x5c
+		  
+byte_test	--test a byte field against a specific value (with operator).
+		  Capable of testing binary values or converting representative
+       	  	  byte strings to their binary equivalent and testing them.
+		  byte_test:4,=,100232,12
+			says grab 4 bytes, convert the hex to decimil
+			compare it to the value 100232, does it equal that?
+			look in the 12th offset...starts at 0		
+byte_jump	--grab some number of bytes, convert those bytes to their 
+		  numeric representation, and jump forward that many bytes.
+		  This will allow relative pattern matches to take into 
+		  account numerical values found in network data.
+		  byte_jump:4,8,relative,align;
+			says grab 4 bytes, convert the hex to decimil
+			look in the 8th byte from the last offset...starts at 0
+			relative -says start from last offset
+			align -aligns to the 4 byte fields
+
+
+Non-payload detection Rules options:
+
+flowbits	--used in conjunction with conversation tracking from the 
+		  flow preprocessor
+		  keywords associated with flowbits:
+			set
+			unset
+			toggle
+			isset
+			reset
+			noalert
+		  alert tcp any 143 -> any any (msg:"IMAP login"; content: \
+			"OK LOGIN"; flowbits:set, logged_in; flowbits:noalert;)
+		  alert tcp any any -> any 143 (msg:IMAP LIST"; content: \
+			"LIST"; flowbits:isset,logged_in;)
+fragoffset	--compare the IP fragment offset field against a decimal value
+		  alert ip any any -> any any (msg:"First Fragment"; \
+			fragbits: M; fragoffset: 0;)
+ttl		--time to live value
+		  ttl:<3;
+		  ttl:3-5;
+		  ttl:<=5;
+tos		--type of sevice
+		  tos:!4;
+id		--check the IP ID field
+		  id:31337;
+ipopts		--check if a specific IP option is present
+		  rr 	-record route
+		  eol	-eol
+		  nop	-no op
+		  ts	-time stamp
+		  sec	-IP security iption
+		  lsrr	-loose source routing
+		  ssrr	-strict source routing
+		  satid -stream identifer
+		  any	-any IP options are set
+fragbits	--check if fragmentation and reserved bits are set in the IP
+		  header
+dsize		--packet payload size in total.  Used to check for abnormally 
+		  sized packets
+flags           --TCP flags -   S -SYN
+                                F -FIN
+                                R -RST
+                                A -ACK
+                                U -URG
+                                P -PSH
+                                2 -indicates an ECN echo
+                                1 -indicates that an ECN congestion window
+                                   has been reduced
+                                0 -indicates that no TCP flags are set, which
+                                   should never occur in normal traffic
+		  The following modifier can be set to help match criteria:
+			+ match on the specifed bits, plus any others
+			* match if any of the specified bits are set
+			! match if the specified bits are not set
+flow            --specify the direction of the traffic flow to which the rule
+                  applies:
+                  to_client     -triggers on server responses
+                  to_server     -triggers on client responses
+                  from_client   -triggers on client responses
+                  from_server   -triggers on server responses
+                  established   -triggers on established tcp connections
+                                 SYN,SYN ACK,ACK
+                  stateless     -triffers regardless of the state of the
+                                 stream preprocessor
+                  no_stream     -Does not trigger on rebuilt stream packets
+                  only_stream   -Triggers only on rebuilt stream packets
+seq		--check for a specific TCP sequence number
+ack		--check for acknowledge number
+window		--check for a TCP window size
+itype
+icode
+icmp_id
+icmp_seq
+ip_proto
+sameip		--check if source ip is same as destination
+
+
+Post-detection Rule Options:
+
+logto		--log all packets that trigger this rule to a special output 
+		  log file
+		  "logfile:"filename";
+session		--extract user data from TCP Sessions.  I.e. see what users are
+		  typing in telnet, rlogin, ftp and even web sessions
+resp		--used with flexible response to close sessions by sending
+		  resets, etc.
+			rst_snd
+			rst_rcv
+			rst_all
+			icmp_net
+			icmp_host
+			icmp_port
+			icmp_all
+react		--used with flexible response.  Allows a note to be placed in
+		  response.  Displays web page if going to web site.
+tag		--allows rules to log more than just the single packet that
+	   	  triggered the rule
+
+
+
+		  
+
+
+
