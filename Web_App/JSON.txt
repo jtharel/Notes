@@ -1,0 +1,162 @@
+JSON -
+JavaScript Object Notation (JSON) is a language and platform independent format for data 
+interchange. JSON is in widespread use with a number of JSON parsers and libraries available 
+for different languages. While some information is available for JSON hijacking this attack is 
+not very well understood.
+
+JSON Hijacking as the name suggests is an attack similar to Cross-Site Request Forgery where an
+attacker can access cross-domain sensitive JSON data from applications that return sensitive 
+data as array literals to GET requests. An example of a JSON call returning an array literal is
+shown below:
+
+ [{"id":"1001","ccnum":"4111111111111111","balance":"2345.15"},{"id":"1002","ccnum":"5555555555554444","balance":"10345.00"},{"id":"1003","ccnum":"5105105105105100","balance":"6250.50"}]
+
+This attack can be achieved in 3 major steps:
+
+Step 1: Get an authenticated user to visit a malicious page.
+
+Step 2: The malicious page will try and access sensitive data from the application that the 
+	user is logged into. This can be done by embedding a script tag in an HTML page since 
+	the same-origin policy does not apply to script tags. 
+	<script src="http://<json site>/json_server.php"></script>
+
+	The browser will make a GET request to json_server.php and any authentication cookies 
+	of the user will be sent along with the request.
+
+Step 3: At this point while the malicious site has executed the script it does not have access 
+	to any sensitive data. Getting access to the data can be achieved by using an object 
+	prototype setter. In the code below an object prototypes property is being bound to the 
+	defined function when an attempt is being made to set the “ccnum” property.
+
+	Object.prototype.__defineSetter__('ccnum',function(obj){
+		secrets = secrets.concat(" ", obj); 
+	});
+
+	At this point the malicious site has successfully hijacked the sensitive financial data 
+	(ccnum) returned by json_server.php
+ 
+
+It should be noted that not all browsers support this method; the proof of concept was done on 
+Firefox 3.x. This method has now been deprecated and replaced by the use Object.defineProperty 
+There is also a variation of this attack that should work on all browsers where full named 
+JavaScript (e.g. pi=3.14159) is returned instead of a JSON array.
+
+There are several ways in which JSON Hijacking can be prevented:
+
+Since SCRIPT tags can only generate HTTP GET requests, only return JSON objects to POST 
+requests.
+
+Prevent the web browser from interpreting the JSON object as valid JavaScript code.
+
+Implement Cross-Site Request Forgery protection by requiring that a predefined random value be 
+required for all JSON requests.
+
+
+
+*****
+
+
+If we send the word "CANARY" into each input, we can see if that input ends up in the 
+response generically (great for cross site scripting) or specifically in the JSON (which 
+means we might be able to perform JSON injection). 
+
+On this page, the value sent in one particular parameter "ToolID" seems to show up in the 
+response JSON. This is potentially good (or potentially bad if your the developer). Lets 
+inject ToolID and looks at the resulting JSON.
+
+Get the response using your favorite method and search for your input ("Canary" in this 
+example). Here is a greatly truncated example response.
+
+	try{ 
+		var gPenTestToolsJSON = ( 
+			{"query": { 
+				"toolIDRequested": "CANARY", 
+				"penTestTools": []}} ); 
+		}catch(e){ 
+			alert("Error trying to evaluate JSON: " + e.message); 
+		};
+
+Note the developer outputs the value of the "ToolID" parameter into the JSON. If the 
+developer encodes the output as a JavaScript string, this is ok. The OWASP ESAPI includes 
+a method "encodeForJavaScript()" which performs this encoding.
+
+Did the developer encode the output? We will check to find out. If the developer did not 
+encode, chances are the JSON is vulnerable. (What if the developer used input validation? 
+In that case, try to use SQL injection to inject the payload into the database table from 
+which the data is fetched. Output encoding will protect the site even if the database is 
+infected by a worm, SQLi, or a rouge DBA.
+
+To check for encoding, send it characters which most certainly should be encoded. This 
+would be any characters that are not alphanumeric. This example will use the string 
+"{\'"CANARY"\'}" so we can test a few useful characters in one test (single-quotes, 
+double-quotes, parenthesis are all handy). Here is the response. We note that the site has 
+a defect as the characters are not output encoded. Again this is just a fraction of the 
+response.
+
+	try{ 
+		var gPenTestToolsJSON = ( 
+			{"query": { 
+			"toolIDRequested": "{\'"CANARY"\'}", 
+			"penTestTools": []}} ); 
+	}catch(e){
+		 alert("Error trying to evaluate JSON: " + e.message); 
+	};
+
+As usual, pen-testing is a lot of mapping and discovery research followed by a short 
+exploit. So far we found the inputs into the page, figured out which input is output into 
+the JSON, figured out where in the JSON the output lands, and figured out the output is 
+not properly encoded due to a defect.
+
+Web pages offer choices because there is more than one interpreter listening. There is 
+obviously an HTML interpreter and perhaps slightly less obvious there is a JavaScript 
+interpreter listening. We could also choose to poison the existing JSON context rather 
+than break-out into HTML or JavaScript. Perhaps we could poison the JSON with false values 
+of our choosing. Lets choose to break-out into JavaScript and execute some JavaScript code 
+of our choosing as an example.
+
+This requires determining how to "escape" the current context so we can start a new 
+command. The context is JSON. We want to break-out or escape the JSON and execute some 
+JavaScript. We need to look where our canary landed carefully so we can end the current 
+JSON statement and start a new JavaScript code statement. We need to insert characters to 
+end the JSON by completing the JSON with the characters that would naturally end the JSON. 
+Work backwards from the canary and notate each character that "opened". We have a double-
+quote that quotes our canary, before that an open curly-brace after "query", another open 
+curly-brace before "query", and that opening parenthesis. 
+
+	try{ 
+		var gPenTestToolsJSON = ( 
+			{"query": 
+				{ "toolIDRequested": "
+
+To break out of the JSON context, we just insert those characters counterparts to "close-
+out" those opening characters. When injecting JavaScript it is a good idea to also add a 
+semicolon to our "close-out" because valid JavaScript statements end in semi-colons. To 
+deal with all the JSON that comes after our canary, we will insert a comment to comment 
+all that ending JSON out. Between our "close-out" characters and our ending comment goes 
+our payload. We chose JavaScript so our payload will be a well-formed JavaScript 
+statement.
+
+Be careful. It is important to end the statement exactly as it started. Watch out for 
+spaces that matter and be certain the order of the characters injected complements the 
+characters being closed-out. Assuming a simple alert statement is our payload, lets match 
+each character one-by-one. The double-quote, first curly-brace, second curly-brace, 
+closing parenthesis, then a semi-colon terminate the JSON. We inject our payload next, 
+then a comment to comment-out what would have become the rest of the JSON. NOTE: We URL 
+encode certain characters (i.e. semi-colons) because they could break the web server 
+otherwise making the web-server return a 500 error.
+
+	try{ 
+		var gPenTestToolsJSON = ( 
+			{"query": { 
+				"toolIDRequested": ""}} )%3balert(1)%3b//
+
+All together the injection looks like this example. Inject this exploit instead of the word "canary".
+
+	"}} )%3balert(1)%3b//
+
+Using Burp capture or View Source, view the response. Also note the popup in your browser. The JavaScript injection is complete.
+
+	try{ 
+		var gPenTestToolsJSON = ( {"query": {"toolIDRequested": ""}} );alert(1);//", "penTestTools": []}} ); }catch(e){ 
+		alert("Error trying to evaluate JSON: " + e.message); 
+	};
