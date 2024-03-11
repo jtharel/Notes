@@ -1,0 +1,662 @@
+Mobile Pen Test
+
+MobiSec Live Environment -> mobisec.secureideas.net
+	Donated to OWASP
+	Includes tools for pen testing, secure development, forensics
+	
+OWASP Mobile top 10:
+	https://www.owasp.org/index.php/OWASP_Mobile_Security_Project
+	tools, guidelines, standards
+	
+Mallory -> transparent TCP and UDP proxy, not just a web proxy
+	uses IP tables and network adapters, it becomes our gateway
+	http://intrepidusgroup.com/insight/mallory/
+
+SecurityCompass ExploitMe Mobile LabServer
+	https://github.com/securitycompass/LabServer
+	https://github.com/securitycompass/AndroidLabs
+
+WSAttacks -> Good for fuzzing, has wiki
+	wsattacks.org???
+
+AWESOME CHEAT SHEET!!! **********************
+https://github.com/tanprathan/MobileApp-Pentest-Cheatsheet/
+
+
+MITM Technique:
+
+	Run on Kali Linux:
+	Run Burp On Kali Linux, put in invisible mode and listen on Port 8080
+	Run iptables command for all ports to redirect to burp:
+	IPTABLES -t nat -A PREROUTING -p tcp --dport 443 -j REDIRECT --to-ports 8080
+	Set default gateway on Device/host to IP of Kali Linux
+	iptables -L -t nat #lists NAT tables
+
+
+
+
+IPad
+	Having spent way too much time trying to install an iOS app on a jailbroken iOS 7 
+	device without a provisioning profile, I thought I'd send this out.
+	To install apps on iOS 7.0.4, do this (make sure you have cydia in developer mode).
+	Add http://repo.hackyouriphone.org as a source in Cydia (under manage). 
+	Install Appsync for iOS 7+ from the repo above (can just search for appsync).
+	Install afc2add from Cydia.
+	Install http://www.i-funbox.com/ifunboxmac/
+	Use iFunBox to install the app.
+
+
+Pretty much everything you need from the device is in 
+/private/var/containers/Shared/SystemGroup/systemgroup.com.apple.configurationprofiles/Library/ConfigurationProfiles/
+Device/MDM certificates and whatnot, Which is incidentally the folder you want to delete to strip 
+MDM from a jailbroken device
+	
+
+Enable an installed CA Certificate: Settings -> General -> About -> Certificate Trust Settings -> Enable
+
+
+	Applications are stored in:
+		/private/var/mobile/Containers/Data/Application/ -> App data stored here
+		/private/var/mobile/Containers/Bundle/Application/ -> App unzipped / binary
+		/private/var/containers/Bundle/Application/ -> App Unzipped / binary -> iOS 11
+		
+
+			tar -cf app.tar mcdonalds.app/
+			gzip mcdonalds.tar
+			cp mcdonalds.tar.gz /var/root
+
+	Applications running as root are stored in:
+		/Applications/
+
+	iFunBox -> lets you browse filesystem on iPAD
+		can pull down cache from applications.
+
+	Cydia tools to install:
+		adv-cmds		Erica Utilities		applist		appsync		basic-cmds		BigBoss Recommended Tools
+		Darwin CC Tools		Class Dump		ClutchPatched		cURL		Cycript		Developer-cmds		Diff Utilities		Make		network-cmds		OpenSSH		OpenSSL		pcre		Python		sbutils		Vim		wget
+
+	Install IPA from command line
+		IPA Installer Console from within Cydia
+			installipa <filename>
+
+	Keychain Dumper ->
+		Dumps passwords and such from the keychain
+		https://github.com/ptoomey3/Keychain-Dumper
+		Download and copy keychain-dumper to the iPad
+		cp keychain_dumper /bin
+		cd /var/Keychains/
+		  or
+		cd /bin
+		./keychain_dump -a	#May be to enter pin on Device!!!
+
+		keychain_dumper -gn 	#dumps generic and internet password
+		keychain_dumper -a 	#dumps all, keys, passwords, entitlements, etc.
+
+
+	otool ->
+		Unzip .ipa file.
+		Go into directory
+			cd payload/blabla.app/
+		Find binary file (usually largest file in the directory)
+		otool -l -v <name of file from above>
+
+		otool –I –v <appname> | grep _objc_release		otool –hv <appname>		otool –I –v <appname> | grep stack
+
+	PlistEdit Pro
+		https://www.fatcatsoftware.com/plisteditpro/
+		View and/or edit *.plist files.
+		After Unzipping the .IPA file:
+			ls -l `find . -name *plist` 
+
+		A very important file is the Info.plist in the root directory of an iOS 
+		application. This file contains a lot of configuration data like if the 
+		application enables weak TLS settings on some domains (search for the 
+		NSAppTransportSecurity key), or if the application accepts custom Scheme 
+		URLs (search for the CFBundleURLTypes key).
+
+
+		CFBundleURLTypes: Having custom Scheme URLs is not an issue, but it means 
+		this app can be launched by other applications using the 
+		<app name>:// 	#i.e. vlc://bla.js
+		scheme URL and it probably takes some parameters with it. 
+			
+
+
+	Frameworks ->
+		Open the Frameworks folder (if it exists), take a look at which 
+		frameworks the app is using and pay attention to the frameworks' versions. 
+		The framework's version is disclosed in its info.plist file. Google those 
+		framework versions and search for known vulnerabilities.
+		  in 
+		/private/var/containers/Bundle/Application/<app id>/Frameworks  #iOS 11
+
+	idb - framework for testing iOS Apps
+		http://www.idbtool.com/
+		idb from terminal
+
+
+	View Logs:
+		socat - log viewer for iOS
+			apt-get install socat 
+				or SOcket CAT from Cydia
+			run the following from SSH:
+				socat - UNIX-CONNECT:/var/run/lockdown/syslog.sock 
+					watch
+						watch backlog of messages and new ones as they arrive
+			/var/mobile/Applications/<applicationID>/Library... #path below?		
+			~/Library/Logs/CrashReporter/MobileDevice/<Device>/private/var/log/system.log
+
+		idevicesyslog	- iOS log viewer from MAC laptop
+			brew install libimobiledevice	
+			frida-ps -U
+			idevicesyslog -p $PID		#pid you got from the frida command above
+
+	
+	Xcode - View Crash logs via Xcode
+		Launch Xcode -> Window -> Devices 
+	
+
+	Autocorrect / Keyboard Caching:
+		/var/mobile/Library/Keyboard/*.dat
+			stores key presses used with the word-complete function within
+			iOS
+			Search for passwords, etc.
+			may be in the en-dynamic/ directory
+
+	File Caching - PDF, Excel and other files may get cached here:
+		/private/var/mobile/Containers/Data/Application/<applicationID>/Library/Caches ??	
+
+
+	Pasteboard cache:
+		/User/Library/Caches/com.apple.UIKit.pboard/pasteboardDB  	< iOS 10
+		/User/Library/Caches/com.apple.Pasteboard/<app id>  		>= iOS 10
+			search for items in pasteboard:
+			strings pasteboardDB |grep blablabla
+
+
+	Photo Storage / Shared Storage:
+		/var/mobile/Media/DCIM/100APPLE/
+			all apps have access to that path
+		
+
+	Snapshot Caching:
+		iOS takes a screenshot of your screen when you press the home button. 			
+		Sensitive info can be revealed from this
+		/private/var/mobile/Containers/Data/Application/<applicationID>Library/Caches/Snapshots
+		
+	Temporary Directories:
+		/private/var/tmp
+		/var/tmp
+
+	iOS-CheckIPA	Scans PLIST files
+		https://github.com/apperian/iOS-checkIPA
+		./checkipa -i file.ipa -v
+			output to file and put in keyword search
+
+	ILSpy (decompile the binary (exe and dll) written in .net)
+		https://github.com/icsharpcode/AvaloniaILSpy
+		Download it:
+		https://ci.appveyor.com/api/projects/icsharpcode/avaloniailspy/artifacts/artifacts%2Fzips%2FILSpy-osx.10.12-x64-Release.zip?branch=master
+		Unzip in the Application folder on your Mac, double click the ILSpy app in applications.
+		
+
+	Binary Cookies:
+		Access to cookies used by applications to gain access to other Apps:
+		/private/var/mobile/Containers/Data/Applicationa/<appID>/Library/Cookies/Cookies.binarycookies
+		BinaryCookieReader.py 
+		http://securitylearn.net/wp-content/uploads/tools/iOS/BinaryCookieReader.py
+			python ./BinaryCookieReader.py ./Cookies.binarycookies
+
+Decrypting an iOS AppStore application:
+https://www.citadel.sh/blog/decrypting-an-ios-appstore-application			
+
+
+Disable Cert Pinning:
+	SSL Kill Switch 2 - Disables certificate pinning.  ** use this one, supports ios13
+	Install:
+		Download from:
+		https://github.com/nabla-c0d3/ssl-kill-switch2/releases
+			copy to iOS device
+		dpkg -i com.nablac0d3.sslkillswitch2_0.14.deb
+		killall -HUP SpringBoard
+		Settings -> SSL Kill Switch 2 -> Enable
+		Terminate victim app and relaunch
+
+	Uninstall:
+		dpkg -r com.nablac0d3.SSLKillSwitch2
+
+	iOS Trustme - Disables certificate pinning
+		https://github.com/intrepidusgroup/trustme
+		Install on iOS:
+			wget https://www.dropbox.com/s/zyltyoa7s1x3m47/com.intrepidusgroup.trustme_0.1-4_iphoneos-arm.deb
+			dpkg -i com.intrepidusgroup.trustme_0.1-4_iphoneos-arm.deb
+			killall -HUP SpringBoard
+		To disable run: 
+			dpkg -r com.intrepidusgroup.trustme
+
+
+
+	https://blog.netspi.com/four-ways-to-bypass-ios-ssl-verification-and-certificate-pinning/
+
+
+
+Cracking Encrypting of binary using Clutch:
+		For cracking iOS applications.  Useful is you can't get a class dump with Class-Dump-Z, or if you 
+		want to take a look at the app in IDA, etc.  
+		https://github.com/KJCracks/Clutch
+		https://forum.appaddict.org//index.php?/topic/1785-how-to-crack-ios-apps-with-clutch-now-on-64bit/
+
+		When SSH'd in:
+		Clutch -i			#lists bundleID's
+		Clutch -d com.bla.gcs.g3	#creates decrypted .ipa file and displays location it placed it
+
+
+Cracking Encrypion using Bfinject:
+	To run on iOS 11 you need bfinject
+		on device run: 
+			mkdir bfinject
+			cd bfinject
+			wget https://github.com/BishopFox/bfinject/raw/master/bfinject.tar
+			tar xvf bfinject.tar
+			#disable "Tweaks" in electra, reboot if it is enabled, rejailbreak with it disabled
+			bash ./bfinject.tar
+			In bfinject:
+				Change md5 to md5sum on lines 163 and 164. (this probably also fixes #15)
+
+				Under # Be a good netizen and tidy up your litter
+				Change the file paths from /bootstrap/usr/local/bin/... to /usr/local/bin/...
+	
+				Under # Detect LiberiOS vs Electra
+				Change the if from /bootstrap/inject_criticald to /electra/inject_criticald
+				Change the file paths from /bootstrap/usr/local/bin/... to /usr/local/bin/...
+					
+				From a root shell:
+				Run: mkdir /usr/local/bin to create the bin folder if it doesn't already exist.
+		
+					
+				
+		Run bfinject on binary - App must be running in foreground of device
+			bash bfinject -P <app-name> -L decrypt 
+			decrypted IPA is located in:
+					/private/var/mobile/Containers/Data/Application/<app id>/Documents
+
+				or
+			run netcat and output to a file:
+				nc <ip of iphone> 31336 > decrypted.ipa			
+
+
+
+Class_Dump	-> Dump classes from IPA file. Makes for better search below.
+		https://code.google.com/archive/p/networkpx/wikis/class_dump_z.wiki
+			class-dump-z -H Instagram.app/Instagram -o /var/root/Class\ dump/Instagram/
+		Apps downloaded from the app store must be decrypted before using Class_Dump.
+		Use clutch (above) or rasticrac to decrypt app
+			Rasticrac from http://cydia.iphonecake.com
+
+		also try: class-dump-z <appname> > dump.txt
+			this will give you the classes, methods and instance variable names
+
+		also try: class-dump <appname>		#different than class-dump-z
+			http://stevenygard.com/projects/class-dump/
+
+frida-ios-dump	-> dump decrypted IPA file
+		https://github.com/AloneMonkey/frida-ios-dump
+		sudo apt-get install libimobiledevice*
+		sudo apt-get install libgcrypt20-doc gnutls-doc gnutls-bin usbmuxd
+		git clone https://github.com/rcg4u/iphonessh
+		
+		
+		On Kali:
+			cd frida-ios-dump/iphonessh/python-client
+			python ./tcprelay.py -t 22:2222
+			
+			In new Terminal:
+				cd frida-ios-dump
+				./dump.py <process name> -u root -P <ssh password for Kali>
+
+			Congrats, now have a decrypted IPA file
+			
+		
+
+Search for:
+		Strings and Variables:
+		export GREP_OPTIONS='--color=always'
+
+		grep -iREo ".{0,30}key.{0,30}" *     -> gets only the 30 characters before and after the match
+		grep -iR "key" *
+			password=/pwd=	id		userid/user_id	user[\ :=]
+			username	user_name 	connect		connection
+			connector	token		key		encrypt
+			decrypt		login		address		root
+			secret		auth		"select * from"	"select %@ from"
+			access		private		href		url
+			http and //	https		https://	http://
+			account		sql		admin		passwd
+			api		apikey		github		gmail
+			@ and .com	Facebook	twitter		pk
+			rsa		cipher		509		jdbc
+			crypto		hash		CFBundleURLTypes
+
+		|grep -v Binary |grep -v Caches
+ 
+
+
+Hopper
+	drag and drop the decrypted mobile app binary into Hopper
+	once it finishes disassembling the binary (takes several minutes). Click the "Proc." Button to see
+		the method names that hopper was able to find.
+
+
+		see this page for decent instructions on reversing an iOS binary. 
+
+
+Dump Memory:
+    
+   fridump.py 
+	https://github.com/Nightbringer21/fridump
+	Requires Frida be installed
+
+	On Device:
+		frida-server -l <ip of iOS device>			#version 12.8.14 on device and Kali VM
+
+	python ./fridump.py -U <process name>
+		-u means usb 
+
+	see frida section below for more info
+
+
+   Objection - gui for frida - connect via USB by default; has network option.  ##Working on Mac now!!!!
+	Installation: pip3 install -U objection
+
+	objection --gadget 4876 -N -h 192.168.1.123 explore
+
+	objection --gadget=“AppName” explore --startup-command "ios jailbreak disable"
+
+	objection --gadget="AppName" explore
+		env 				-> show storage locations of the app
+		ls				-> ls and current directory
+		pwd print			-> print pwd
+		ios sslpinning disable		-> disable ssl pinning for app
+			jobs list
+			jobs kill <UUID>
+		ios jailbreak disable		-> disable jailbreak detection
+		ios keychain dump --smart	-> dump iOS keychain
+		ios plist cat <myfile.plist>	-> show contents of plist file
+		file download info.plist i.plist	-> downloads info.plist to i.plist
+			!cat i.plist
+		sqlite connect db.sqlite	-> connect to sqlite db
+			sqlite disconnect
+
+		ios cookies get			-> show cookies
+		ios pasteboard monitor		-> monitor the pasteboard
+			jobs list
+			jobs kill <UUID>
+		memory dump all mem.dump	-> dump all memory from process to mem.dump
+		ios bundles list_frameworks	-> list 3rd party frameworks in use
+		ios ui biometrics_bypass	-> bypass faceid and touchid
+			jobs list
+			jobs kill <UUID>
+
+
+	
+Static Analysis:
+	Mobile Security Framework (MobSF) https://github.com/MobSF/Mobile-Security-Framework-MobSF
+	
+	install:
+		docker pull opensecurity/mobile-security-framework-mobsf
+		docker run -it -p 8000:8000 opensecurity/mobile-security-framework-mobsf:latest
+
+	For Persistence:
+		docker run -it -p 8000:8000 -v <your_local_dir>:/root/.MobSF opensecurity/mobile-security-framework-mobsf:latest
+
+	
+Debugging
+	On Mac:
+	hdiutil attach /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/DeviceSupport/9.1/DeveloperDiskImage.dmg
+	cp /Volumes/DeveloperDiskImage/usr/bin/debugserver .
+	create an entitlements.plist file and put the following in it:
+		<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+ 		<plist version="1.0">
+		  <dict>
+		    <key>com.apple.springboard.debugapplications</key>
+		    <true/>
+		    <key>run-unsigned-code</key>
+		    <true/>
+		    <key>get-task-allow</key>
+		    <true/>
+		    <key>task_for_pid-allow</key>
+		    <true/>
+		</dict>
+		</plist>
+
+	codesign -s - --entitlements entitlements.plist -f debugserver	#Yes it's -s - --entitlements
+	scp debugserver root@<ip of iOS device>:
+
+
+	ssh root@<ip of iOS device>
+	cp ./debugserver /usr/bin/
+	debugserver *:777 --attach=<Program Name>
+
+	Back on the Mac:
+	lldb
+	   process connect connect://<IP of iOS device>:777
+		display backtrace
+		bt
+
+Jailbreak with Palera1n (iOS 15.7.6):
+	Install on Mac:
+		sudo /bin/sh -c "$(curl -fsSL https://static.palera.in/scripts/install.sh)"
+
+	Installation iPhone (from Mac):	
+		/usr/local/bin/palera1n
+			had to run it until it gets to the color palra1n icon (usb cable matters) 
+			CTRL-C then run /usr/local/bin/palera1n again
+
+		In Sileo install "NewTerm 3 Beta (Free)"
+			in terminal:
+				su passwd root
+				default password is alpine
+
+	Root is set to 1234
+
+		http://ios.cfw.guide/installing-palera1n/#running-palera1n-1
+	
+
+
+Bypass Jailbreak Detection
+	https://www.notsosecure.com/2016/02/05/bypassing-jailbreak-detection-ios/
+	Xcon - from cydia
+	tsProtector - from cydia
+
+	Liberty Lite -> Prevents Jailbreak Detection in most Apps!
+		Add to cydia repo:
+			http://ryleyangus.com/repo/	***Works well!
+
+
+Frida - dynamic code instrumentation toolkit.
+	http://www.frida.re/docs/home/
+	Quick Start Guide:
+		http://www.frida.re/docs/quickstart/
+	Install Cydia Repo -> http://build.frida.re/
+		Search for and install Frida on iOS
+	Install Mac Client piece:
+		sudo pip install frida
+	Connect iOS device via USB and Run the following from the Mac:
+		cd /opt/local/Library/Frameworks/Python.framework/Versions/2.7/bin
+		./frida-ps -U
+			-U iOS device connected to USB
+
+		Note the PID you want to connect to
+		./frida -U -p <pid>
+
+	Install Frida on Ubuntu:
+		create .bash_alaises and put the following in it:
+			alias python=python3
+		logout and then back in
+		python --version #should be 3.5 now
+
+		m
+		pip3 install frida
+
+	Run Frida server on iOS device:
+		Keep app running in the foreground, don't let device go to sleep
+		frida-server -l <ip of iOS device>
+
+	On Ubuntu Client:
+		List running processes:
+		frida-ps -H <ip of iOS device> 
+		
+		List running apps:
+		frida-ps -H <ip of iOS device> -a
+			get Process ID of app too
+			
+		List installed apps:
+		frida-ps -H <ip of iOS device> -ai
+
+		Discover internal functions in a program, which can be used with frida-trace
+		frida-discover -H 192.168.1.119 -p 996
+
+		Trace recv* and send* API's in app:
+		frida-trace -H 192.168.1.119 -i "recv*" -i "send*" -p 996
+
+		Trace ObjC method calls:
+		frida-trace -H 192.168.1.119 -m "-[NSView drawRect:]" -p 996
+
+		Trace crypto API calls:
+		frida-trace -H 192.168.1.119 -p 996 -I "libcommonCrypto*"
+			-I is Module
+		frida-trace -H 192.168.1.119 -p 996 -i "CCCryptorCreate*"
+			-i is function
+
+		Run Frida CLI:
+		frida -H <ip of iOS device> -p <pid of app>
+
+			Look at local variables/context # Use TAB key to cycle through them
+			select "interface" from the list or type it in. For example:
+				ObjC  #will list things exposed through the ObjC interface
+			
+			List first 10 classes:
+				Object.keys(ObjC.classes).slice(0, 10)
+
+		
+	Jailbreak Evasion for App written in Objective C using JavaScript with Frida on Mobile Device:
+		https://blog.attify.com/bypass-jailbreak-detection-frida-ios-applications/
+		On Mac:
+			frida-ps -U 		# get PID of application
+			frida -U <process name>	# attach to running process
+				
+				
+		Write a script to dump all classes in a file DumpAllClasses.js:
+			for (var className in ObjC.classes){
+				if (ObjC.classes.hasOwnProperty(className))
+
+			{console.log(className);} }
+
+		Run script in Frida:
+			frida -U -l DumpAllClasses.js <process name>
+				
+
+		Run again but grep for the word Jailbreak
+			frida -U -l DumpAllClasses.js <process name> |grep -i jailbreak
+
+			Output returns The Following Classes:
+				JailbreakDetectionVC
+		
+		Run FindMethodGivenClass.js script. Modify script line "var className=" to class found above
+			frida -U -l FindMethodGivenClass.js <process name>
+
+		Grep for "jail" and "detect", etc.
+
+		Methods returned:
+			- isJailbroken
+
+		Edit DisplayReturnValueOfMethod.js:
+			var className = <class name from above>
+			var funcName = <method returned above>
+			
+		Run DisplayReturnValueOfMethod.js:
+			frida -U -l ./DisplayReturnVlaueOfMethod.js <process name>
+				Launch Application with Jailbreak
+
+			output should return: 0x1 which means True
+			0x0 should mean false
+
+
+		Run ModifiedReturnValueOfMethod.js, modify className and funcName from above and retval to 0x0
+			frida -U -l ./ModifiedReturnValueOfMethod.js <process name>
+
+		
+
+	
+
+Cycript -> dump memory, etc
+	http://www.cycript.org/
+	a tutorial on swizzling with cycript.
+	http://resources.infosecinstitute.com/ios-application-security-part-8-method-swizzling-using-cycript/
+	On Device
+		ps aux |grep PvZ
+		cycript -p 1930
+			Make sure the app is running in the foreground on the device
+		cy# [UIApplication sharedApplication]			You can get the instance of the application
+		#"<UIApplication: 0x14469d7a0>"
+		cy# var a = [UIApplication sharedApplication]		Assign instance to variable a
+		#"<UIApplication: 0x14469d7a0>"
+		cy# a
+		#"<UIApplication: 0x14469d7a0>"
+		cy# a.delegate						lists the delegate class
+		#"<SexyApplicationDelegate: 0x17012c260>"
+									we now know the delegate class name is 
+									SexyApplicaitonDelegate. So the delegate
+									files are SexyApplicationDelegate.h and .m
+		cy# [[UIApplication sharedApplication] setStatusBarHidden:NO animated:NO]
+		cy# 							iOS status bar will now appear across the 
+									top of the application
+		cy# UIApp.windows					Shows where touch events are accepted
+		@[#"<UIWindow: 0x1445d4140; frame = (0 0; 1024 768); gestureRecognizers = <NSArray: 0x174441020>; layer = <UIWindowLayer: 0x17023b1a0>>",#"<UITextEffectsWindow: 0x1481a3d20; frame = (0 0; 1024 768); opaque = NO; gestureRecognizers = <NSArray: 0x175849840>; layer = <UIWindowLayer: 0x17483fa20>>"]
+		cy# 
+			?exit 							used to quit interpreter 
+		
+
+Bypass iOS version check:
+	unzip .ipa file, 
+	find the info.plist file and change the string 'minimum iOS version' to the desired version
+	rezip file back to .ipa
+		some apps can also use other plist files instead of info.plist to check min version
+	Also, you can change the version on the iPhone/iPad device by:
+	ssh into device
+	change the 'ProductVersion' value in the /System/Library/CoreServices/SystemVersion.plist' file
+		This doesn't always work.
+
+
+
+
+Damn Vulnerable iOS App
+	http://damnvulnerableiosapp.com/#about
+
+Reversing iOS apps:
+	iRET-Tool
+	Hopper
+	Cycript
+	IDA-Pro
+
+
+inalyzer - framework for manipulating iOS applications, tampering with parameters and methods.
+	https://appsec-labs.com/inalyzer/
+	Can start and stop from Shell:
+		cd /Applications
+		./iNalyzer 	#to stop and to start
+
+
+		
+Snoop-it - You can monitor what the target application is doing in the filesystem, keychain, network, etc.  It also lets you log application behavior and (my favorite) make arbitrary calls to functions within the application (under Objective-C classes in the web UI).  Point it at the application and then go to http://[deviceIP]:12345 in your web browser, currently initialized objects will have a green button, you can review their functions, call them, etc. Bypass cert pinning and jailbreak detection?
+https://code.google.com/p/snoop-it/
+
+
+
+Watchdog - A filemonitor that's useful for grabbing temporary files that are quickly created and deleted.  I've got it jury-rigged to monitor an application and create copies of any files that are created/deleted during runtime with the following command (sorry, it's a bit unwieldy, I'm gonna clean it up at some point, haha):
+watchmedo shell-command --patterns="*" --ignore-directories --command='pid=[process ID]; kill -STOP "$pid"; unique="$RANDOM"; echo "$unique": copying "${watch_src_path}"; cp `basename "${watch_src_path}"` /var/root/filemonitor/"$unique"`basename "${watch_src_path}"` | tee --append /var/root/filemonitor/watchdog.log; kill -CONT "$pid"' .
+
+Just cd to the application's directory (should be /var/mobile/Applications/[APP ID]). That should dump copies of all created/deleted files (with a random number appended to the name, I really need to change this to the time it was copied…) into ~/filemonitor and create a log file at ~/filemonitor/watchdog.log.
+
+
+

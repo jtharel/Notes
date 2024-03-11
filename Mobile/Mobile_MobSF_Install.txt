@@ -1,0 +1,119 @@
+Kali Installation HowTo:
+
+
+Documentation:
+https://github.com/MobSF/Mobile-Security-Framework-MobSF/wiki/1.-Documentation
+	However, it doesn't cover everything:
+
+
+Install Oracle Java:
+https://www.oracle.com/technetwork/java/javase/downloads/index.html
+dpkg -i jdk-11.0.2_linux-x64_bin.deb
+
+update-alternatives --install /usr/bin/java java /usr/lib/jvm/jdk-11.0.2/bin/java 0
+update-alternatives --install /usr/bin/javac javac /usr/lib/jvm/jdk-11.0.2/bin/javac 0
+update-alternatives --set java /usr/lib/jvm/jdk-11.0.2/bin/java
+update-alternatives --set javac /usr/lib/jvm/jdk-11.0.2/bin/javac
+java -version
+
+apt-get purge openjdk*		# do not run until above steps are completed first
+
+
+pip3 install Django==2.1.5
+pip3 install pdfkit==0.6.1
+pip3 install androguard==3.3.2
+pip3 install lxml==4.3.0
+pip3 install rsa==4.0
+pip3 install biplist==1.0.3
+pip3 install requests==2.21.0
+pip3 install git+https://github.com/MobSF/CapFuzz.git
+
+
+git clone https://github.com/MobSF/Mobile-Security-Framework-MobSF.git
+cd Mobile-Security-Framework-MobSF
+./setup.sh
+
+apt-get install wkhtmltopdf
+
+./run.sh
+
+**************************************************************************
+Set up Dynamic Analysis:
+
+https://github.com/MobSF/Mobile-Security-Framework-MobSF/wiki/11.-Configuring-Dynamic-Analyzer-with-MobSF-Android-4.4.2-x86-VirtualBox-VM
+
+On your Kali VM, Make sure you have two network adapters,
+
+	Adapter 1 -> Host-only Adapter -> Name: VBox Ethernet Adapter #X
+	Adpater 2 -> NAT
+
+Download VM / Appliance for Virtual Box:
+https://goo.gl/QxgHZa
+
+In Virtual Box, go to: 
+	
+	File -> Import Appliance
+
+Once imported, go to "Settings" on the newly created VM
+
+	Network Tab -> make sure you have two network adapters
+
+		Adapter 1 -> Host-only Adapter -> Name: Vbox Ethernet Adapter #X
+			Same as configured on Kali
+
+		Adapter 2 -> NAT
+
+
+Boot up the Appliance, what for the IP to be displayed.
+
+Make sure the Kali Host-Only Adapter, the VM/Appliance IP and the Host OS (the one running Virtual Box) are all on the same network (192.168.226.0/24)
+
+
+On the VM/Appliance goto:
+	
+	Settings -> Wi-Fi -> and configure the Proxy to use the IP of the Kali box with 
+		port 1337
+
+In Virtual Box, Take a snapshot of the Appliance/VM
+Right Click the VM -> Show in Explorer/Finder
+Open the MobSF_VM_X.X.vbox file in a text editor
+
+Copy the Machine uuid and currentSnapshot line:
+<Machine uuid="{8d53ae1f-c9ab-45af-a692-82ffb745e14f}" name="MobSF_VM_0.2" OSType="Linux" currentSnapshot="{f6399cd8-b803-44ef-ae0a-e7bff0488458}" snapshotFolder="Snapshots" lastStateChange="2019-01-28T18:37:33Z">
+
+Back in the Kali box modify the MobSF/settings.py file and put in the appropriate values:
+	UUID = < VM UUID >
+	SUUID = < Snapshot UUID >
+	VM_IP = < VM IP>
+	PROXY_IP = < Kali IP >
+
+	ANDROID_DYNAMIC_ANALYZER = "MobSF_VM"
+
+
+**************************************************************************
+
+adb connect 192.168.226.3:5555
+adb shell
+
+Show current density and resolution
+	adb shell
+	dumpsys display | grep mBaseDisplayInfo
+
+	
+Change resolution:
+	adb shell
+	wm density 320
+	wm size 800x1280
+
+
+Restore the navigation buttons at the bottom:
+	adb shell
+	am start -n com.google.android.setupwizard/.SetupWizardTestActivity
+		Enter in Language, Name, etc.
+	reboot
+
+convert ova file to format VMWare likes:
+	7z x vm.ova
+	vmware-vdiskmanager -r sourcedisk.vmdk -t 2 destinationdisk.vmdk
+	
+

