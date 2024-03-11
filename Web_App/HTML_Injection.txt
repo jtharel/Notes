@@ -1,0 +1,6 @@
+Add the following to a “comments” section or something similar. 
+<b><i><u>This+is+bold,+italics,+and+underlined.</b></i></u>
+  or
+%3Cb%3E%3Ci%3E%3Cu%3EThis+is+bold,+italics,+and+underlined.%3C%2Fb%3E%3C%2Fi%3E%3C%2Fu%3E
+
+Does it show up bolded, italics and underlined?  If so, you are vuln to HTML injection
