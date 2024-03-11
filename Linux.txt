@@ -1,0 +1,3686 @@
+pstree  --lists running processes and how owns them
+	  pstree -p -a -u
+	--shows the process ancestry for all process running on the system 
+          init always has PID 1
+********************************************************************************
+apt-file search lber.h
+	libldap2-dev: /usr/include/liber.h
+
+	This shows you what package contains a specific file
+
+apt-get install libldap2-dev
+
+********************************************************************************
+http://bashrcgenerator.com/
+Generate .bashrc prompt in linux using this GUI
+********************************************************************************
+Execute a command on multiple Linux boxes where hosts.txt lists IP's of hosts:
+for X in `cat hosts.txt`; do ssh jimmyt@$X ls -l /etc/ ; done
+for X in `cat hosts.txt`; do scp file.tar.gz jimmyt@$X: ; done
+********************************************************************************
+VI control in BASH:
+set -o vi
+
+Now use the ESC key and perform things on your History like / yy p dd
+********************************************************************************
+Expect - creating an interactive SSH session:
+
+#!/usr/bin/expect -f
+spawn ssh aspen
+expect "Password: "
+send "PASSWORD\r"
+expect "$ "
+send "ps -ef |grep apache\r"
+expect "$ "
+send "exit\r"
+
+********************************************************************************
+Great Web Site for how to use *nix:
+http://cb.vu/unixtoolbox.xhtml
+********************************************************************************
+Determine which configuration files a GUI tool is modifying behind the scenes:
+  touch /tmp/now
+  find /etc -newer /tmp/now
+	or
+  find / -newer /tmp/now |grep -v '^/proc' |grep -v '^/sys'
+
+To list all files in your home directory tree that were modified after May 4 of the current year, type:
+  touch -t 05040000 /tmp/timestamp 
+  find ~ -newer /tmp/timestamp 
+
+********************************************************************************
+Find open source software alternatives to well-known commercial software
+www.osalt.com
+********************************************************************************
+net rpc		-control Windows Boxes
+    List, Start and Stop windows services, do remote shutdown, dump sids, manage windows registry from a linux box:
+	Install necessary tools:
+	sudo apt-get install samba-common 
+
+	List Services:
+	net rpc service list -I IPADDRESS -U USERNAME%PASSWORD
+
+	Stop Service:
+	net rpc service stop SERVICENAME -I IPADDRESS -U USERNAME%PASSWORD
+
+	Start Service:
+	net rpc service start SERVICENAME -I IPADDRESS -U USERNAME%PASSWORD
+
+	net rpc info		show basic info about a domain 	net rpc join            to join a domain 	net rpc oldjoin         to join a domain created in server manager	net rpc testjoin        tests that a join is valid	net rpc user            to add, delete and list users	net rpc password <username> [<password>] -Uadmin_username%admin_pass	net rpc group           to list groups	net rpc share           to add, delete, list and migrate shares	net rpc printer         to list and migrate printers	net rpc file            to list open files	net rpc changetrustpw   to change the trust account password	net rpc getsid          fetch the domain sid into the local secrets.tdb	net rpc vampire         syncronise an NT PDC's users and groups into the local passdb	net rpc samdump         diplay an NT PDC's users, groups and other data	net rpc trustdom        to create trusting domain's account or establish trust	net rpc abortshutdown   to abort the shutdown of a remote server	net rpc shutdown        to shutdown a remote server	net rpc rights          to manage privileges assigned to SIDs	net rpc registry        to manage registry hives	net rpc service         to start, stop and query services	net rpc audit           to modify global auditing settings	net rpc shell           to open an interactive shell for remote server/account management
+
+
+##To list all the domain current machine can talk to
+$ wbinfo --all-domains 
+
+##To get the DC for a particular Domain
+$ wbinfo --getdcname=<DOMAINNAME>
+MACHINE001
+
+##List of all users in domain in /etc/passwd style
+$ getent passwd > /tmp/users
+$ wbinfo -u
+
+##Same for groups
+$ getent group
+$ wbinfo -g
+
+##To get info about a user on a DC (-P use the configured password on this machine)
+$ net user info spider -P -S <DC_HOST>
+<List of groups the user belongs to>
+
+##To add a user to the domain
+$ net user add <user> <pass> -P –S <DC_HOST>
+
+##Get the current authorised user
+$ net getauthuser
+
+##if this works, you might want to check the secrets.tdb file 
+$ strings /etc/samba/secrets.tdb | grep USER 
+$ tdbdump /etc/samba/secrets.tdb
+
+
+
+********************************************************************************
+Harddisk/File System Performance:
+  http://www.coker.com/au/bonnie++
+bonnie++ -m 'USB IDE' -d /media/disk -n 1:1024:0:10 > bonnie.out
+********************************************************************************
+MySQL Tuner -
+A perl script called MySQLTuner can help you optimize MySQL configurations. This
+tool will suggest ways to better manage the database and ensure that enough 
+resources are allocated to it, while at the same time ensuring MySQL resources 
+are not being overextended.
+
+To obtain MySQLTuner, download it via wget:
+
+$ wget mysqltuner.pl
+
+This may not look correct, but the mysqltuner.pl Web site actually redirects to 
+download the script of the same name. Once it is downloaded, you can 
+immediately execute it:
+
+# perl mysqltuner.pl
+
+********************************************************************************
+biosdecode	-prints to screen, information from BIOS memory about all of
+		 its known entry points.
+		 Entry point types:
+			BIOS Information
+			----------------
+			SMBIOS - System Management BIOS
+			DMI - Desktop Management Interface
+			SYSID
+			PNP - Plug and Play
+			ACPI - Advanced Configuration and Power Interface
+			BIOS32 - Compaq-specific
+			PIR - PCI IRQ Routing
+			SNY - Sony-specific
+			VPD - IBM-specific
+	
+dmidecode	-dumps the DMI and SMBIOS information to screen
+	dmidecode 
+	dmidecode -t
+	dmidecode -t system
+	dmidecode -t 1
+	dmidecode -t 1,19
+	
+		DMI Type number Information
+		—————————————-
+		0 BIOS
+		1 System
+		2 Base Board
+		3 Chassis
+		4 Processor
+		5 Memory Controller
+		6 Memory Module
+		7 Cache
+		8 Port Connector
+		9 System Slots
+		10 On Board Devices
+		11 OEM Strings
+		12 System Configuration Options
+		13 BIOS Language
+		14 Group Associations
+		15 System Event Log
+		16 Physical Memory Array
+		17 Memory Device
+		18 32-bit Memory Error
+		19 Memory Array Mapped Address
+		20 Memory Device Mapped Address
+		21 Built-in Pointing Device
+		22 Portable Battery
+		23 System Reset
+		24 Hardware Security
+		25 System Power Controls
+		26 Voltage Probe
+		27 Cooling Device
+		28 Temperature Probe
+		29 Electrical Current Probe
+		30 Out-of-band Remote Access
+		31 Boot Integrity Services
+		32 System Boot
+		33 64-bit Memory Error
+		34 Management Device
+		35 Management Device Component
+		36 Management Device Threshold Data
+		37 Memory Channel
+		38 IPMI Device
+		39 Power Supply
+********************************************************************************
+FORGOT PASSWORD 
+If you're running LILO as your boot loader, type 'linux single' at the boot: 
+
+This will take you to a shell prompt with super user privileges.  Type 
+  'ls /home/' to see possible usernames and you can reset your password by 
+  typing 'passwd [username]' and entering a new one. 
+Type 'init 5' and log in. 
+
+If you're running GRUB as your boot loader, 
+
+You can log in using single-user mode and create a new root password.
+To enter single-user mode, reboot your computer. If you use the default boot 
+loader, GRUB, you can enter single user mode by performing the following:
+   1. At the boot loader menu, use the arrow keys to highlight the installation 
+      you want to edit and type [A] to enter into append mode.
+   2. You are presented with a prompt that looks similar to the following:
+        grub append> ro root=LABEL=/
+   3. Press the Spacebar once to add a blank space, then add the word single to 
+      tell GRUB to boot into single-user Linux mode. The result should look like 
+      the following:
+	ro root=LABEL=/ single
+   4. Press [Enter] and GRUB will boot single-user Linux mode. After it finishes
+      loading, you will be presented with a shell prompt similar to the 
+      following:
+	sh-2.05b#
+   5. You can now change the root password by typing:
+	passwd root
+
+ You will be asked to re-type the password for verification. Once you are 
+ finished, the password will be changed.  You can then reboot by typing reboot 
+ at the prompt; then you can log in to root as you normally would
+******************************************************************************** 
+IP TABLES 
+touch /var/lock/subsys/local echo "1" 
+/proc/sys/net/ipv4/ip_forward iptables -t nat -A POSTROUTING -o ppp0 -j MASQUERADE 
+
+or
+
+edit the /etc/sysctl.conf and enable packet forwarding
+   sysctl -p		--reloads the sysctl.conf file
+
+or
+
+echo "1" > /proc/sys/net/ipv4/ip_forward
+
+    to make that perminant:
+  /etc/sysctl.conf			--change "net.ipv4.ip_forward = 0" to 1
+
+  sysctl -p 				--reloads the sysctl.conf file
+
+Firestarter - gui for easy configuration
+FWLogwatch - allows admin to query the current firewall status
+
+
+Using IPTables for firewalling:
+
+  Tables:
+    filter		--default if no tables is defined
+    nat
+    mangle
+
+  Rules:
+    DROP		--drops packets
+    ACCEPT		--allows it to pass through
+    LOG			--connects to system log; log match does not exit chain
+    REJECT		--sends a notice returned to the sender
+
+    -A 		--add
+    -I INPUT	--inserts as the first rule
+    -I INPUT 3  --inserts as the 3rd rule
+    -D INPUT	--delete rule
+    -D INPUT 3  --delete rule 3
+    -L		--lists all tables
+    -T nat	--lists NAT tables
+    -T mangle	--lists Mangle talbes
+    -s		--source
+    -d		--destination
+    -i		--incoming interface: lo, eth0 or eth1, etc --used on forward
+    -o		--outgoing interface			    --used on forward
+    -v 		--verbose
+    -p tcp	--layer 4 protocal: tcp, udp, icmp
+		  source port:		--sport
+		  destination port:	--dport
+		  TCP flags:		--tcp-flags
+		  Inital connection req --syn
+    -m		--module
+    -P		--policy --the default if no rules apply
+    -Z		--used for monitoring chain statistics
+    -t filter	--table filter
+    -F		--flush; deletes all rules
+    -j		--jump to RULES above
+    
+  Match Arguments
+    !		--arguments are negated
+    0:1023	--Inclusive port range
+
+    example:
+	iptables -A INPUT -s 192.168.0.1 -p tcp --dport 80 -j DROP
+	iptables -t filter -A INPUT -s 192.168.0.1 -j DROP
+	iptables -I INPUT 3 -s 192.168.0.2 -j DROP	--becomes rule #3
+	iptables -D INPUT 3				--deletes rule #3
+	iptables -P INPUT DROP				--always set this!
+	iptables -A INPUT -m udp -p --sport 123 -j DROP
+	iptables -A INPUT -p icmp --icmp-type destination-unreachable \
+		-j accept
+	iptables -A INPUT -s ! 192.168.0.0/24 -j DROP
+	iptables -A OUTPUT -m owner --uid-owner 501 -J DROP
+		prevents the user with uid 501 for going outbound
+     Advanced Example on HostB
+	iptables -A INPUT -s HostA -j DROP
+		Prevents HostA from communicating with HostB
+		However, HostB will not be able to communication with HostA
+		So you could use this instead:
+	iptables -A INPUT -p -tcp --syn -s HostA -j DROP
+		It denies the inital communication syn, syn ack, ack
+ 
+  Gernal Considerations
+	iptables defaults to open.
+	be sure to add "iptables -P INPUT DROP"
+	Criteria also apply to loopback interface; must add rule to allow that
+
+  Connection Tracking
+	Recognized States:
+		NEW
+		ESTABLISED
+		RELATED
+		INVALID
+
+	Config file:
+	/etc/sysconfig/iptables-config
+	
+	man iptables 		--will show you what modules you can add to
+				  the iptables-config file IPTABLES_MODULES=
+				  section
+   Connection Tracking Examples:
+       Permit established connections
+	  iptables -A INPUT -m state --state ESTABLISED,RELATED -j ACCEPT
+       Many rules; one for each permitted service:
+	  iptables -A INPUT -m state --state NEW -p tcp --dport 25 -j ACCEPT
+       One rule to block all others inbound:
+	  iptables -A INPUT -m state --state NEW -j DROP
+
+   NAT
+     MASQUERADE 	--use in DHCP env. or modem
+	iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+     SNAT		--use in static NAT situation
+	iptables -t nat -A POSTROUTING -j SNAT --to-source 10.1.2.3
+	iptables -t nat -A POSTROUTING -j SNAT --to-source 1.2.3.45-1.2.3.55
+     DNAT		--Destination NAT
+       INBOUND:
+	iptables -t nat -A PREROUTING -p tcp --dport 80 -j DNAT \
+		--to-dest 192.168.0.20
+       OUTBOUND with port redirection:
+	iptables -t nat -A OUTPUT -p tcp --dport 80 -j DNAT \
+		--to-dest 192.168.0.20:3128
+
+  IPTABLES RULES PERSISTANCE
+	service iptables save		--saves the rules to:
+					  /etc/sysconfig/iptables
+	iptables file can be edited directly
+******************************************************************************** 
+Routing
+  Permanent entries can be placed in:
+	/etc/sysconfig/network-scripts/route-eth0	--interface dependant
+	/etc/sysconfig/static-routes			--interface independan
+  
+  quagga		--Dynamic routing protocols
+			  /usr/share/doc/quagga-version/quagga.html
+******************************************************************************** 
+Anti-Virus
+http://www.clamav.net
+http://clamtk.sourceforge.net/ - gui front end for ClamAV
+	http://klamav.sf.net
+	http://apollon.sf.net
+	http://www.dazuko.org
+	http://www.linuxpipeline.com
+ClamAV works as a client/server system, but you can use it as a stand-alone 
+scanner as well. To initiate the simplest invocation of ClamAV, run the 
+following command:
+
+$ clamscan -r -l scan.log /home/user
+
+freshclam   -will update the virus definition database
+
+Bitdefender: http://www.bitdefender.com
+F-Prot: http://www.f-prot.com
+F-Secure: http://www.f-secure.com
+H+BEDV: http://www.hbedv.com
+Sophos: http://www.sophos.com
+Vexira: http://www.centralcommand.com
+
+RootKit Hunter
+http://www.rootkit.nl
+
+Free Anti-Virus for Mac:
+http://www.sophos.com/products/free-tools/free-mac-anti-virus/download/
+
+
+******************************************************************************** 
+SAMBA
+  Daemons		--smbd - authentication and authorization, file share
+			  nmbd - resource browsing, WINS server
+  Ports			--137,138,139 and 445
+  Configuration		--/etc/samba/smb.conf
+  Related		--system-config-samba, testparm
+			  samba-swat RPM gives http://localhost:901
+
+  SMB.CONF
+	[global]	--section for server generic or global settings
+	[homes]		--used to grant access to home directories
+	[printers]	--defines printer resources and services
+    Shares should have their own [ ] section.  Options on a share:
+	public
+	browseable
+	writeable
+	printable
+	group
+   Security = method
+	user
+	share
+	domain/server
+	ads
+
+   Passwords
+	smbpasswd -a user	--users added with this
+	smbpasswd user		--modifies password
+	users must have local accounts (or be translated to a local account 
+		through /etc/samba/smbusers, or implement winbindd, a sepearte
+		service
+
+   smbclient
+	smbclient -L hostname -U bob%password  	--shows shares on remote host
+   nmblookup 				--wins lookups
+	nmblookup -U WINS_servr -R name --list specific machine
+	nmblookup \*			--list all machines
+
+   mount -t cifs //servername/sharename /mnt/smb/ -o <options>
+		username=bob
+		workgroup=domain name
+		password=
+		credentials=credentials file
+		uid=student, gid=student
+		fmask=777			--file mask, not Umask
+		dmask=777			--directory mask
+		noauto
+
+  # --portmap, moutd: 10.1.1.1 needs to be added to the hosts.allow
+
+
+smb:// in the location field of nautilus for Network Neighborhood type browsing 
+
+mount -t smbfs //<remote server>/share /mnt/folder -o username=jimmy, pa
+	 For SMB mount passes the request to /usr/sbin/smbmount
+   smbmount options:
+	 username=<arg>, password=<arg>, credentials=/root/cred, ip=<arg>, 
+		  uid=<arg>, and gid=<arg>
+	uid --makes the specified linux users own the directory mounted
+	gid --makes the specified linux group own the directory mounted
+	credentials --password file so that the password isn't displayed in 
+		      clear text in mount command
+fstab entry:
+//server1/home  /mnt/samba    smbfs	username=jim,workgroup=group,uid=jim 0 0
+
+/dev/hda1	/mnt/windows	ntfs	umask=000,uid=jimmy,gid=users 0 0
+	This mounts a local ntfs partition so that the user Jimmy can access
+******************************************************************************** 
+MOUNT WINDOWS PARTITION 
+I dual boot, how do I access files on my Windows partition? 
+Shadowman says: 
+Mount the Windows partition thusly: 
+  mount -t vfat /partition/windows_share /mount_point Where the file system 
+  follows -t. 
+Replace '/partition/windows_share with the partition/location of your XP 
+document folder and /mount_point with a valid mount point.
+
+cd /mount_point 
+And you should see the documents. Open from and/or write to that folder and all 
+should be right as rain.  Shadowman adds that mount point to /etc/fstab to make 
+it go like magic. In the fstab file go to the column on the right and change
+'owner' to 'user' to have write access to the file system as a user.
+******************************************************************************** 
+SHUTDOWN AS A USER 
+put a list of usernames in shutdown.allow, then 'shutdown -a' should work. You 
+can also try 'halt' 
+
+   shutdown -h now
+   halt
+   poweroff
+   init 0
+******************************************************************************** 
+REBOOT
+   shutdown -r now
+   reboot
+   init 6
+******************************************************************************** 
+LINUX COMMANDS 
+http://www.oreillynet.com/linux/cmd/ 
+******************************************************************************** 
+ls
+  ls -R --recursive
+  ls -d --directory
+  ll --same as ls -l
+  ls [a-m]* --anything that begins with the letter A through M
+  ls [0-9a-t]* --0-9 or a-t
+  ls [^a-z]* --any thing that doesn't start with a-z
+  ls -Fd *t --doesn't do an ls in the directories
+  ls -i --shows the inode number of the file (inode # is location on hard disk)
+******************************************************************************** 
+cp
+  -i --interactive: ask before overwriting a file
+  -r --recursive: recursively copy an entire directory tree
+  -p --preserve: preserve permissions, ownership and time stamps
+  -a --all: preserve and recursive
+******************************************************************************** 
+mv
+  -i --interactive
+********************************************************************************  
+rm 
+  -i --interactive
+  -r --recursive
+  -f --force
+******************************************************************************** 
+mkdir 
+  -p --parent: i.e mkdir /temp/jimmy - creates parent dir as well
+******************************************************************************** 
+file --tells you what kind of file a file is.  i.e file jimmy.txt
+******************************************************************************** 
+cat 
+  -A --all: show all characters, characters and non-print characters
+  -s --squeeze: multiple adjacent blank lines into a single blank line
+  -b --number: number each non-blank line of output
+******************************************************************************** 
+less --similar to more but allows you to scroll up and down and search
+******************************************************************************** 
+slocate and locate --similar to find.  Uses database for search
+******************************************************************************** 
+man
+  -k --search for supplied sting for man pages.  i.e. man -k iptables
+  -1 --1-8 for different man sections.  i.e. man 5 passwd
+	1 User Commands
+	2 System calls
+	3 Library calls
+	4 Special files
+	5 File formats
+	6 games
+	7 Miscellaneous
+	8 Administrative commands
+******************************************************************************** 
+info --newer version of man
+******************************************************************************** 
+Alt-F1 - Pop up Red Hat Menu
+******************************************************************************** 
+history --show command history
+
+!! --repeat last command
+!c --repeat last command that started with c
+!4 --repeat a command by its number (4 in this case) in history output
+******************************************************************************** 
+~ --refers to home directory i.e. ls ~ show directory of home dir
+******************************************************************************** 
+$ --represents a variable i.e. $PATH
+******************************************************************************** 
+{n,n} -- touch hell.{c,o} -- creates hell.c and hell.o
+******************************************************************************** 
+` --ls -l `which mozilla` performs action in `` first than other comand with 
+						output
+******************************************************************************** 
+echo $[] --tells it to perfrom mathmatical operation i.e. echo $[2*2] or echo $[200-1]
+  i=1; echo $[$i+6]
+******************************************************************************** 
+Command Editing Tricks
+  ctrl-a --move to beginning of line
+  ctrl-e --move to end of line
+  esc-f  --moves cursor to begining of next word
+  esc-b  --moves cursor to beginning or previous or current word
+  ctrl-u --deletes to beginning of line
+  ctrl-k --deletes to end of line
+******************************************************************************** 
+-rwx rwx rwx --(u)ser (g)roup (o)ther --a is all
+  chmod o-r tmp  --changes other permission, subtract read
+  chmod u+w tmp  --changes user permission, add write
+  chmod go=rwx tmp --sets group and other to read write and execute regardless
+                     of current permission
+  chmod a+x tmp --changes all permission, adds execute
+  chmod -R u+x tmp --changes user permision, adds execute Recursively through 
+                     subdirectories
+  chmod u+x tmp --
+
+-rwx rwx rwx -- - regular file
+		d directory
+		l symbolic link
+		b block special file -used to communicate with hardware a block
+	          at a time
+		c character special file -used to communicate with hardware - a
+		  character at a time
+		p named pipe -a file that passes data between processes
+		s socket -a stylized mechanism for interprocess communication
+******************************************************************************** 
+vi
+  yy - copy line
+  yw - copy word
+  y( - copy Sentence Ahead
+  y) - copy Sentence behind
+  y{ - copy Paragraph above
+  y} - copy Paragraph below
+  p  - paste
+  u  - undo most recent change
+  U  - undo all changes to the current line since the cursor landed on the line
+  ctrl-r - redo last "undone" change
+  /text - search downwards for "text"
+  ?text - search upwards for "text"
+    n - contine search in the same direction
+    N - continue search in the opposite direction
+  lpr - send a job to the queue to be printed
+  lpq - view the contents of the queue
+  lprm - remove job from the queue
+  G  - go to last line in file
+  1G - go to the first line in file. Any number can be given to go to that line
+  ctrl-f  - go forward one full screen
+  ctrl-b  - go back one full screen
+  H  - go to first line on screen (high)
+  L  - go to last line on screen (low)
+  !!date  - enters current date
+  !!ls  - enters ls output
+  !!command - enters ouput of command
+  :s/mozilla/netscape/g -- says search for mozilla and subsitute mozilla 
+                           for netscape on every line in the document. 
+                           g means global
+  :r /tmp/jimmy.txt - open file for editing
+  .vimrc file -allows you to set vi configuration perminantly
+		set showmatch
+		set autoindent
+		set textwidth=65
+		set wrapmargin=15
+		set ignorecase  
+  0  -go to start of current line
+  $  -go to end of current line
+  dd -delete line
+  d  -delete word ????
+********************************************************************************   
+ln --create symbolic or soft link -creates new inode for link
+  ln -s filename [linkname]
+  ln -s /usr/bin/mozilla moz
+
+ln --create a hard link -keeps same inode for link
+  ln filename [linkname]
+  ln dragonfly dragonfly.jpg
+******************************************************************************** 
+df	--reports diskspace usage
+  df -h --human readable
+  df .  --shows where current directory is mounted.  Even nfs mounts
+******************************************************************************** 
+du --disk usage
+  du -s --single directory summary
+  du -sh --single directory summary; human readable
+******************************************************************************** 
+find
+  find . -name mozilla
+  find . -iname mozilla  --iname is incase sensitive
+  find / -name *.cfg -exec ls -l {} \;  --execute command ls -l on cfg file
+  find / -name *.cfg -ok ls -l {} \;    --prompt than execute ls -l on cfg file
+  find / -atime 1  --list iles that were accesed more than one day ago
+  find / -user jimmy --list files owned by user jimmy
+  find / -group jimmy --list files owned by group jimmy
+  find /var/lib -user games 2> /dev/null  --suppress error messages
+  find / ! -user jimmy  --list files NOT owned by user jimmy
+  find / -user jimmy -min +120 -ls --list files owned by jimmy less than 120 
+		minutes old
+
+******************************************************************************** 
+mtools --Lists DOS commands that can be used in Linux
+********************************************************************************
+TAR
+  tar czvf jimmy.tar.gz /home/jimmy/*
+     c --creates a new archive
+     v --produces verbose messages
+     f --file name (jimmy.tar) is name of new file; must be next to file name
+     z --use gzip to compress files
+     r --append files to the end of the archive
+     t --list
+     x --extract
+     j --bzip2 compression
+
+  star -backs up SELinux contexts and ACL attributes
+
+  time tar cvf jimmy.tar /home/jimmy/* --times how long it takes to archive
+
+  tar -tzvf jimmy.tar --displays list of all files in the archive
+
+  tar -xzvf jimmy.tar --extracts archive
+
+zip
+  gzip -v jimmy.tar
+  gunzip -v jimmy.tar.gz
+
+  bzip2 -v jimmy.tar
+  bunzip2 -v jimmy.tar.bz2
+********************************************************************************
+alias  --allows you to set up "short cuts" like ll = ls -l
+         just typing alias shows what alias's are defined
+********************************************************************************
+set
+  set -u  --unset variables generate an error
+********************************************************************************  
+shopt  --shell options
+  shopt -s cdspell  --spelling correction on the cd command
+********************************************************************************
+env    --lists environment variables
+********************************************************************************
+PS1    --Variable for setting the prompt
+	\d  the date
+        \h  short hostname (not fqdm)
+        \t  current time
+        \u  user name
+        \w  current working directory
+        \W  basename of the current working directory
+        \!  history number of the current command
+        \$  show $ if you are a non privileged user and a # if you are
+********************************************************************************
+export --export command sets shell variable to environment variable
+         set A=5  --creates shell variable equal to 5
+         export A --makes the A=5 an environment variable 
+********************************************************************************
+reset  --command resets your terminal screen
+********************************************************************************
+Random Number Generator
+	/dev/random
+	/dev/urandom
+
+	openssl rand <number>		--generates random string
+	openssl rand <number> -base64 	--generates ascii string
+********************************************************************************
+which  --tells you the location of the file you are executing
+  which mozilla
+********************************************************************************
+Shell Startup Scripts  --they are ran in the following order
+Login Shells
+  /etc/profile       --set environment variables like HISTSIZE and MAIL. 
+		       effects all users
+    /etc/profile.d   --contains initialization scripts specific to software
+		       packages installed by RPM
+  ~/.bash_profile    --user specific environment settings and startup programs
+    ~/.bashrc        --User specific aliases and functions
+      /etc/bashrc    --System wide aliases and functions
+
+Non-login Shells --used for CRON jobs
+  ~/.bashrc
+    /etc/bashrc
+      /etc/profile.d
+********************************************************************************
+``  --what ever is in quotes is always executed first
+    --ls -l `which mozilla`  --performs ls -l on the value returned from 
+	                       `which mozilla`
+********************************************************************************
+su - jimmy  --the "-" means to process the environment and login scripts
+   su -jimmy -c		--pass a single COMMAND to the shell
+
+sudo	--set up in /etc/sudoers
+	  allows users to execute command with the group id of roots group
+********************************************************************************
+groups      --shows what groups you belong to
+********************************************************************************
+who         --show who is logged in
+********************************************************************************
+w           --shows who is logged in and what they are running
+********************************************************************************
+users       --shows who is logged in 
+********************************************************************************
+last        --tells you when a person logged in, how long, last time
+********************************************************************************
+umask       --default file permissions are set with this command.  By default 
+              all files created will have 666 and all directories will have
+              777.  umask is the inverse of chmod.  umask 002 means chmod 775.
+              i.e.  with a umask of 002, when you create a directory it will 
+              be 775.  When you create a file with the same umask it will be 
+              775 - 111.  So you will get 664.  When creating a file you must 
+              always subtract 111.
+********************************************************************************
+/etc/nsswitch.conf	--control which name services to check and in
+				  which order
+				  passwd: file nis ldap
+********************************************************************************
+getent	--lists all objects stored in the specified db
+	getent services
+	getent passwd
+	getent passwd student
+	getent shadow
+********************************************************************************
+PAM		--Pluggable Authentication Modules
+		/lib/security	--PAM modules
+		/usr/share/doc/pam-0.77/	--doc files
+		/etc/pam.d/	--main configuration
+
+		PAM performs tests against 
+		Tests are organized into 4 groups:
+			auth		--authenticates that the user is the
+					  user
+			account		--authorizes the account may be used
+			password	--controls password changes
+			sessions	--opens, closes and loges the session
+		   Each group is called as needed and provides a seperate
+		   result to the service
+
+		Control values determine how each test affects group's overall
+		result.
+		Control values:
+			required	--must pass, keep testing even if fail
+			requisite	--as required, except stop testing on
+					  fail
+			sufficient	--if passing so far, return success
+					  now; if fails, ignore test and keep
+					  checking
+			optional	--whether test passes or fails is 
+					  irrelevant
+
+		PAM "login" Example:
+
+		#%PAM-1.0
+		auth       required     pam_securetty.so
+		auth       required     pam_stack.so service=system-auth
+		auth       required     pam_nologin.so
+		account    required     pam_stack.so service=system-auth
+		password   required     pam_stack.so service=system-auth
+		session    required     pam_selinux.so close
+		session    required     pam_stack.so service=system-auth
+		session    required     pam_loginuid.so
+		session    optional     pam_console.so
+		session    required     pam_selinux.so multiple open
+
+		pam_unix.so	--module for NSS-based authentication
+			auth	--gets hashed password from NSS and compares
+				  it to hash of entered password
+			account --check for apssword expiration
+			password --handles password changes to local files 
+				   or NIS
+			session	--records login and logout to logs
+
+		auth modules:
+			pam_securetty.so
+			pam_nologin.so
+			pam_listfile.so
+
+		Password Policy:
+			pam_unix.so with remember=N argument will remember the
+				last N passwords
+			Password strength
+				pam_cracklib.so	 --force password complexity
+				pam_passwdqc.so  --quality check/complexity
+						   doesn't force complexity
+				pam_tally.so	 --failed login monitoring
+
+		Session Modules:
+			pam_limits.so	--enforces resource limits
+					  uses /etc/security/limits.conf
+			pam_console.so	--sets permissions on local devices
+					  for console users. ie. cdrom, etc
+			pam_mkhomedir.so --creates a home directory if it does
+					   not exist
+		
+		Local Admin tools -su, reboot, system-config*, etc
+			pam_rootok.so	--passes if running as root
+			pam_timestamp.so --for sudo-like behavior
+			pam_xauth.so	--forwards xauth cookies
+
+		PAM Troubleshooting
+			/var/log/messages
+			/var/log/secure
+			Keep a root shell open when testing PAM
+			Single-user mode bypasses PAM
+			Boot the system using a rescue disc
+********************************************************************************
+System Monitoring:
+	find / \( -nouser -o -nogroup \)	--finds files with no owner or
+						  group assigned to it
+	find / -type f -perm -002		--locates other-writeabl files
+	file / -type d -perm -2			--locate other-writeable dir
+
+	lsattr					--show file attributes
+	chattr					--set attributes
+		A	--a time record is not modified upon access 
+		a	--file can only be open in append mode for writing
+		d	--file is excluded in backup by dump
+		j	--file data is journaled to ext3 journal
+		i	--file is immutable.  It cannot be deleted or modified
+		S	--All changes to this file are written synchronously
+			  on the disk; this is equivalet to the sync mount
+			  option applied to a subset of files
+		Attributes not supported by Red Hat:
+		c	--file is automatically compressed
+		s	--the file's content is zeroed upon deletion
+		u	--files content is save when it is deleted.  Undelete
+			  is possible
+
+	Log Files:
+		/var/log/messages	--logs most system messages
+		/var/log/secure		--authentication messages, xinetd
+		/var/log/xferlog	--ftp logs
+		/var/log/maillog	--mail logs
+
+	/etc/syslog.conf		--contains locations of log files
+		syntax:	facility.priority  log_location
+
+		Facility:
+		authpriv	--security/authorization messages
+		cron		--clock daemon (atd and crond)
+		daemon		--other daemons
+		kern		--kernel messages
+		local[0-7]	--reserver for local use
+		lpr		--printing
+		mail		--mail system
+		news		--news system
+		syslog		--internal syslog messages
+		user		--generic user level messages
+
+		Priority
+		debug		--debugging information
+		info		--general informative messages
+		notice		--normal, but significant, condition
+		warning		--warning messages
+		err		--error condition
+		crit		--critical condition
+		alert		--immediate action required
+		emerg		--system no longer available
+
+		Example:        kern.info  /var/log/kernel
+                        For remote machine:     @hostname
+	
+	SYSLOG	--to accept remote connections
+		Allow firewall connections on UDP port 514 on syslog server
+		modify the /etc/sysconfig/syslog file on the server and change:
+			SYSLOGD_OPTION="-r -m 0"
+		add the following to the bottom of /etc/syslog.conf on client:
+			user.*	@192.168.0.3
+		restart syslog on both machines: service syslog restart
+		From remote machine run the following to test:
+			logger -i -t Jimmy "This is a test"
+
+		**Have all linux server report to one syslog
+		  logwatch can parse the logs and send you one e-mail
+		  with details about all servers.
+********************************************************************************		
+Monitoring Processes
+	top	--resource monitoring tool
+		Xrestop		-Shows X11 users which X client programs are 
+				 using the most resources
+		Ntop		-Network monitoring
+		ApacheTop	-offers information on current Apache web 
+				 server access, the pages Apache serves up, the
+				 number of hits per second, etc
+		Dnstop		-uses Pcap library to filter all DNS queries on
+				 a network and list them neatly
+		Powertop	-Identifies power consumption and helps to
+				 optimize the hardware and software for max 
+				 battery life
+		Mytop		-MySQL top mytop -u user -p password -h host
+					-P port -d database
+
+		
+	gnome-system-monitor
+	sar	--reads and generates "human friendly" logs
+	kpm 	--kde version of top
+	history	--shell built-in command listing
+	last	--diplays users login history
+	psacct	--process accounting
+		  activate by accton /var/account/pacct
+	ac	--displays user connected times from /var/log/wtmp
+********************************************************************************
+Redirecting Input and Output
+  Standard In    0
+    tr  --translate command
+      tr'A-Z' 'a-z' < jimmy.txt  --changes anything from upper case to lower
+      tr 'a-m' 'A-M' > a.txt  --allows you to type and saves it to a.txt file
+    cat < jimmy.txt  --same thing as cat jimmy.txt
+
+  Standard Out   1
+
+
+  Standard Error 2
+    2>  --Error messages from command are directed to a file rather than the
+	   screen.  2>> can also be used to append output.
+      i.e. find /etc -name passwd 2> /dev/null --suppresses permission denied
+                                                 error message
+      i.e. find /etc -name passwd 2> fileoutput.txt --captures all errors into 
+                                                      file with only errors
+      i.e. find /etc 2> errors.txt > files.txt --sends errors to one file the 
+						 remaining output to other file
+      i.e. find /etc/ &> both.txt --send both standard out and standard error
+                                    to the same file
+
+      set -o noclobber --prevents files from being overwritten through 
+                         redirection output
+      set +o noclobber --allows files to be overwritten through redirection 
+                         output
+
+Pipes
+  |  --redirect output from one command to become the input to another command
+    ls /usr/lib | less
+    cut -f1 -d: passwd | sort -r | less  
+       --f1 looks at first field
+         -d: is our delimiter
+         sort -r  sorts in reverse order
+         less  displays one screen at a time   
+
+tee  --lets you tee a pipe: redirect output to a file while still piping it to
+       another program
+       i.e. ls /usr/lib/ | tee output.txt | sort -r | less
+            in the above command the sort happens after the output.txt file is
+            created.
+********************************************************************************
+mail  --send an e-mail
+  ls -l | mail -s "Here's the Listing" bob@aol.com
+     -s is the subject and bob@aol.com is the recepient
+********************************************************************************
+STRING PROCESSING
+  head  --displays first 10 lines of a file by default
+          i.e. head -n 20 jimmy.txt --displays first 20 lines
+
+  tail  --displays last 10 lines of a file by default
+          i.e. tail -n 5 jimmy.txt --displays the last 5 lines
+          i.e. tail -f jimmy.txt --f is follow.  It is used to "watch" log 
+                                   files.  It always shows you the last part 
+                                   of the file.
+  wc    --Word Count.  Counts lines, words and characters
+    -l  --lines
+    -w  --words
+    -c  --characters
+        i.e  wc -l jimmy.txt --counts number of lines
+
+  sort  --Sorts text to standard output.  Original file unchanged
+    -r  --reverse
+    -n  --numeric sort instead of alpha
+    -k  --sort from a certain position field.  must be used with -t
+    -t  --seperator value
+    -u  --unique (remove duplicate lines in output)
+
+  uniq  --removes successive, duplicate lines in a file
+    -c  --counts number of occurrences of duplicate data
+
+  cut   --display specific columns of file data
+    -f  --field
+    -d  --delimiter (tab is default)
+      i.e. cut -f3 -d: /etc/passwd
+    -c  --cuts by character
+      i.e. cut -c2-5 /usr/share/dict/words
+
+  paste --paste files together
+      i.e. paste file1 file2  --combines files in tab delimited columns
+    -d  --delimiter (tab is default)
+
+  diff  --compares two files
+
+  aspell --Interactive spell-checker
+      i.e. aspell check file.txt
+    -l  --will non-interactively list the misspelled words in a file read from
+          standard input
+          i.e. aspell -l < file.txt
+
+  expand --changes tabs into spaces in a file
+      i.e. expand file.txt > file.expanded.txt
+
+  fmt   --reformat width to line width that you specify
+      i.e. fmt -u w72 file.txt > file.fmt.txt
+
+  strings
+      i.e. strings dragonfly.jpg |less
+********************************************************************************  
+REGULAR EXPRESSIONS
+  Regular Expressions are pattern maching engines
+  Two Types
+    Basic
+    Extended
+
+  grep
+    -r  --recursive through directory
+    -v  --opposite of what you specifiy.  
+          i.e.  grep "root" /etc/passwd  --returns every line that does't 
+                                            contain the word root
+    -c  --counts how many lines matched the expression
+    -i  --ignore case of characters
+
+  sed  --stream editor
+          i.e. sed 's/cat/dog/' pets  --search's pets file and replaces cat 
+                                        with dog.  Context is the same as vi
+  
+  Extended Regular Expressions
+    -egrep
+    -awk    
+
+Notation	Description		Example		What the example Matches
+--------	---------------------	-----------	------------------------
+a		'Ordinary' characters 	apple		The string 'apple'
+		match themselves
+
+[...]		Any character in []	[02468]		Any even digit
+
+[^...]		Any char not in []	[^13579]	Anything except odd 
+							digit
+
+[x-x]		Range of characters	[A-Z]		Any uppercase letter
+
+.		Any single character	c.t		cut, cat, c9t and so on
+
+^		Beginning of line 	^[0-9]		Lines starting with a 
+		(start of string)			digit
+
+$		End of line (end of	/bin/sh$	Lines ending with
+		string)					/bin/sh
+
+*		Zero or more of the 	[a-z]*		Any sequence of lower-
+		preceding item				case letters, including
+							none at all
+
+?		Zero or one of the	https?://	http:// and https://
+		preceding item		
+
++		One or more of the	T+		T, TT, TTT, TTTT and so 
+		preceding item				on
+
+{n}		Exactly n occurrences	[0-9]{3}	A sequence of exactly 
+		of the preceding item			three digits. eg 123,
+							644 and 999
+
+{n,}		n or more occurrences	0{3,}		000, 0000, 00000 and so
+		of the preceding item			on
+
+{n,m}		Matches between n and	[A-Z]{2,3}	Things like AB, ABC, 
+		m occurrences of the 			YY, ZZZ
+		preceding item
+
+********************************************************************************
+
+Process States from ps -aux
+    R  -running (on the run queue)
+    S  -sleeping
+    T  -stopped
+    D  -uninterruptible sleep
+    Z  -Defunct (zombie) process
+    SN -
+    SW -
+ 
+  ps -aux
+    -a  --display ALL processes
+    -u  --display the user name of the process owner
+    -x  --include processes not controlled by a terminal, such as daemon
+          processes
+******************************************************************************** 
+kill  -kill a process  --kill [-signal] pid
+  killall mozilla --kill all instances of the process that contain the word
+                    mozilla.  You can use names instead of PID number
+  kill -l         --lists signal names
+  kill -kill
+  kill -15        --tries to shut down gracefully     
+  kill -9 pid	  --uses kernal to kill process
+********************************************************************************
+nice  --Processes are scheduled with a default priority of 0.  Priority value
+        can range from -20 (highest priority) to 19(lowest).  Must be root to
+        have a negative priority.
+  nice [-n adjustment] command
+
+renice --renice changes the priority of a running process
+  renice # [[-p|-g] PID] [[-u]user]   --# is the priority number
+  renice 10 -p <process id>
+
+  top shows nice level
+********************************************************************************
+jobs  --displays all process running in the background or that are suspended
+  fg [%job number]  --moves suspended job to the foreground
+  bg [%job number]  --moves suspended job to the backgroup
+   i.e. sleep 500 &   --run jobs to see it running
+                        use fg %job number to bring it to the foreground
+  ctrl-z  --suspends running job.  Than you can use bg to move it to the 
+            background
+********************************************************************************
+COMPOUND COMMANDS
+  ( date; ls / ) > file.txt is not the same as date; ls / > file.txt.
+     ls / > file.txt is treated as a seperate command than date due to the ;
+     ( date; ls / ) > file.txt captures both outputs
+********************************************************************************  
+CRON
+  ctrontab 
+    -u  -user
+    -l  -lists jobs
+    -r  -remove jobs
+    -e  -edit crontab file
+
+    Crontab file Format:
+    #Min   Hour   DoM    Month   DoW    Command
+    0      4      *      *       1,3,5  mail -s "boo" $LOGNAME < boo.txt
+
+    Minute		0-59
+    Hour		0-23
+    Day of Month	1-31
+    Month		1-12
+    Day of Week         0-6 (0=Sunday)
+    *                   every possible time
+
+  Restrict / allow user access to cron
+    /etc/cron.allow
+    /etc/cron.deny
+    contains usernames to allow / deny access
+    by default users are allowed to add / edit cron jobs
+
+  Master crontab file /etc/crontab runs executables in these folders.  Just
+  drop the executable in the following folders:
+    /etc/cron.hourly/
+    /etc/cron.daily/
+    /etc/cron.weekly/
+    /etc/cron.monthly/
+
+  /etc/cron.daily/tmpwatch  --check the /tmp folder daily and cleans out
+			      out files.  Keeps /tmp and /var/tmp directory 
+			      from filling up.  Can be used for other dirs
+
+  /etc/cron.daily/logrotate --keeps log files from getting too large and 
+			      filesystem from filling up.
+			      Configure all logs in /etc/logrotate.conf
+			      Configure individual log files in files
+			      whithin /etc/logrotate.d/
+			      For example, /var/log/messages is rotated weekly
+			      to /var/log/messages.1, with older files rotated
+			      to /var/log/messages.2, etc., optionally
+			      compressed
+  /etc/cron.daily/logwatch  --Helps catch problem issues
+			      detects suspicious behavior
+			      e-mails nightly report
+
+  if you don't output to a file all output will be e-mailed
+********************************************************************************
+/etc/init.d  --all services are listed here and their scripts
+********************************************************************************
+SCRIPTING BASICS
+  #!/bin/bash		--Bash scripts (default shell)
+  #!/bin/sh		      --Bourne Shell Scripts
+  #!/bin/csh		--C Shell Scripts
+  #!/usr/bin/perl	      --Perl Scripts
+  #!/usr/bin/python	--Python Scripts
+
+  # 			      --For entering comments
+
+  read 			--assign an imput value to a shell variable
+    echo -n "Please enter the file name: "
+    read FILENAME
+    echo "You are looking for file $FILENAME"
+
+    read -p "What is your name? " NAME
+    echo "Hello $NAME how are you doing"
+
+  printf  		--used to generate formatted output
+    printf "The result is %0.2f\n" $RESULT
+
+  $0  --used for command line arguments $0, $1, $2, etc..
+    myscript jim  --jim would be assigned to value $0 inside of the myscript
+                    script
+
+  $*  --holds all command line arguments entered
+
+  echo $?  --returns error code of 0 or 1.  0 means last command was successful
+             1 means last command was not successful
+	     i.e. ls /asdk  --echo $? will return a 1
+             i.e. ls        --echo $? will return a 0
+
+
+  if
+    if [ -<argument> <filename> ]; then
+      echo ....
+    fi
+       if [ -d True if file is a directory
+            -e True if file exists
+            -f Ture if file exists and is a regular file
+            -h True if file is a symbolic link
+            -L True if file is a symbolic link
+            -r True if file is readable by you
+            -s True if file exists and is not empty
+            -w True if the file is writable by you
+            -x True if the file is executable by you
+            -O True if the file is effectively owned by you
+            -G True if the file is effectively owend by your group
+            more test types are available.  Type 'help test'
+
+  if/else
+  if/elif/else  
+
+  strings
+    if [  =  ]; then 
+       echo ...
+    fi 
+         -z returns true if the string is empty
+         -n returns true if the string is not empty
+    operators such as =. !=, < and > can be used to compare strings
+
+  Arithmetic test
+    read N
+    if [ $N -le 20 ]; then
+       echo ...
+    fi
+     -eq  equal
+     -ne  not equal
+     -lt  less than
+     -le  less than or equal
+     -gt  greater than
+     -ge  greater than or equal
+     -a   true if both expression 1 and 2 are true
+     -o   true if either expression 1 or 2 are true
+           if [ $N -le 10 -o $N -ge 100 ]; then
+             echo ...
+           fi
+  
+  case
+    case <variable> in
+       pattern1)
+          do something ;;
+       pattern2)
+          do something ;;
+    esac
+
+  for
+    for <variable> in <list-of-values>
+      do
+        <commands...>
+      done
+
+    for X in 'ls /' ; do
+       ls -dl /$X 
+    done
+
+  while
+    while <condition>
+      do
+        <commands>
+      done
+    
+    i=1
+    while [ $i -lt 20 ]; do
+      echo $i
+      i=$[$i+1]
+    done
+
+  until  --same as while just the opposite
+
+  continue  -stops the current execution of the loop and reexamines the inital
+             condition, possibly restarting the loop
+  break     -stop processing the loop entirely, jumping past the done statement
+  exit      -exits from the shell script entirely.  You must provide an exit
+             status
+    
+  &&  --logical AND
+        cp -a /tmp/*.o /home/jimmy && echo 'Done'
+           --part before && must be true in order for second part to execute
+  ||  --logical OR
+        grep joe /etc/passwd || echo 'No Joe'
+           --part before || must be false in order for second part to execute
+********************************************************************************
+DEBUGGING
+  bash -x <scriptname>
+  bash -v <scriptname>
+********************************************************************************
+SECURE SHELL
+	Packages:		openssh, openssh-clients, openssh-server
+	Daemons:		ssh
+	Scripts:		sshd
+	Ports:			22	
+	Configuration:		/etc/ssh/*, $HOME/.ssh/
+	Related:		openssl, openssh-askpass,
+				openssh-askpass-gnome
+
+	/etc/ssh/sshd_config		--config file
+	Options to consider:
+		Protocol 2		--want version 2
+		ListenAddress		--what IP's can connect to the server
+		PermitRootLogin	no	--Always set to yes
+		LoginGraceTime 2m	--drop if you don't connect after 2
+					  minutes
+		Inactivety use PAM to drop connections:
+			pam_access.so
+			pam_time.so
+
+	ssh -Y remotehost	--is more secure than -X
+
+	scp file user@host:remote-dir
+		scp /etc/hosts root@webserv:/root/hosts
+	scp -r user@host:remote-dir localdir
+		scp -r root@webserv:/etc/hosts ./hosts
+
+	konqueror	--in the url bar: fish://jimmy@webserv	
+
+	Protecting Your Keys
+		ssh-agent		--manages key passphrases
+		ssh-add			--collects key passphrases
+
+	Creating keys for login without password:
+		ssh-keygen -t rsa
+			#This creates public and private keys
+			#don't enter a password if you don't want one
+		cp ~/.ssh/id_rsa.pub to all systems you want to access
+		scp ~/.ssh/id_rsa.pub user@bla.com:/home/user/.ssh/authorized_keys
+		To test use:
+			ssh jimmy@10.1.1.1 
+				or
+			ssh jimmy@10.1.1.1 -i ~/.ssh/id_rsa
+
+	VNC through SSL
+		Run VNC server on Computer1
+		On computer2:
+			ssh user@computer1 -L 12345:computer1:5801
+				then from a new xterm session
+			vncviewer --change to port 12345
+
+	$ cd ~
+	$ ssh-keygen -t rsa –C “raspberrypi@raspberrypi”
+	This set a default location of /home/pi/.ssh/id_rsa to store the key
+	Enter a passphrase e.g. “myfirstpicluster”. If you leave this blank (not such good security) then 
+	no further typing of passphrases is needed.
+	$ cat ~/.ssh/id_rsa.pub | ssh pi@192.168.1.162 " "mkdir .ssh;cat >> .ssh/authorized_keys"
+
+
+  Client examples:
+
+     ssh -l jimmy <computername> -- -l specifies the user name to login with
+     ssh jimmy@<computername>    --same as above
+     ssh barney ls /tmp          --runs a command
+     ssh -X <computername>	      --starts X Application through secure shell
+
+     scp  --secure copy
+     scp <source> <destination>
+     scp /etc/passwd <computer>:/home/jimmy
+       -r  --option enables recursion
+       -p  --preserves times and permissions
+       -c  --compresses datastream
+
+
+To limit who can log into a system via SSH, edit the /etc/ssh/sshd_config file 
+and add a line at the bottom of the file similar to:
+
+AllowUsers [username]
+
+Where [username] is the username you want to allow. For example:
+
+AllowUsers joe
+
+This will only allow the users that you specify the ability to log via SSH. In 
+the above example, user joe has already been created on the system. Multiple 
+users can be specified, separated by spaces.
+
+For additional information and options, see the sshd_config and sshd man pages 
+by typing man sshd_config and man sshd, respectively, at a command prompt. 
+********************************************************************************
+PSSH - Parallel SSH
+
+For a user caring for multiple systems, OpenSSH is extremely useful, but being 
+able to execute OpenSSH commands in parallel is even more so. This is where 
+Parallel SSH, or pssh, comes in. Pssh provides parallel versions of the OpenSSH 
+tools, meaning you can execute commands on various hosts in parallel, copy files 
+in parallel, and so forth. Pssh is essentially a frontend to OpenSSH written in 
+Python. It includes pssh, pscp, and prsync, as well as pslurp (the opposite of 
+pscp in that it downloads rather than uploads) and pnuke (a frontend to the kill 
+command).
+
+Using pssh is extremely easy. There are no manpages, but calling the command with 
+no arguments will bring up the help, which describes each option.
+
+Every command uses a plaintext “hosts” file that is a simple text file containing 
+the hosts to act upon, one per line. As an example, assume you wanted to make sure 
+that the time on each server was identical. This could be done using the date 
+command, but to do it with regular SSH, you would have to execute the command at 
+the same time on each host using screen or multiple terminals. With pssh, this is 
+one simple command:
+
+	$ pssh -h hosts -P date
+	    hades: Wed Nov 12 10:21:11 MST 2008	
+	    hades: [1] 10:21:11 [SUCCESS] hades 22
+	    odin: Wed Nov 12 10:21:11 MST 2008
+	    odin: [2] 10:21:11 [SUCCESS] odin 22
+
+	$ cat hosts
+	    hades
+	    odin
+
+Contrast that to using ssh directly:
+
+	$ for host in hades odin; do ssh ${host} "date"; done
+	    Wed Nov 12 10:24:02 MST 2008
+	    Wed Nov 12 10:24:02 MST 2008
+
+Not much difference, other than the one command is easier and executes faster. 
+Calling the date command itself won’t take up much time, but imagine for a 
+moment that you were performing a database dump or some other time-intensive 
+task. Using ssh directly in a serial mode, if each dump took one hour, would 
+cost you two hours of ssh execution on the host. In parallel, it would only 
+take one hour. If there are 10 systems to execute the command on…well, you 
+get the idea.
+
+You can use pscp to copy files to the hosts:
+
+$ pscp -h hosts example.txt /tmp/example.txt
+
+Or you can use pslurp to copy files from the hosts:
+
+$ pslurp -h hosts -L ~/tmp /tmp/example.txt example.txt
+
+The above will download /tmp/example.txt as example.txt, and will store the
+file in ~/tmp/[host]/, where [host] is the corresponding hostname to that 
+found in your hosts file.
+
+Finally, prsync will also upload to the hosts using rsync rather than scp.
+
+The Parallel SSH tools can be great time savers if you work with multiple 
+systems and need to be able to copy files to or from these servers and/or 
+execute similar commands on each host. This can be great for updating servers 
+with the latest security fixes, performing automated maintenance such as 
+database backups and retrieval of dump files, and so forth.
+********************************************************************************
+RSERVICES  --insecure --use secure ones above
+  rsh   --remote shell
+  rlogin --remote login
+  rcp   --remote copy
+********************************************************************************
+lftp  --command line ftp client
+  lftp -u jimmy ftp.mysite.com  -- -u tells client to login as user jimmy
+********************************************************************************
+links --text based web browser
+  links www.redhat.com
+********************************************************************************
+rsync  --used to remotely sync remote computers.  Faster than scp in that it
+         copies the differences in like files
+         You can use SSH for transpoint
+   rsync --rsh=ssh myfile.txt mycomputer:/home/jimmy
+********************************************************************************
+wget   --retrieves files via http and ftp
+  wget http://www.redhat.com/file.rpm
+  wget --recursive --level=1 --convert-links http://www.redhat.com/training/
+     --recursive         -get all downlevel files
+     --level
+     --convert-links
+********************************************************************************
+NETWORK TOOLS
+  ping         --
+     ping -c 3 www.yahoo.com  --pings only 3 times
+  traceroute
+  host         --performs hostname to ip address translations, as well as 
+                 reverse
+  dig          --performs a service similar to host in greater detail
+  netstat      --provides a number of network statistics
+     netstat -a |grep LISTEN  --tells us what ports are listening
+                                -a stands for all
+                                -n says use port number instead of name
+     netstat -taupe	      --gives you list of active network servers,
+				established connections
+********************************************************************************
+NETSTAT
+
+  netstat -l			--gives an overview of everything running on 
+				  your system
+  netstat -l -p --tcp --udp	--displays all LISTENING TCP and UDP sockets and
+				  displays what program is doing the listening
+				  as well as the process ID (PID) via the -p
+  netstat -a -p --tcp --udp	--list all ACTIVE TCP and UDP connections,
+				  including those that are listening and the 
+				  ones that are connected
+********************************************************************************
+Reloading of inittab file without a reboot
+  init q
+  tel init q
+********************************************************************************
+ntsysv		--utility used to configure runlevels
+serviceconf	--utiltiy used to configure runlevels
+chkconfig 	--utility used to configure runlevels
+********************************************************************************
+chkconfig - Lists services installed on a system and allows you to configure 
+	    them
+
+  chkconfig [--level <levels>] <name> <on|off|reset>
+
+  chkconfig --list			-lists services installed
+  chkconfig <service-name> on		-causes a service to start when system 
+					 is booted
+  chkconfig <serivce-name> off		-causes a service to not be started when 
+					 system is booted
+  chkconfig --list pcmcia		-shows run level for pcmcia service
+********************************************************************************
+service   - Allows you to start, stop or restart a service immediately
+  service <service-name> stop		-causes service to stop
+  service <service-name> start		-causes service to start
+  service <service-name> status		-lists status of a service
+********************************************************************************
+Install Packages from NFS share:
+   mkdir /mnt/server1
+   mount server1:/var/ftp/pub /mnt/server
+   system-config-packages --tree=/mnt/server
+******************************************************************************** 
+Package selection by predefined components
+   /usr/share/comps/i386/comps.xml
+******************************************************************************** 
+Install drivers from floppy during installation:
+   type "linux dd" at the first installation screen
+********************************************************************************
+RUNLEVEL
+   runlevel	-Shows what runlevel you are currently in
+******************************************************************************** 
+CHVT
+   chvt		-change to virtual terminal
+   chvt 1 	-same as ctrl-alt-f1
+
+   tail -f /varl/log/messages > /dev/tty9 &
+   chvt 9
+******************************************************************************** 
+STARTX
+   startx		-starts an X Session
+   startx --:1		-starts another X session on F8-F12
+   Ctrl-Alt-backspace   -Kills X
+******************************************************************************** 
+ntsysv			--start and stop services like system-config-services 
+			  but in text mode
+   netsysv --level      --can configure run level
+******************************************************************************** 
+xinetd		-Super Daemon - multiple service run within the one service
+		chkconfig --list shows services running under xinetd
+  configured by files in /etc/xinetd.d/
+  replaces inetd
+
+  chkconfig xinetd on
+  chkconfig krb5-telnet on
+
+  Config file:
+    /etc/xinetd.conf
+  
+  Include Directory:
+    /etc/xinetd.d/
+
+  Access Control:
+    Entries in the xinetd.conf or individual files in /etc/xinet.d/:
+	only_from = 192.168.0.0/24
+	no_access = 192.168.0.1
+	access_times = 9:00-18:00
+	per_source = 2			--cannot exceed maximum instances from
+					  the same ip address
+******************************************************************************** 
+FTP 			-vsftpd...no longer xinetd
+  ports			--21 ftp; 20 ftp-data
+  Configuration		--/etc/vsftpd/vsftpd.conf
+			  /etc/vsftpd.ftpusers  --users NOT allowed
+			  /etc/vsftpd.user_list --changable list of users to 
+						  allow or deny users
+			  /etc/pam.d/vsftpd
+  Virtual Accounts	--virtual FTP-only user access accounts
+******************************************************************************** 
+GRUB BOOT MENU EDITING
+   Press "e" on boot menu
+   select the Kernal line
+   press "e" again to edit the line
+   at the end of the line put a 3 for run level 3
+   press "b" to boot
+******************************************************************************** 
+GRUB PASSWORD
+   grub-md5-crypt	--command allows you to enter a password and it returns 
+			  the md5 sum for you to put in the grub.conf file
+			  underneath the default= line add:
+				password --md5 $1$uHlIanchae2ahea2w9iea
+******************************************************************************** 
+KERNAL MODULES
+   lsmod 			--lists kernal modules
+   modprobe -r <module name>	--removes module
+	modprobe -r floppy	--removes floppy module
+			          modprobe configures all modules
+   modinfo <module name>	--info about the module
+	modinfo floppy		  displays info about the floppy module
+   modprobe.conf		--sets options for drivers and such
+   depmod			--checks for module dependancies
+				  don't normally need to run this
+   insmod			--manually configure one module or driver
+   rmmod			--manually configure one module or driver
+******************************************************************************** 
+/proc
+   Every process on Linux has a PID
+   /proc/2034/env
+	every environment variable associated with that PID
+   /proc/2034/fd
+	fd stands for file descriptor -> links to all open files
+   /proc/2034/cmdline
+	Command line argument that the PID was started with
+
+/PROC/SYS
+   /etc/sysctl.conf		--configures everything in /proc/sys
+				  i.e. packet forwarding
+   sysctl -p			--reloads the sysctl.conf file
+******************************************************************************** 
+DMESG
+   dmesg			--shows kernal messages about hardware
+******************************************************************************** 
+KUDZU				--maintains a database of detected and 
+				  configured hardware found in the 
+				  /etc/sysconfig/hwconf.  If new hardware is
+				  detected kudzu attemptes to configure it
+******************************************************************************** 
+LSPCI
+   lspci			--lists devices on the PCI Bus
+******************************************************************************** 
+USB DEVICES
+   lsusb			--lists usb devices
+   usbmodules			--lists usb devices
+******************************************************************************** 
+PCMCIA UTILITIES
+   cardmgr			--lists PCMCIA cards
+   cardctl			--allows you to eject/insert PCMCIA cards
+******************************************************************************** 
+RESOURCES AND STATISTICS
+   gnome-system-monitor		--gui version of top
+   vmstat			--shows virtual memory stats
+   iostat			--shows I/O stats
+				  not installed by default
+   free				--shows system memory usage; amount of free ram
+******************************************************************************** 
+HARD DISK PARTITIONING, FORMATING AND MOUNTING
+   fdisk 			--partitioning utility
+      fdisk -l   		--lists partitions
+   sfdisk			--partitioning utility
+   parted			--partition manipulation utility (resize)
+
+Steps for installing a new drive:
+   use fdisk to create new partition
+	w -writes changes to disk and exits fdisk
+   partprobe			--reinitialize partition to kernal to makes 
+				  settings take effect without rebooting
+   mke2fs 			--defines file system and formats drive
+      mke2fs -j /dev/hda8	--j stands for journaling which is the ext3 file 
+				  system
+   mkdir /data			--make a directory to mount the new drive and 
+				  partition to
+   mount /dev/hda8 /data	--mount the drive/partition to the new folder
+
+mke2fs -b			--block size 1024 2048 4096 ...
+      -c			--bad block check
+      -i			--bytes per inode (inode is a signle file or how
+				  much a single file takes up on the file system
+				  1024 2048 4096 ...)
+      -L			--Volume Label
+      -m #			--Percent of file system reserved for root.  
+				  Default is 5%
+
+ext3 has 3 journaling modes
+	ordered			--default setting; journals only metadata
+	journaled		--journals data as well as metadata
+	writeback		--journal updates are not atomic, but gives 
+				  better performance at possible expense of data
+				  integrity
+********************************************************************************
+MOUNT
+  mount -o loop -t iso9660 <isofilename> <mountpoint> --mount an ISO image that
+                                                        is saved to a directory
+  mount -o remount,ro /data			      --remounts file system as 
+							read-only
+  fuser -m /data				      --shows what process is 
+							using the file system in
+							case the remount doesn't
+							work to to being in use
+  mount -o noexec /dev/hda7 /home		      --remounts file system 
+							without the ability to 
+							execute files
+  mount -o noatime /dev/hda2 /data		      --remounts file system to
+							reduce the amount of 
+							disk access to save 
+							battery life on laptops
+  mount --bind /data /no-data			      --mounts directory already
+							mounted on the file 
+							system on another mount
+							point.  (good for 
+							chroot)
+  mount -a					      --reloads the fstab file 
+							without reboot
+********************************************************************************
+E2LABEL
+   e2label /dev/had /data	--labels /dev/hda as /data.  Good for fstab file
+********************************************************************************
+FORMAT FLOPPY DISK A: 
+  fdformat /dev/fd0H1440  --low level format --rarely needed
+  mkfs -t ext2 /dev/fd0   --normal
+  mformat a:              --normal
+  /sbin/mke2fs /dev/fd0 
+******************************************************************************** 
+VIEWING REMOTE SHARES
+   showmount		  --shows what filesystems are shared on a remote system
+     showmount -e <remote server>	--shows NFS shares of remote server
+   
+   smbclient		  --shows what filesystems are shared on a remote system
+     smbclient -L <remote server> -N -U <windows user name>   --shows SMB shares 
+								of remote server
+********************************************************************************
+ATTACHING TO REMOTE SHARES
+   for NFS:
+      mount -t nfs <remote server>:/shared/dir /mnt/folder
+   for SMB:
+      mount -t smbfs //<remote server>/share /mnt/folder -o username=jimmy, pa
+	 For SMB mount passes the request to /usr/sbin/smbmount
+   smbmount options:
+	 username=<arg>, password=<arg>, credentials=/root/cred, ip=<arg>, 
+		  uid=<arg>, and gid=<arg>
+	uid --makes the specified linux users own the directory mounted
+	gid --makes the specified linux group own the directory mounted
+	credentials --password file so that the password isn't displayed in 
+		      clear text in mount command
+********************************************************************************
+NFS
+   Exports or shares are listed in /etc/exports	
+   exportfs -r 		--reloads the /etc/exports file
+   nfs-utils 		--RPM package
+   Daemons		--nfsd, lockd, rpciod, rpc.mountd, prc.rquotad,
+			  rpc.statd		
+   Ports:		--2049(nfsd) tcp and udp, 111tcp and udp(portmap)
+			  use tcp and udp for mountd and statd as well
+   portmap		--Mandatory service
+   mountd and statd can be forced to use a static port
+	Set the MOUNTD_PORT and STATD_PORT variables in 
+	/etc/sysconfig/nfs
+	MOUNTD_PORT="4002"
+	STATD_PORT="4003"
+  exportfs -v		--used to view the exports and thier options on the
+			  local machine
+  showmount -e		--used to view the exports from remote machines
+  rpcinfo -p hostname	--used to probe the portmapper on hostname and print
+			  a list of all registerd RPC services
+  rsize=8192 wsize=8192	--will speed up your file transfers
+  hard			--will block a process that tires to access an
+			  unreachable share
+  soft			--process return with an error on a failed I/O attempt
+  intr			--allows NFS request to be interrupted or killed if
+			  the server is unreachable
+  nolock		--disables the file locking (lockd) and allows 
+			  interoperation with older NFS Servers
+********************************************************************************
+FSTAB
+device		mount_point   FS_type	options		dump_freq  fsck_order
+LABEL=/		/	      ext3	defaults	1	   1
+server1:/var/j	/mnt/server1  nfs	defaults	0	   0
+//server1/homes /mnt/samba    smbfs	username=jim,workgroup=group,uid=jim 0 0
+
+   device	--special device file name
+   mount_point	--the path used to access the file system
+   FS_type	--the file system type
+   options	--a comma-seperated list of options
+   dump_freq	--Level 0 dump frequency: 1=daily, 2=every other day, etc.; 
+		  0=never dump
+   fsch_order	--0=ignore, 1=first (the root should have this value), 
+		  2-9=second, third, etc
+
+   mount -a	--reloads the fstab file without a reboot
+********************************************************************************
+AUTO-MOUNTER
+   /etc/auto.master
+   /etc/auto.misc		--auto mount network shares, cd, floppy and such
+   /etc/auto.net		--show network shares
+   service autofs restart	--restart the automount service
+********************************************************************************
+FILESYSETM ATTRIBUTES
+   lsattr			--display file attributes
+   chattr			--changes file attributes
+
+   chattr +|-attribute
+             A		--when file is modified, its atime record is not modifed
+	     a		--the file may only be opened in append mod.  The file 
+			  may not be deleted.  Only the su can set or clear this
+			  attribute
+			  ls >> file.txt will work.  ls > file.txt will not
+	     d		--the file is skipped for backup by dump
+	     i		--the file is immutable.  It cannot be deleted or 
+			  rename, nor linked to any other name.  No data can be
+			  written to the file.  Only su can change the immutable
+			  attribute
+	     j		--the file's data as well as teh meta-data is written to
+			  the ext3 journal, even if the ext3 filesystem is 
+			  mounted with the data=ordered or data=writeback option
+	     S		--when the file is modified, the changes are written 
+			  synchronously to the filesystem; this is the 
+			  equivalent to the mount option sync
+
+    chattr +a jimmy.txt
+********************************************************************************
+VIRTUAL MEMORY
+   mkswap 		--create signature needed on the partiton to make a swap
+	mkswap /dev/hda6
+
+   fstab entry:
+	/dev/hda6	swap	swap	defaults	0 0
+	
+   activate the swap partition (reload fstab) using:
+	swapon -a	-activate the swap partition
+	   swapon /dev/hda6
+	swapon -s 	-check the swap partitions status
+	
+   create a swap file on an existing none swap partition:
+	dd if=/dev/zero of=swap bs=1M count=100
+	mkswap /root/swap
+	swapon -a /root/swap
+		creates a swap file 100MB in size with 1MB blocks, 100 blocks.
+********************************************************************************
+FILESYSTEM MAINTENANCE
+   tune2fs		--used to modify many filesystem attributes, convert 
+			  from ext2 to ext3
+   dumpe2fs		--provides a dump of filesystem info to standard out
+   debugfs		--interactive utility to examine and debug and ext2 
+			  filesystem
+   ext2online		--can be used to grow the size of and ext2 or ext3 
+			  filesystem
+********************************************************************************
+ADDING A DRIVE
+   fdisk /dev/hdb
+	   partprobe                    -reread partiton table if required
+	   fdisk -l                     -verify
+   	   cat /proc/partitions         -verify
+   mke2fs -j /dev/hdb1
+   e2label /dev/hdb1 /data 		-optionaly label 
+   mkdir data				-create mount point
+   add entries to /etc/fstab file
+	LABEL=data  /data  ext3   defaults 1 2 
+********************************************************************************
+MII-TOOL
+   mii-tool -v		--shows link speed, duplex and link up or down
+   mii-tool -v --force 100baseTx-FD eth1  --forces speeds and duplex
+********************************************************************************
+IFUP / IFDOWN
+   ifup eth0	-brings interface up and renews DHCP address
+   ifdown eth0  -brings interface down
+********************************************************************************
+DHCP
+   Ports: 67 (bootps), 68 (bootpc)
+   Configuration:	/etc/dhcpd.conf, /var/lib/dhcp/dhcpd.leases
+	dhcpd.conf doesn't exist.  A sample file is provided at:
+		/usr/share/doc/dhcp-version/dhcpd.conf.sample
+	DDNS must be allowed in SELinux 
+		"Allow named to overwrite master zone files"
+
+	/etc/sysconfig/dhcpd	--DHCPDARGS=eth0  	-defines intface to 
+							 give out IPs
+********************************************************************************
+IFCFG-XXX
+   located in /etc/sysconfig/network-scripts/
+   ifcfg-eth0  		--configuration information and settings
+	USERCTL=yes	--allows user to but NIC in promiscuous mode
+********************************************************************************
+NETWORK CONFIGURATION UTILITIES
+   netconfig				--text based network setup
+					  use ifup/ifdown to activate changes
+					  used by kudzu when new network card 
+					  found at boot
+   system-config-network		--gnome based config tool
+********************************************************************************
+BINDING MULTIPLE IP ADDRESSES
+   add 1 additional ip address:
+	create ifcfg-eth0:0 file in /etc/sysconfig/network-scripts
+
+   add a range of ipaddress
+   	create ifcfg-eth0-range0 file in /etc/sysconfig/network-scripts/
+		IPADDR_START=192.168.2.1
+		IPADDR_END=192.168.2.255
+		CLONENUM-START=0
+********************************************************************************
+GLOBAL NETWOK PARAMATERS
+  /etc/sysconfig/network/
+	NETWORKING=yes|no
+	HOSTNAME=<fqdm by default>
+	GATEWAY=<gateway ip>
+	NISDOMAIN=<nis domain name>
+********************************************************************************
+DEFAULT ROUTE
+   can be configured in:
+	/etc/sysconfig/network
+		GATEWAY=xxx.xxx.xxx.xxx
+	/etc/sysconfig/network-scripts/ifcfg-XXX
+		ifcfg-xxx default overrides the Global default routes
+		GATEWAY=xxx.xxx.xxx.xxx
+********************************************************************************
+STATIC ROUTES
+   Static routes defined per interface	
+	/etc/sysconfig/network-scripts/route-eth0
+	/etc/sysconfig/networking/devices/eth0.route
+
+   Display with:
+	route -n
+	netstat -rn
+********************************************************************************
+NAME RESOLUTION
+   hostname			--used to set or get the current computer name
+				  located in /etc/sysconfig/network
+   /etc/hosts			--looks here before looking in DNS
+				  search order located /etc/host.conf
+					order hosts,bind
+   /etc/resolv.conf		--defines which name servers to use
+				  servers are checked in order listed in file
+********************************************************************************
+DNS UTILITIES
+   ping				--ping by machine name
+   host				--gather host/domain info both forward and 
+				  reverse host www.redhat.com -returns ip 
+				  address host -a www.redhat.com -zone transfer
+   dig				--send queries to name server directly
+				  dig @ns1.redhat.com mx redhat.com
+   nslookup
+********************************************************************************
+DNS
+  Ports: 53 -domain and 953 -rndc
+
+  Configs: (under /var/named/chroot/)
+	/etc/named.conf, v/ar/named/*, /etc/rndc.*
+
+  Related RPMs: caching-nameserver, openssl
+
+  bind-chroot
+	Config file: /etc/sysconfig/named
+	define chroot directory: ROOTDIR=/var/named/chroot
+
+  NAMED.CONF example:
+  # Global Options for named.conf
+  # acl "slaveservers" { 192.1.1.1 }; --example of individual
+	acl "mynetwork" { 192.168.1.100/24;
+			  192.168.1.12; };
+	options {
+	  directory 	"/var/named";
+	  forwarders	{ 203.50.0.137; };
+	  allow-query	{ mynetwork; };
+	  allow-transfer { mynetwork; };  # "none" will work here too
+	};
+  # rndc command is used to verify the key
+	include "/etc/rndc.key";
+	controls {
+	  inet 127.0.0.1 allow { localhost; } keys { rndckey; };
+	};
+  # Master and Slave zones.  File name should indicate the zone
+	zone "redhat.com" {
+	  type		master;
+	  file		"redhat.come.zone";
+	};
+	zone "kernel.org" {
+	  type		slave;
+	  masters	{ 192.168.192.168; };
+	  file		"slaves/kernerl.org.zone";
+	};
+  # Reverse Lookup Zones
+	zone "10.100.172.in-addr.arpa" {
+	  type		slave;
+	  masters	{ 172.100.10.1; };
+	  file		"slaves/10.100.172.zone";
+	};
+  # Special Zones - loopback zones: 0.0.127.in-addr.arpa and localhost
+	zone "." {
+	  type		hint;
+	  file		"named.ca";
+	};
+
+  Zone files - In zone files FQDN name must end with a "."
+  Resource Records (RR)
+	domain  --specify domain or use current
+	ttl	--Time to live - how long record will be cached
+	class	--record classification - usually IN
+	type	--SOA, MX, A, etc
+	rdata	--specific data for record
+
+  Example zone file:
+  #SOA	# root.redhat.com. is the e-mail address
+	# serial number is used to notify slave servers of change.  Must be
+	#   manually changed everytime a change is made
+	# 5M - slave servers check in every 5 minutes
+	# 60 -retry every 60 seconds if a failure
+	# 14D - expire records every 14 days
+	# 12H - chache negative hours for 12H
+	# values no longer need to be in seconds
+
+	$TTL 86400
+	@ IN SOA ns1.redhat.com. root.redhat.com.  (
+	  2006070401 ; serial number
+	  5M	     ; refresh
+	  60	     ; retry
+	  14D	     ; expire
+	  12H	     ; min TTL for neg answers
+
+  #NS	# Name Servers - records point to any slave servers that should be 
+			 consulted by the clients name server if the master
+			 should fail
+
+	@		IN NS ns1.redhat.com.
+	redhat.com.	IN NS ns2.redhat.com.
+
+  #A	# Address record
+
+	mail			IN A 192.168.100.3
+	login.redhat.com.	IN A 192.168.100.4
+
+  # Round-robin load sharing
+  # DNS traffic will increase as a TTL of 0 is never cached
+        www 0 IN A 192.168.34.4
+        www 0 IN A 192.168.34.5
+        www 0 IN A 192.168.34.6
+
+
+  #CNAME	# aliases
+
+	pop		IN CNAME mail
+	ssh		IN CNAME login.redhat.com.
+
+  #MX	# mail servers for a domain
+	# 
+	@		IN MX  5 mail.redhat.com.
+	redhat.com.	IN MX 10 ns2.redhat.com.
+	redhat.com.	IN MX 10 lava.redhat.com.
+
+################ domain4.example.com zone file example########################
+$TTL 86400
+@       IN SOA ns.domain4.example.com. root.station4.example.com.  (
+        2006041800 ; serial number
+        2H         ; refresh
+        5M         ; retry
+        7D         ; expire
+        1M         ; min TTL for neg answers
+)
+
+@                               IN NS           ns.domain4.example.com.
+
+mail.domain4.example.com.       IN CNAME        station4.domain4.example.com.
+
+ns.domain4.example.com.         IN A            192.168.0.4
+station4.domain4.example.com.   IN A            192.168.0.4
+
+@                               IN MX 10        mail.domain4.example.com.
+
+######## domain4.example.com zone file example###############################
+
+######## 4.0.168.192.in-addr.arpa zone file reverse look up example##########
+$TTL 86400
+4.0.168.192.in-addr.arpa. IN SOA ns.domain4.example.com.
+root.station4.example.com.  (
+        2006041800 ; serial number
+        2H         ; refresh
+        5M         ; retry
+        7D         ; expire
+        1M         ; min TTL for neg answers
+)
+                                NS      ns.domain4.example.com.
+4.0.168.192.in-addr.arpa.       PTR     station4.domain4.example.com.
+
+######### 4.0.168.192.in-addr.arpa zone file reverse look up example##########
+
+  BIND SYNTAX UTILITIES:
+	named-checkconf  --inspects /var/named/chroot/etc/named.conf for error
+	named-checkzone  --inspects a specific zone configuration example:
+		named-checkzone /var/named/chroot/var/named/redhat.com.zone
+	host www.redhat.com	--host command gathers host/name server info
+	host -a ns1.redhat.com	
+	host -al example.com
+	dig		 -- send queries to name server directly
+		dig @ns1.redhat.com www.redhat.com  --selects other dns server
+	nslookup
+
+  CACHING-ONLY Name Server
+	caching-nameserver RPM package
+		provides a working named.conf file
+		Also provides internet root server 'hints' via named.ca
+
+********************************************************************************
+MTR
+   mtr				--similar to tracert
+********************************************************************************
+RPM
+
+the RPM database is maintained in /var/lib/rpm
+
+   rpm -i			--install
+   rpm -U			--upgrade
+   rpm -F			--freshen
+   rpm -e			--erase
+ 
+ Installed Package Options - querie database
+   rpm -qa		  --lists installed packages
+   rpm -qf filename	  --shows owning package i.e. rpm -qf /sbin/ifconfig
+   rpm -qi package_name	  --general info
+   rpm -ql package_name	  --lists files in package and location
+    
+ Packages Not Installed Options
+   rpm -qip package_file.i386.rpm	--Gives info and descriptionon the rpm
+   rpm -qlp package_file.i686.rpm	--Give path to where files will be 
+					  installed
+
+ RPM Verification
+   rpm -V package_name		--verifies the package against the RPM database
+				  shows you any changes to files in the package
+				  rpm -V initscripts  --shows inittab and 
+							rc.local file changes
+   rpm -Vp zip-2.3-8.i386.rpm	--verifies the installed zip package against the
+				  zip package file
+   rpm -Va			--same as -V but it verifies ALL installed RPMS
+				  against the RPM database
+
+   rpm -Fhv ftp://updates.redhat.com/current/en/os/i386/*.rpm
+	updates all rpm files that are newer version that what I have installed
+	http addresses do not support wildcards *
+
+   rpm --test			--test entire process for dependencies and such
+
+   rpm -ivh --force		--force an installation or upgrade
+
+   rpm --import RPM-GPG-KEY	--imports key from RedHat CD
+   rpm --checksig package_file  --shows if package is ok based on the GPG Key
+
+   rpm --redhatprovides filename --helps solve dependancies
+
+   rpm --aid			--Installs dependancies
+   EXAMPLE
+   rpm -ivh xsane-0.92-13.i386.rpm
+     warning: xsane-0.92-13.i386.rpm: V3 DSA signature: NOKEY, key ID db42a60e
+     error: Failed dependencies:
+        libieee1284.so.3 is needed by xsane-0.92-13.i386
+        libsane.so.1 is needed by xsane-0.92-13.i386
+      Suggested resolutions:
+        libieee1284-0.2.8-4.i386.rpm
+        sane-backends-1.0.14-6.i386.rpm
+   rpm -ivh xsane-0.92-13.i386.rpm --aid
+     warning: xsane-0.92-13.i386.rpm: V3 DSA signature: NOKEY, key ID db42a60e
+      Preparing...           ########################################### [100%]
+         1:libieee1284       ########################################### [ 33%]
+         2:sane-backends     ########################################### [ 67%]
+         3:xsane             ########################################### [100%]
+
+   yum and apt  http://freshrpms.net  --help solve dependencies
+		http://freshrpms.net/apt
+		synaptic package manager --gui for apt
+		http://dag.wieers.com/home-made/apt/
+
+  Recovery Mode
+   rpm -ivh --force --root /mnt/sysimage /mnt/source/RedHat/RPMS/util-linux*
+	this command will force the installation to run.  --root tells rpm
+	to do a chroot mnt/sysimage to trick the system into thinking that
+	the installation is on a normal system and not in recovery mode 
+
+   rpm -ivh kernel-version.arch.rpm
+	Boot to the new kernel to test
+	revert to old kernel if a problem arises
+	rpm -e kernel-oldversion if no problems
+
+   **** Do NOT upgrade the kernel using rpm -U or -F
+	rpm -F or -U determines if a version already exists 
+	on the system, and if so, whether the version to be 
+	installed is newer.  If it is, it removes the old 
+	version's files, excluding those tagged as configuration 
+	files when the RPM was built.  It then installs the new
+	files, runs any installation scripts that are included
+	in the RPM, then updates the installed database
+********************************************************************************
+ADDING / DELETING / MODIFYING ACCOUNTS
+   useradd <user_name> 				--adds a user account
+   passwd george				--sets password for george
+   
+   newusers					--add users in batch
+
+   usermod [option] <username>			--used to change fields in 
+						  user's /etc/passwd entry
+	options:
+		-c <comment>		--comment field
+		-d <home dir>		--change home directory
+		-e <expire date>	--set expire date
+		-g <group>		--Change the inital login group
+		-G <group, [...]>	--Comma seperated list of
+					  supplementary groups for the
+					  user
+		-l <login name>		--Change the login name
+		-s <shell>		--change the shell
+		-u <uid>		--Change the login ID
+		-p <password>		--change the password
+		-L 			--lock the password; renders account
+					  unusable
+		-U			--unlock the password
+
+   userdel					--delete user account
+	userdel -r <username>			--deletes user account and
+						  home directory
+********************************************************************************
+GROUP ADMINISTRATION
+   groupadd <group_name>			--add a new group
+   	groupadd -r <group_name>		  In order to avoid using 
+						  a GID with the range 
+						  typically assigned to 
+						  users and their private
+						  groups, use -r
+   groupmod					--add user to group
+   groupdel <group_name>			--delete a group
+   chgrp <file or directory>			--change group on file or dir
+********************************************************************************
+PASSWORD AGING POLICIES
+   Modify default expiration settings in:
+      /etc/login.defs
+
+   chage			--used to set up password again
+   chage [options] username
+	 -m	--minimum days between password changes
+	 -M	--maximum days between password changes
+	 -I	--number of days inactive since password expired before
+		  locking out
+	 -W	--number of days before required change to start warnings
+********************************************************************************
+AUTHENTICATION CONFIGURATION
+   system-config-authentication
+
+   LDAP
+	4 configuration files used:
+	   /etc/ldap.conf
+	   /etc/openldap/ldap.conf
+	   /etc/nsswitch.conf
+	   /etc/pam.d/system-auth
+   NIS		--Network Information Services
+		One Master server, Zer0-Many slaves
+		Packages: ypserv
+		Daemons:  ypserv, rpc.yppasswdd, rpc.ypxfrd
+		Service:  ypserv, yppasswdd, ypxfrd
+		Ports:	Dynamically assigned by portmap (can be statically
+			assigned) --need both tcp and udp in firewall
+		Configuration: /var/yp/, /etc/ypserv.conf, 
+				(/etc/yp.conf for ypbind -client util)
+		Related: protmap, ypbind, yp-tools, 
+			/usr/lib/yp/ypinit	--used to config master, etc
+
+		Firewall settings:
+			/etc/sysconfig/network can contain variables to set 
+			static ports for ypserv and ypxfrd:
+				YPSERV_ARGS="-p <port number>"
+				YPXFRD_ARGS="-p <port number>"
+			/etc/sysconfig/yppasswdd can contain the
+			YPPASSWDD_ARGS variable to set a static port for
+			yppasswdd:
+				YPPASSWDD_ARGS="--port <port number>"
+			Will need both tcp and udp in firewall but only list
+				tcp port number in above files
+
+		NIS MASTER Server CONFIG:
+		Set NIS Domain Name:
+			Alway keep extra root session open when configuring
+                               You can accidently lock out the root account
+                               if you don't.
+
+			run: nisdomainname <domain name>
+			in /etc/sysconfig/network insert the line:
+				NISDOMAIN=<domain name>
+				To set this the server must be rebooted or
+				you can run "domainname <domain name>"
+			in /var/yp/securenets, specify the networks that may
+				use your server:
+				255.255.255.255		127.0.0.1
+				255.255.255.0		192.168.0.0
+			verify that the portmap service is running:
+				service portmap status
+			start ypserv: service ypserv start
+
+			To share only user, group and host name info edit:
+				/var/yp/Makefile
+				Change the "all:" line to:
+				all: passwd group hosts netid
+					Notice the \ at the end of the line
+					if you comment out the existing line
+			
+			Build the NIS maps from local files by using the 
+			Makefile:
+				/usr/lib/yp/ypinit -m
+			Start yppasswdd to allow password updates:
+				service start yppasswdd
+				chkconfig yppasswdd on
+			
+			To get new users sent to all servers:
+			Add a new user: i.e. useradd bob
+			Run "make -C /var/yp
+			if local account already exists on server it will be
+			used first before NIS
+
+		NIS Slave Server Config:
+			Include the names of all slave server in the master 
+			servers /var/yp/ypservers file
+			
+			On the slave, transfer the inital NIS maps from the 
+			master server:
+				/usr/lib/yp/ypinit -s master
+
+			To rebuild and push NIS maps rom master to slave, on
+			the master run:
+				make -C /var/yp
+
+			Should always make the NIS Slave server a client too
+
+		NIS Client Config
+			Must install ypbind, yp-tools, authconfig-gtk
+				and portmap RPMs
+			system-config-authentication
+				Specify NIS server and NIS domain name
+				Keep default "Authentication" 
+				
+			Files that get modified from the above:
+				/etc/sysconfig/network
+				/etc/nsswitch.conf
+				/etc/pam.d/system-auth
+				/etc/yp.conf
+
+			ypwhich		--should return name of NIS server
+			ypcat passwd	--the /etc/passwd lines should display
+			getent passwd	--local and NIS users
+			yppasswd	--allows the client to change the user
+					  password stored on the Master Server
+
+		Home Directory with NIS:
+		mkhomedir.so	--uses pam to create a home dir on each server
+
+		auto.master	--mapping home dir to central point
+		auto.home	--mappoing home dir to central point
+********************************************************************************
+FILE OWNERSHIP
+   chown
+	SGID directories may change ownership
+
+   chown jimmy -R /home/jimmy		--changes owner to Jimmy recursively
+					  through the subdirectories
+
+   chown jimmy:webteam /tmp/file.txt	--change owner to Jimmy and group to
+					  webteam simultaneously
+					  You may use a . in place of the :
+********************************************************************************
+SUID / SGID EXECUTABLES
+
+suid	--command run with permissions of the owner of the command, not the 
+	  executor of the command.  i.e. /usr/bin/passwd
+
+sgid	--command runs with group affiliation of the group of the command.  
+	  i.e. apache
+	  files created in directories with the sgid bit set have group
+	  affiliations of the group of the directory
+
+sticky bit --files in directories with the sitcky bit set can only be removed
+	     by the owner and root, regardless of the write permissions of the
+	     directory
+
+  chmod 4775 user
+  chmod 2775 group
+  chmod 1775 
+   SUID = 4 -for user
+   SGID = 2 -for group
+   sticky bit = 1
+
+  SUID and SGID must be executable files
+  SGID and sticky bit can be directories
+
+  -rwsr-xr-x --makes files execuate as the owner of the file.  i.e. sudo
+     ^
+  -rwxr-sr-x --makes file execute as the group of the file.  i.e slocate
+        ^
+
+  chmod 4755 file  --the 4 in the front defines the SUID
+
+  sticky bit example: /tmp
+	drwxrwxrwt   12 root  root  4096 Nov 2 15:44 tmp
+                 ^
+  to set the sticky bit chmod o+t /home/share
+
+  chmod g+s /depts/*  --sets it so that files created within the /depts 
+     directory will be owned by the group that owns the directory
+********************************************************************************
+DEFAULT FILE PERMISSIONS
+
+   umask		--used to withhold permissions on file creation
+
+   non-system users umask is 002
+	files will have 664
+	directories will have 775
+   system users umask is 022
+
+   to make perminant global change modify entry in /etc/bashrc
+   or add it to the .bashrc in user home directory
+********************************************************************************
+ACCESS CONTROL LISTS		
+   only available in ext3
+
+   allows more than one group to be assigned to a file or directory
+
+   mount -o remount,acl /home  	--must be performed on the filesystem
+
+   to make perminant add ,acl to "defaults" in the fstab file
+
+   getfacl file|directory		--shows you acl info
+
+   setfacl -m u:jimmy:rwx file.txt
+   setfacl -m g:webusers:rw /var/www
+   setfacl -m d:u:frodo:rw file.txt
+   setfacl -x u:jimmy
+	u:  -user
+	g:  -group
+        d:  -default - set default user to listed user
+	-m  -modify
+	-x  -xpunge, remove user
+
+  if ls -l returns -rwxrwx---+ it means an ACL is applied to the file or dir
+                             ^
+********************************************************************************
+SE LINUX
+   SELinux - Security Enhanced Linux
+
+   All process or objects (file, directory, network socket) have a SELinux
+   three contexts:  identity:role:domain/type
+   contexts define type of SELinux policy to enforce (sort of)
+
+   system-config-securitylevel
+   system-config-securitylevel-tui	--text mode
+
+   logs to /var/log/messages
+
+   setenforce 0	--sets SELinux to permissive (logging only)
+   setenforce 1	--sets SELinux to enforced (blocking and logging)
+
+   setsebool	--lets you configure the policies
+		  stored in /etc/selinux/targeted/booleans
+   getsebool	--shows what polices are active and inactive
+   sestatus	--shows what policies are active and inactive
+
+   /etc/sysconfig/selinux  --can be edited to make enforcement changes
+                             persistant across reboots
+
+   /selinux virutal file system stored in ram
+
+   ps -Z  	--shows process contexts
+   ps -aZ	--shows all processes contexts
+   ls -Z	--shows file contexts
+
+   Change file contexts:  chcon
+   chcon -t httpd_sys_content_t index.html   	-t is type
+   chcon --reference=/var/www/html index.html	--reference uses context in 
+						  directory listed
+
+  user identity:role:type
+
+  Type enforcement - Only uses types
+
+Controlling SELinux
+  system-config-securitylevel
+  getenforce		--shows status 
+  setenforce 0		--sets to permissive mode
+  setenforce 1		--set to enforcing mode
+
+  getsebool -a 		--shows active and inactive status
+  setsebool httpd_enable_homedirs 0  --sets httpd_enable... to inactive
+
+  /etc/sysconfig/selinux
+
+  kernel line when booting 
+    kernel .... enforcing=0
+      options are enforcing 0 or 1
+          and selinux=0 or 1
+
+  /selinux 		-- virutual file system
+
+SELinux Contexts
+  ps -auxZ
+  just add a capital Z to any command
+
+  COPY and MOVE of files 
+    cp command to new directory the file inherites the selinux context
+    mv command retains existing context
+
+  chcon -t httpd_sys_content_t index.html     --requires that you know the
+                                                name of the context
+  chcon --reference=/var/www/html index.html  --references another file
+                                                and uses the same context
+  restorecon -R /var/www/html                 --restores the context of the 
+                                                entire directory.  Requires
+                                                directories to be in their 
+                                                default locations
+
+  Everything is logged to /var/log/messages
+********************************************************************************
+Strace 			 --gathers information from applications
+  strace date		 --gathers info about the date command
+  strace -p PID		 --when connecting to a running process
+********************************************************************************
+CUPS
+
+  Web Administraton on port 631
+	http://localhost:631
+
+  system-config-printer
+  system-config-printer-tui  --text based setup
+
+  lpadmin	--command line tool for printer administration/configuration
+
+  lpq		--shows print queue from command line
+  lpstat	--
+
+
+  CUPS Config files:
+	/etc/cups/cupsd.conf
+	/etc/cups/printers.conf
+
+  CUPS runs as the user: lp and group: sys
+	can add other users to the sys group than the user can administer 
+	printers
+
+  http://www.turboprint.info/		--printer driver solution for linux
+
+********************************************************************************
+SYSLOG
+   /etc/rc.d/init.d controls both the syslogd and the klogd daemons
+
+   /etc/sysconfig/syslog	--sets switches used when starting syslogd and
+				  klogd
+				  add SYSLOGD_OPTIONS="-r -m 0" to accept 
+				  remote messages from other machines
+
+   /etc/syslog.conf		--configures system logging
+				  append the following to send messages to
+				  a machine named machine_name
+				  user.*   @machine_name
+
+   logger -i -t Jimmy "This is a test"   --sends test message to remote syslog
+********************************************************************************
+TAPE DRIVES
+   tape drives show up as either /dev/st0 or /devnst0
+	devices with 'n' do not automaticlly rewind
+
+   use the mt utility to control tape drive
+	mt -f /dev/st0 rewind		--rewind
+	mt -f /dev/st0 fsf 50		--position
+	mt -f /dev/st0 offline		--eject
+	mt -f /dev/st0 erase		--erase
+	mt -f /dev/st0 rewoff		--rewind than eject
+********************************************************************************
+USING DUMP / RESTORE TO TAPE
+   not used much anymore since file system must be unmounted
+
+   dump 		--only works with ext2/3 file systems.  Should only be 
+			  used on unmounted filesystems or filesystems that
+			  are read-only
+			  dump -0u -f /dev/nst0 /dev/hda2
+			  dump -0uf joe@svr:/dev/nst0 /home  --dumps local
+							       home dir to 
+							       server tape
+   restore		--used to restore data backed up with dump
+			  restore -rf /dev/nst0
+********************************************************************************
+CPIO
+   smililar to tar
+   does not recurse directories itself
+   piping output from find to cpio is common
+
+   find /data | cpio -ocv > /dev/nst0
+   cpio -icdvm < /dev/nst0
+   cpio -tvf < mybackup.cpio
+********************************************************************************
+XORG SERVER CONFIGURATION
+
+   system-config-display
+	best to run in runlevel 3
+   system-config-display --noui			--
+   system-config-display --reconfig		--will drop current config and
+						  allow you to reset up
+
+   stored in /etc/X11/xorg.conf
+
+ Modularity
+
+   xdpyinfo		--view server capabilities
+   
+   display managers     --gdm, kdm and xdm
+   windows managers	--metacity, kwin and twm
+
+ Starting XOrg from runlevel 3
+   2 methods to establish the environment:
+   /usr/X11R6/bin/xinit
+   /usr/X11R6/bin/startx
+	environment configuration:
+		/etc/X11/xinit/xinitrc and ~/.xinitrc
+		/etc/X11/xinit/Xclients and ~/.Xclients
+		/etc/sysconfig/desktop
+
+ Starting XOrg in runlevel 5
+   1 method to establish the environment:
+   /sbin/init
+	environment configuration:
+		/etc/inittab
+		/etc/X11/prefdm
+		/etc/sysconfig/desktop
+		/etc/X11/xdm/Xsession
+		/etc/X11/xinit/xinitrc.d/*
+		~/.xsession or ~/.Xclients
+
+ Configuration Utilities
+   Server
+	system-config-display
+	mouseconfig
+   Fonts and Typefaces
+	xfs
+	chkfontpath
+	fc-cache
+   Display and Window Managers
+	switchdesk
+	/etc/sysconfig/desktop
+	gconftool-2
+
+ REMOTE X SESSIONS
+   xhost	--command for remote sessions
+   sshd may automaticlly install xauth keys on remote machine
+	ssh -X <machine name>	
+********************************************************************************
+SOFTWARE RAID CONFIGURATION
+
+   Create and define RAID device using mdadm
+	mdadm -C /dev/md0 -l 0 -n 2 /dev/hda5 /dev/hdb7 
+		-C 		--create
+		/dev/md0	--defines name of device
+		-l 0		--defines RAID level 0 (stiping)
+		-n 2		--defines number of disks in RAID set
+		/dev/hdaX	--defines partitions to use in RAID set
+		-x 1		--defines 1 hot spare drive -if you don't use
+				  -x with the -C Create command you must use -a
+				  to Add the hotspare - when building the
+				  array.  Otherwise just add the drive with -a
+				  and it will default to spare.
+   Watch the array being built by:
+	watch cat /proc/mdstat
+
+   Format the RAID device with a file system
+	mke2fs -j /dev/md0
+	mke2fs -j -b 4096 -R stride=16 /dev/md0
+		-b		--block size
+		-R stride=16	--stripe size (4x16=64K chunks)
+
+   Mount drive
+	mount /dev/md0 /<mount point>
+
+   mdadm allows you to check the status of your RAID devices
+	mdadm --detail /dev/md0
+	cat /proc/mdstat
+	syslog messages
+
+   Software RAID Recovery
+   Simulating disk failures
+	mdadm /dev/md0 -f /dev/sda1
+
+   Recovering from a software RAID disk failure
+	replace the failed drive
+	remove the drive from the raid set:
+		mdadm /dev/md0 -r /dev/hda11
+			-r --remove
+	reconstruct partitions on the replacement drive:
+		mdamd /dev/md0 -a /dev/sda1
+			-a --add
+********************************************************************************
+CONVERTING LVM1 to LVM2
+   RHEL4 uses LVM2 fomat for metadata.  Older versions of RHEL use LVM1
+	LVM2 is more compact and takes up less disk space
+	LVM2 supports transactional changes and replication
+	
+   Convert by using the vgconvert command:   
+	vgconvert -M2 vg0	
+		-M2		--use LVM2
+		vg0		--volume group 0
+********************************************************************************
+Creating Logical Volumes using pvcreate command
+	Create physical volumes
+		pvcreate /dev/hda3 /dev/hda4
+	Assign physical volumes to volume groups
+		vgcreate vg0 /dev/hda3 /dev/hda4
+	Create logical volumes from volume groups
+		lvcreate -L 256M -n data vg0
+			-L 2G		--size of logical volume 2Gigabytes
+			-n data		--names the logical volume data
+			vg0		--volume group 0
+		mke2fs -j /dev/vg0/data
+
+   Resizing Logical Volumes
+	lvextend -L +500M /dev/vg0/data
+	ext2online /dev/vg0/data
+	
+   Physical volumes may be added to or removed
+	vgextend vg0 /dev/sdb1		--adds new drive to volume group
+		Now use lvextend to add to logical volume
+	pvmove /dev/hda3		--moves data off of /dev/hda3, it
+					  picks the location, you can't
+	vgreduce vg0 /dev/hda3		--removes partition from volume group
+
+   Usful commands
+	pvdisplay	--physical volume display
+	vgdisplay	--volume group display
+	lvdisplay	--logical volume display
+
+   system-config-lvm 	--gui version for this
+********************************************************************************
+LINUX QUOTA SYSTEM
+   Implemented within kernel
+   Enabled on a per-filesystem basis
+   Individual policies for groups or users
+	limit by number of block or inodes
+	implement both soft and hard limits
+		soft  -warm when limit is reached
+		hard  -none flexable
+
+   Initialization
+	Partition mount options in fstab file:
+		usrquota	--user quota -add to default,usrquota in fstab
+		grpquota   	--group quota
+
+	mount -o remount /home  --reloads the fstab file with new setting from
+				  above
+
+	quotacheck -c /home	--initialize the quota database for /home
+
+	quotaon /home 		--turns on quotas for filesystem /home
+	quotaoff /home		--turns off quotas
+
+	edquota <username>	--edit quotas directly
+	  <username> blocks soft hard inode soft hard  --inode is number of
+							 files
+        or
+ 
+	setquota <username> 4096 5120 40 50 /home    --first 2 numbers in 
+						       kilobytes soft and hard 
+						       second 2 numbers are
+						       number of files soft
+						       and hard
+	
+	edquota -p <user1> <user2>	--defines prototypical users
+
+	quota		--user inspection
+	repquota /home 	--quota overviews
+	warnquota	--sends e-mail to users when they hit their soft limit
+********************************************************************************
+SENDMAIL
+  MUA - Mail user agent - passes message to mail transport agent
+  MTA - Mail transport agent - routes messages to destination, giving
+        to other intermidate MTA's as necessary
+  Domain MTA - passes message to mail delivery agent (MDA)
+  Features:
+	Allows many different types of e-mail addesses to be routed
+	Uses tcpwrappers
+	Supports virtual domains and users
+	Allows masquerading of users and machines
+	Provides automatic retry for failed delivery and other errors
+
+  Security Features:
+	Default configuration allows only local connections
+	no longer a setuid root program
+	rejects email from unresolvable domains
+	Anti-spam - access databases, email header checks, spamassassin
+
+  Packages: sendmail, sendmail-cf, sendmail-doc
+  Daemons: sendmail
+  Ports: 25
+  Configuration: /etc/mail/ (including sendmail.cf, sendmail.mc, submit.cf)
+  		 /etc/aliases, /usr/share/sendmail-cf/
+  Related: procmail, spamassassin
+
+  Main config file: /etc/mail/sendmail.cf
+	Contains domain alias directives, header rewriting directives and 
+	relaying rules
+  /etc/mail/submit.cf is used when Sendmail is called by a user program.
+	normally doesn't need modification
+
+  Sendmail m4 Macro File:
+	requires the sendmail-cf RPM
+	Rebuild sendmail.cf from sendmail.mc from within the /etc/mail dir:
+		m4 sendmail.mc > sendmail.cf
+			or
+		make 	
+
+	DAEMON OPTIONS(`Port=smtp,Addr=127.0.0.1, Name=MTA') --most important
+		line.  Must change this to accept mail from outside computers.
+		You can rem out the entire line to accomplish this.
+	FEATURE(`accept_unresolvable_domains')  --might want to change
+
+   Sendmail Client Configuration:
+	MASQUERADE_AS(`jm.com')		--makes the e-mail be from domain 
+					  instead of server host name
+
+   Other Valuable m4 directives
+	FEATURE(`dnsbl')		--checks a DNS blackhole list to block
+					  email spammers
+	FEATURE(`relay_based_onMX')	--Automatically allows relaying if 
+					  sendmail server is listed as the 
+					  target domain's MX record
+
+  newaliases		--configures /etc/alias file. 
+	Defines local user aliases
+	alias file can configure root emails to go to external acct
+	newaliases command must be ran to reload the alias file
+
+  local-host-names	--contains access control, virtual user db and
+			  configuration source files
+
+  /etc/mail/virtusertable	--allows multiple virtual domains and users
+				  to be mapped to other addresses:
+		admin@123.com	shopper	--could be configured in alias file
+		admin@xyz.com	jdj	--could be configured in alias file
+		@cba.com	cba@aol.com
+		@dom1.org	%1@dom2.org
+	Must run "make -c /etc/mail/" once you make these changes
+
+  /etc/mail/access		--used to accept or deny incoming mail
+	user@aol.com	REJECT
+	yahoo.com	REJECT
+	10.3		OK
+	jm.com		RELAY
+	user@dom9.com	ERROR:550 mail discarded
+	nobody@		ERROR:550 bad name
+
+  Debugging Sendmail
+	/etc/mail/local-host-names  	--must contain servers name and alias
+	mail -v user			--view SMTP exchange with local relay
+	mailq and mailq -Ac		--view messages queued for delivery
+	sendmail -q			--reprocess the email queue
+	tail -f /var/log/mailog		--view log in real-time
+	   or
+	xterm -e tail -f /var/log/maillog &		--the bomb!!!
+  
+Switch MTAs: Alternatives
+	alternatives		--displays and set link groups	
+		alternatives --display mta
+		alternatives --config mta
+			config will let you switch from sendmail to postfix
+			it will not stop sendmail, that must be done manually
+	system-switch-mail	--gui version of alternatives
+				  it will stop previous mail program and start
+				  the new one.
+********************************************************************************
+POSTFIX
+  More secure than Sendmail
+  Designed for speed
+  Easey Administration
+  Packages: postfix
+  Daemons: master, nqmgr, smtpd, pickup, (others)
+  Port: 25
+  Configuration: /etc/postfix/maincf, /etc/postfix/master.cf
+  Related: Procmail, spamassassin
+  
+  Instead of editing the postconf config file manually:
+    postconf	--will show you all settings; -e lets you modify them
+    postconf -e "myorigin = redhat.com"	--masqurade option for postfix
+    postconf -e "mydestination = redhat.com dawg.redhat.com"  --email sent to
+    postconf -e "mynetworks = 192.168.0.0/24, 127.0.0.1" --who can connect 
+							   not relaying
+    postconf -e "inet_interfaces = all"  --which network cards to allow 
+      					   connections on
+
+   postalias /etc/aliases		--reloades the aliases file
+   postmap virtual/access
+
+   Enhanced Postfix Config:
+	Pre-receipt header and body checks
+	Multiple transports (uucp, X.400)
+	Virtual domain support
+	Unsolicited Commercial Email (UCE) controls (blacklists, helo/sender)
+	Table lookups (SQL, LDAP)
+
+   YOU MUST ALIAS POSTFIX TO A USER OTHER THAN ROOT IN /etc/aliases
+
+  Be sure to stop Sendmail before usin postfix via chckconfig and service stop
+********************************************************************************
+PROCMAIL 	--delivery tool for sendmail and postfix
+	Different uses:
+		sorting incoming email into different folers or files
+		preprocessing email
+		starting an event or program when email is received
+		automatically forwarding email to others
+	Additional MTA config may be required
+********************************************************************************
+DOVECOT  		--used for pop3 and imap server
+   Packages: dovecot
+   Daemons: /usr/sbin/dovecot
+   Ports: 110 (pop), 995 (pops), 143 (imap), 993(imaps)
+   Configuration: /etc/dovecot.conf
+   Related: procmail
+
+   Testing POP3 Access using teling:
+	telnet mail.wispertel.net 110
+	USER jimmy
+   	PASS <password>
+	STAT		--shows how many e-mail I have
+	LIST		--lists all of the e-mails and their sizes
+	RETR 1		--retrives the 1st e-mail
+	DELE 1		--deletes the e-mail
+	QUIT		--quits
+********************************************************************************
+FETCHMAIL		--used to download mail from a mail server to your 
+			  local queue
+
+  Configured in ~/.fetchmailrc which should look like:
+	poll station4.example.com protocol pop3 user jimmy password "<passwd>"
+
+  Because password are stored in the .fetchmailrc file, fetchmail will refuse
+ 	to run unless you make the file readable only by owner.
+		chmod 600 ~/.fetchmailrc
+		chown jimmy:jimmy ~/.fetchmailrc
+
+
+********************************************************************************
+
+APACHE
+   Packages: httpd, httpd-devel
+   Daemons: httpd
+   Ports: 80 and 443
+   Configuration: /etc/httpd/, /var/www	
+   Related: system-config-httpd, mod_ssl
+   Configuration File: /etc/httpd/conf/httpd.conf
+   Does NOT use tcpwrappers
+   Module Config files: /etc/httpd/conf.d/
+
+   Users can have own web page: http://servername/~jimmy
+	This is disabled by default --comment "UserDir disable" in httpd.conf
+		uncomment out "#UserDir public_html
+	711 on /home/jimmy
+	755 on /home/jimmy/public_html/
+		SELinux will prohibit apache from getting to this folder
+			ls -Z /home/jimmy/public_html/
+			restorecon -R /home/jimmy/public_html
+				or
+			chcon httpd_user_content_t /home/jimmy/public_html
+
+   httpd.conf   
+     DirectoryIndex	--defines what files to look for index.html, etc
+     Virtual Hosts
+	<VirtualHost 192.168.0.100:80>
+	  ServerName 	virt1.com		--must exist in DNS
+	  DocumentRoot	/virt1
+	</VirtualHost>
+
+	<VirtualHost 192.168.0.100:80>
+	  ServerName 	virt2.com		--must exist in DNS
+	  DocumentRoot	/virt2
+	  ServerAlias	www.virt2.com www2.virt2.com	--must be in DNS
+	</VirtualHost>
+
+     Access Configuration	--appache provides directory and file-level
+				  host based access control
+	<Directory /var/www/html/internal>
+	  order allow,deny		--allows explicitly allowed clients
+					  denies everyone else; clients	
+					  matched by both are denied.
+	  				  deny,allow- denies explicitly 
+					  denied clients, allows everyone else,
+					  clients matched by both are allowed
+	  allow from .example.com
+	  deny from station2.example.com
+	</Directory>
+
+    .htaccess files		--put in the physical directory where you want
+				  the security; not the httpd.conf file
+	add mime-type definitions
+	allow or deny certain hosts
+	Setup user and passwords databases:
+	AuthUserFile directive
+		htpasswd -cm /etc/httpd/.htpasswd bob	--c is create; m is md5
+		htpasswd -m /etc/httpd/.htpasswd alice  --file already exists
+			-c should only be performed once.  If you do it again
+				it will override the existing .htpasswd file
+				all additions should only use -m
+	
+	AuthName	"Bob's Secret Stuff"	
+	AuthType	basic
+	AuthUserFile	/var/www/html/.htpasswd
+	AuthGroupFile	/var/www/html/.htgroup
+
+	<Limit GET>
+	require group staff
+	</Limit>
+
+	<Limit PUT POST>
+	require user bob
+	</Limit>
+
+    CGI		--CGI programs are restriced to seperate directories by
+		  Script Alias directive:
+	ScriptAlias /cgi-bin/  /path/cgi-bin/
+
+    SSL
+	mod_sll
+	/etc/httpd/conf.d/ssl.conf	--config file
+	conf/ssl.crt/server.crt		--certificate
+	conf/ssl.key/server.key		--private key
+	Certificate Key generation:
+		/usr/share/ssl/certs/Makefile
+		make testcert		--self-signed cert
+		make certreq		--cert signature request; used to send
+					  to verisign, etc.
+	
+	Instructions for generating a new cert with the name I want:
+		cd /etc/httpd/conf/ssl.crt/
+		rm server.crt
+		cd /usr/share/ssl/certs/
+		make testcert
+		service httpd restart		
+		--rename server.crt to snort.crt and reference this in the
+		  /etc/httpd/conf.d/ssl.conf file 
+
+	Apache Tomcat guide: http://tomcat.apache.org/tomcat-5.5-doc/index.html
+
+	Securing Apache via the httpd.conf file:
+		Make sure the ServerTokens directory is set to Prod
+			This hides the version of Apache you are using
+			curl -I http://yourwebserver 
+				shows what your server is advertising
+		Make sure ServerSignature is set to EMail
+			This will prevent your versions being disclosed on
+			Apaches error pages
+		Disable users from having their own web-accessible folders
+			Disable the userdir module in httpd.conf
+		Directory browsing. This is done within a directory tag 
+			(the document root is a good place to start) using the 
+			Options directive and is set with “-Indexing”.
+		Server side Includes. This is another feature that is disabled
+			within a directory tag (using Options directive) and is 
+			set with “-Includes”.
+		CGI execution. Unless your site needs CGI, turn this off. This 
+			feature is also set within a directory tag using the 
+			Options directive, with “-ExecCGI”.
+		Symbolic links. Set this inside a (surprise, surprise) 
+			directory tag with “-FollowSymLinks”.
+		None. You can turn off all options (in the same way you set the 
+			above) using “None” with the Option directive.
+
+	More Apache Security
+		Disable unused modules - Apache has a ton of modules. To get an 
+			idea how many modules your installation is running, 
+			issue the command (as the root user) grep -n LoadModule 
+			httpd.conf from within your Apache configuration 
+			directory. This command will show you every module 
+			Apache is loading, along with the line number it falls 
+			on. To disable the modules you don’t need, simply 
+			comment them out with a single # character at the 
+			beginning of the module line.
+		Restrict access - Say you have an intranet that contains 
+			critical company information. You will want to deny 
+			anyone outside your private network from seeing this 
+			information. To do this, you can restrict access to 
+			your internal network by adding the following inside 
+			a directory tag in your httpd.conf file:
+
+				Order Deny, Allow
+				Deny from all
+				Allow from 192.168.1.0/16
+
+			where 192.168.1.0/16 is the configuration matching your 
+			internal network. As with all modifications to the 
+			httpd.conf file, make sure you restart Apache so the 
+			changes take effect.
+		Limit request size - Denial of service attacks are always a 
+			possibility when you allow large requests on Apache. 
+			Apache has a directive, LimitRequestBody, that is 
+			placed within a Directory tag. The size of your limit 
+			will depend upon your Web site’s needs. By default, 
+			LimitRequestBody is set to unlimited.
+		Employ mod_security - One of the most important Apache modules 
+			is mod_security. This module handles many tasks, 
+			including simple filtering, regular expression 
+			filtering, URL encoding validation, and server identity 
+			masking. The mod_security installation and setup is a 
+			bit beyond a one-paragraph description. But you can 
+			begin by adding the “unique_id” and “security2″ 
+			directives in the Apache modules section. Once you have 
+			added the entries, run the command service apache2 
+			configtest. If you get returned Syntax OK you’re good 
+			to go.	
+		Do not allow browsing outside the document root - Allowing 
+			browsing outside the document root is inviting 
+			trouble. Unless you have a specific need to allow it, 
+			disable this feature. First, you’ll need to edit the 
+			document root Directory entry like so:
+
+				<Directory />
+				   Order Deny, Allow
+				   Deny from all
+				   Options None
+				   AllowOverride None
+				</Directory>
+
+			Now, if you need to add options to any directory within 
+			the document root, you will have to add a new Directory 
+			entry for each one.		
+		Hide Apache’s version number - The best offense is a good 
+			defense. And one of the best defenses is to obfuscate 
+			as much information about your service as you can. One 
+			crucial bit of information to hide is the Apache 
+			version number. By hiding it, you keep unwanted users 
+			from knowing how to quickly hack your Web server. To 
+			hide Apache’s version number, add the following in your 
+			document root Directory tag:
+
+				ServerSignature Off
+				ServerTokens Prod
+
+		Immunize httpd.conf - One of the best security measures is to 
+			hide your httpd.conf file from prying eyes. If people 
+			who shouldn’t see your httpd.conf file can’t see it, 
+			they can’t change it. To immunize the httpd.conf file, 
+			set the immutable bit with the following command:
+
+				chattr +i /path/to/httpd.conf
+
+			where /path/to/httpd.conf is the path to your Apache 
+			configuration file. Now it will be very difficult for 
+			anyone to make any changes to httpd.conf.
+********************************************************************************
+SQUID
+   squidgard	--good for reverse proxy, malformed url detection,etc
+   squid.conf:
+	cache_mem	--8MB is the default. should increase in large env.
+	cache_dir	--/var/spool/squid 100 16 256
+	acl all src 0.0.0.0/0.0.0.0		--
+	acl localhost src 127.0.0.1/255.255.255.255
+	http_access allow localhost
+	http_access deny all
+
+********************************************************************************
+WHOPPIX PENETRATION TESTING CD
+http://distrowatch.com/?newsid=02683#0
+********************************************************************************
+TROUBLESHOOTING
+
+X --never debug X while in runlevel 5
+    try system-config-display first
+		system-config-display --reconfig
+		system-config-display --noui
+    X -probeonly  --shows what is happening when loading X
+    is /home or /tmp full?  has the user reached a hard quota
+    is xfs running?
+
+Networking
+    device activation    
+    dig www.redhat.com
+    ifconfig
+    route -n
+    module specification  -modinfo
+
+Boot Process
+    Bootloader config
+    Kernel
+    /sbin/init
+    /etc/rc.d/rc.sysinit
+    check runlevel scripts /etc/rc.d/rc?.d
+    /etc/rc.d/rc.local
+    X
+
+FileSystem Corruption
+    
+Filesystem Recovery
+    Runlevel 1  --process rc.sysinit and rc1.d scripts
+    runlevel S  --process only rc.sysinit
+    emergency   --run sulogin only  --mounts filesystem read only
+				      mount -o remount,rw /dev/hda2
+				      exit to quit emergency mode
+
+Rescue Environment
+    Boot from CD-ROM - "linux rescue" from first screen
+    /tmp/syslog or /tmp/anaconda.log --logging locations
+
+    mknod /dev/hda   --will recreate the device node for the harddrive
+
+
+Reload MBR
+   linux rescue			--from boot cd
+   chroot /mnt/sysimage 	--sets root to /mnt/sysimage so the grub
+				  installation works properly
+   grub-install /dev/hda	--resinstalls grub
+   exit				--exit chroot environment
+   grub				--configure grub
+	root (hd0,0)
+	setup (hd0)
+	quit
+   exit				--reboots computer
+
+Startup Process
+
+   init
+    |
+    +--rc.sysinit
+    |
+    +--rc
+    |   |
+    |   +--rc?.d/k*
+    |   |
+    |   +--rc?.d/s*
+    |          |
+    |          +--rc.local
+    |
+    +--Virtual Consoles
+    |
+    +--X with Display Manager
+
+
+********************************************************************************
+FIREFOX SETTINGS
+
+in the url line type about:config
+
+set network.http.pipeling and network.http.proxy.pipelining to true  -
+Firefox is now optimized for Broadband instead of dial-up
+
+set network.http.pipeling.maxrequests option to 30 - Firefox will now 
+send
+up to 30 HTTP requests at once
+
+right click anywhere in the about:config page and select New | Integer
+than type in nglayout.initialpaint.delay and enter 0 as its value. 
+Firefox will now render pages immediately instead of waiting its 
+defauilt
+250 ms.
+
+********************************************************************************
+CYGWIN		--run linux programs in windows
+http://cygwin.com/
+
+********************************************************************************
+NETCAT
+
+Often referred to as the "Swiss Army Knife of networking," netcat is a tool 
+that administrators can use to read and write TCP or UDP data across the 
+network. In addition, it's extremely useful for network debugging and testing.
+
+Netcat offers several interesting uses. For example, you can make it listen to 
+a particular port and run a program. To do so, use the following:
+
+$ netcat -v -l -p 10111 -e "/bin/cat /etc/motd"
+
+This tells netcat to listen to port 10111. When there's a connection, it tells 
+netcat to execute "/bin/cat /etc/motd," which essentially displays the contents
+of /etc/motd and exits.
+
+You can also set up netcat on a machine to listen for incoming connections and 
+run it on a remote machine to connect to the local machine and serve up a bash 
+shell. For example, on a local machine with an IP address of 192.168.5.10, you 
+would use the following:
+
+$ netcat -v -l -p 10111
+
+On the remote machine, you would use:
+
+$ netcat 192.168.5.10 10111 -e /bin/bash
+
+This tells the netcat instance on the remote machine to connect to the netcat 
+instance listening on 192.168.5.10 and serve up a bash shell from the remote 
+machine, which will then be available on the local machine. Using the netcat 
+instance on 192.168.5.10, you can execute shell commands on the remote host.
+
+To perform some Web debugging, you could use something like the following:
+
+$ netcat www.website.com 80
+
+Then, enter typical HTTP commands to get the unaltered output 
+(e.g., "GET / HTTP 1.0").
+
+As you can see, netcat is both an extremely versatile and very powerful 
+utility. You can download this useful tool, based on the original netcat 
+program, from the GNU Netcat Project Web site.
+	
+********************************************************************************
+NGREP
+
+Ngrep's most basic use is to listen to all traffic on an interface. However, 
+you can extend this quite a bit to narrow down what you're looking for. 
+Ngrep's syntax is similar to that of tcpdump. Here's an example:
+
+$ ngrep port 80 and src host 192.168.5.10 and dst host 192.168.5.100
+
+This monitors all traffic on port 80 from the host 192.168.5.10 to the host 
+192.168.5.100.
+
+If you're interested in watching Telnet traffic, you can do so using ngrep. You 
+can make it only return traffic that shows a login string by using grep-style 
+syntax. Here's an example:
+
+$ ngrep -q -t -wi "login" port 23
+
+This tells ngrep to look for the string "login" as a word (without case 
+sensitivity) on port 23 for any connection. In this case, ngrep operates in 
+quiet mode so it only prints out matches. In addition, it timestamps them 
+(as designated by the -t option).
+
+Used in conjunction with tcpdump, ngrep can also be very valuable for 
+searching standard pcap dump files to look for patterns. If you have a large 
+dump file from tcpdump, you can use ngrep to examine it by using standard ngrep 
+commands and issuing it an input file with the -I parameter. Here's an example:
+
+$ ngrep -wi "login" port 23 -I /tmp/packet.dump 
+********************************************************************************
+CDRecorder - all on one line:
+/usr/bin/cdrecorder -v gracetime=2 dev=/dev/hda speed=48 -dao \
+driveropts=burnfree -eject -data /home/jimmy/FC4-x86.iso
+
+********************************************************************************
+
+Securing the Service
+  ldd 			 --shows which libraries are assocaited with app
+    ldd `which xinetd`   --shows libraries for xinetd
+
+  libwrap.so 		 --referred to as "tcp_wrappers" provides host
+ 			   host based access control; hosts.allow/deny
+
+  hosts.allow/deny	--3 Stages of acess checking:
+	Is access explicitly permitted?
+	Otherwise, is access explicitly denied?
+	Otherwise, by default, permit access
+   hosts.allow is read before hosts.deny
+
+  hosts.allow/deny example:
+    daemon_list:  client_list  [:options]
+	sshd, in-tftpd: 192.168.0.1
+        sshd: 192.168.0.0/255.255.255.0
+        ALL: ALL
+        sshd: ALL EXCEPT .cracker.org EXCEPT trusted.craker.org
+	portmap, mountd: 192.168.0.3  #--this allows nfs shares
+     if multiple nics in server:
+        sshd@10.1.1.1: 192.168.0.1
+	sshd@10.1.1.2: 192.168.0.1
+   
+    OPTIONS:
+	sshd: ALL: spawn echo "login attempt from %c to %s" |mail ...
+	
+	ALL: ALL: DENY 		--allows you to put DENY in hosts.allow
+
+   GOOD EXAMPLE:
+	hosts.allow:
+		vsftp: 192.168.0.
+		in.telnetd, sshd: .example.com 192.168.2.5
+
+	hosts.deny:
+		ALL: ALL
+********************************************************************************
+SHFS
+
+The ability to export remote file systems is extremely useful, which is why 
+programs like NFS and Samba are so popular. Unfortunately, both are typically 
+tied to a local network which limits their usage somewhat. An ideal file system 
+would allow for encrypted connections to a remote site, without resulting in 
+complicated VPN connections.
+
+This is exactly what shfs, the SHell File System, does. It allows for the 
+mounting of remote directories via ssh by using a kernel module (like smbfs) and 
+a user-space tool, like mount. To get started, you can download shfs from 
+http://shfs.sourceforge.net/; the latest version as of this writing is 0.35. 
+Before starting, be sure you have the kernel source for your currently running 
+kernel available and be sure the C compiler you have is the exact version that 
+was used to compile the kernel.
+
+$ mv shfs-0.35.tar.gz /usr/local/src
+
+$ cd /usr/local/src
+
+$ tar xvzf shfs-0.35.tar.gz
+
+$ cd shfs-0.35
+
+$ make
+
+$ sudo make install
+
+The example above will compile the kernel module for your kernel (shfs supports 
+both the 2.4 and 2.6 kernels) and will also compile the shfsmount utility.
+
+If you are using gcc4, you will need to download and apply this patch to the 
+shfs source for it to compile properly:
+
+http://atrey.karlin.mff.cuni.cz/~qiq/src/shfs/shfs-0.35/gcc4-compilefix.patch.
+
+Once you have shfs installed, load the kernel module and mount your first remote 
+file system:
+
+# modprobe shfs
+
+# shfsmount user@remote /mnt/user
+
+This will mount the home directory of user@remote in the directory /mnt/user. 
+You can also use mount itself:
+
+# mount -t shfs user@remote:/data /data
+
+This would allow you to automount certain directories at boot by adding entries 
+to /etc/fstab. Of course, you would want to use ssh keys with that because on 
+every mount, you'll be asked for a passphrase or password.
+
+As you can see, shfs is extremely easy to use and versatile. It allows you to 
+mount a remote drive at the office that your desktop at home recognizes as a 
+local file system, but without the hassles of making anything more than ssh 
+available on the remote system.
+
+********************************************************************************
+TRANSGAMING / CEDEGA / WINEX
+
+
+WineX/Cedega from CVS 
+If you don't want to spend 5 bucks on WineX/Cedega, you can always try compile 
+it yourself.
+
+Important, in order to install WineX/Cedega from CVS you must have CVS installed
+on your computer.
+
+
+Download 
+Go to http://transgaming.org/cvs for the downloading instructions.
+
+Installation
+
+After downloading you will see that you have a directory called winex.
+Enter this directory and type (as root):
+./tools/wineinstall
+WineX will now try to compile.
+
+
+Configuration
+
+You need a so called fake windows drive and a configuration file.
+You can download a complete Wine configuration here: 
+	http://frankscorner.org/files/winex_drive.tgz
+Untar the file in your HOME directory. You will now have a directory called 
+.wine. In this directory you will find the fake windows drive (c_drive) and the 
+configuration file (config).
+All games will be installed in ~/.wine/c_drive.
+
+
+Installing games 
+Installing a game is easy. If the path to your cdrom is /mnt/cdrom and the 
+installation executable is called setup.exe, then the command would be: 
+	wine /mnt/cdrom/setup.exe
+
+If the game uses the Installshield installer you must install DCOM98 first.
+You can download it here:
+http://download.microsoft.com/msdownload/dcom/98/x86/en/dcom98.exe
+
+Type wine dcom98.exe to install DCOM98.
+Now the installer should work.
+
+
+Running games
+
+Just cd to the game directory in ~/.wine/c_drive and type wine gamename.exe 
+to run it.
+
+
+Note: The CVS version of WineX has no support for copy protection, so you will 
+need a 'no-cd' patch if you want to play a game.
+
+You can find these patches at http://www.megagames.com. 
+
+
+If the game uses the Installshield installer you must install DCOM98 first.
+You can download it here:
+http://download.microsoft.com/msdownload/dcom/98/x86/en/dcom98.exe
+
+Type wine dcom98.exe to install DCOM98.
+
+
+If the game uses the Installshield installer you must install DCOM98 first.
+You can download it here:
+http://download.microsoft.com/msdownload/dcom/98/x86/en/dcom98.exe
+
+Type wine dcom98.exe to install DCOM98.
+
+********************************************************************************
+Ubuntu Games:
+http://gaming.gwos.org/doku.php/games:start
+********************************************************************************
+PROTECT SSH FROM HACKERS
+
+Set Up Swatch To Monitor Security Logs
+Linux is very secure but it still doesn't prevent hackers from scouring the
+Internet looking for systems with easily guessed passwords. Check your daily
+LogWatch for your Linux systems and if you see something like this you
+probably should do something to prevent a potential successful attempt.
+
+sshd:
+   Authentication Failures:
+      unknown (64.161.121.11): 699 Time(s)
+      root (211.136.107.81): 31 Time(s)
+	.
+	.
+
+One way to solve this problem is to use iptables (see below) to filter these
+attempts but I chose to go a slightly simpler route. First of all make sure
+you have swatch installed to easily monitor logfiles.
+
+# yum install swatch
+
+Then create a swatch configuration file called /etc/swatchrc  containing the
+following:
+
+# Bad login attempts
+watchfor   /Failed password for/
+        exec "/usr/local/admin/bin/bad_user $1 $2 $3 $4 $5 $6 $7 $8 $9 $10 $11
+$12 $13 $14 $15"
+
+Then you will want the /usr/local/admin/bin/bad_user script to do the work.
+Below is my script:
+
+#! /bin/bash
+#
+IP=`echo $* | sed 's/^.* from //' | awk '{print $1}' | sed 's/::ffff://'`
+ATTEMPTS=`grep $IP /var/log/secure | grep "Failed password for"  | wc -l`
+
+if [ $ATTEMPTS -gt 2 ]
+then
+	route add $IP lo
+	MINUTES=`expr $ATTEMPTS - 2`
+	echo "route del $IP lo" | at now +$MINUTES minutes 2>&1 >
+/tmp/.bad_user.$$
+	(hostname ; echo $* ; echo "IP=$IP" ; echo "ATTEMPTS=$ATTEMPTS" ; \
+		echo "Blocking for $MINUTES minutes" ; \
+		cat /tmp/.bad_user.$$ ) | Mail -s "bad user" root
+fi
+
+rm -f /tmp/.bad_user.$$
+
+Briefly, what this does is allow two invalid logins before blocking any
+further access from the offending IP address by routing return traffic to that
+IP to the loopback interface for 1 minute. After that expires each further
+attempt will cause access to be blocked for longer and longer periods of time.
+
+Finally you need to start swatch to get it to watch your logfile and protect
+your system:
+
+# /usr/bin/swatch --config-file=/etc/swatchrc --tail-file=/var/log/secure \
+	--awk-field-syntax --tail-args "-F" &
+
+********************************************************************************
+QUAKE 4 Sound problems:
+
+Edit the file ~/.quake4/q4base/Quake4Config.cfg
+change the line
+seta s_alsa_lib "libasound.so.2"
+to
+seta s_alsa_lib "libasound.so.0"
+********************************************************************************
+XDMCP howto on Fedora 5
+
+On host machine go to System > Administration > Login Screen (or just run
+	gdmsetup)
+Select the "Remote" tab and change the drop down box to "Same As Local"
+	This enabled XDMCP and remote users will be presented with exactly
+	the same welcome screen as local users.  Now click the "Configure
+	XDMCP" button in the lower right corner of the window
+	Make sure the "Listen on UDP Port" is set to UDP port 177 and that it 
+	is open in the IPTables firewall
+
+Now, on the other machine, login as normal.  Make sure TCP port 6000 and UDP
+	port 177 is open in the IPTables firewall.
+Log out
+Click on the "Options Menu" on the Login screen.  If you don't see one hit
+	F10 on the keyboard.  You should see an option for "Remote Login Via
+	XDMCP"  
+The X Chooser window will attempt to locate the newly created session from 
+	above.  If it doesn't find it click the add button and add the IP 
+	address of the host machine.
+Click on the host machine in the list and click connect.
+********************************************************************************
+ISO Images - Making ISO's
+
+mkisofs -V "Jimmys Backup" -J -R -o backup.iso /home/jimmyt
+	-V - Volume Name
+	-J - Joliet Extensions
+	-R - Rock Ridge
+   mkisofs -V "Jimmys Backup" -J -R -o backup.iso /home/jimmyt |cdrecord -v \
+	fs=6m speed=4 dev=0,0,0 -
+		Don't forget the "-" at the end of the line.  This tells 
+		cdrecord NOT to read from a file but from standard in
+   
+dd if=/dev/hdc of=cd.iso
+
+********************************************************************************
+hdparm	- set device parameters on storage devices.  i.e. DMA access
+
+hdparm /dev/hda		-shows you what features are available and enabled
+
+hdparm -i /dev/hda	-shows DMA modes supported by your drive
+
+hdparm -Tt /dev/hda	-does a performance test so that you can make changes 
+			 and compare results before and after change
+
+hdparm -d1 -X69 -k1 /dev/hda	-d1 enables DMA and selects the best value.
+				-X69 the number is simple math.  Add the best 
+				 possible UDMA mode to the number 64.  
+				 UDMA5 + 64 = 69
+				 Performing this step I saw a 400MB/sec increase
+					in cached reads and double in buffered
+					reads
+				-k1 settings remain in place despite a soft reset
+				 of the device for error correction
+
+hdparm -d1 -X69 -c3 -u1 -k1 /dev/hda	-these settings didn't work for me
+					-c3 lets you enable 32bit i/o
+					-u1 sets the "unmask" flag for IRQ's
+					 allowing the system to to take care of
+					 other tasks while waiting on the HD
+ 
+********************************************************************************
+SSL VPN solution - adito
+http://sourceforge.net/projects/adito#item3rd-2
+********************************************************************************
+SSH from a PHP web page
+
+install openssl, libssl-dev or libssl-devel, libssh2
+Modify the php.ini file and add the following:
+	extension_dir should be something like /usr/local/lib/php/extensions
+	#search for dll and you will go to the extension section; add:
+	extension=ssh2.so
+
+copy the ssh2.so to the extension directory listed above
