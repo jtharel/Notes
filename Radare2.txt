@@ -1,0 +1,151 @@
+Radare2
+
+
+Installation:
+On Linux:
+git clone https://github.com/radare/radare2.git
+	sys/user.sh for user install
+	sys/system.sys for system install
+
+On Mac:
+brew install radare2
+
+*************************************************
+
+
+
+
+*************************************************
+
+radare2 sol	#load the binary sol into radare2
+
+?		brings up help
+.		used to interpret results in r2
+[times]		number of times to repeat the command
+[cmd]		r2 command
+~		grep through results using r2's internal grep
+~!		inverse grep matches
+@		perform command starting at the specified offset
+@@		only used for iterating over commands that return
+		multiple items, like the search command
+|		pipe command output to another program
+>		redirect command output to a file
+
+
+Seek Commands:
+s		seek command
+s 0xda13
+s main
+s-		go back to where you just came from
+
+Print Commands:
+p		print functions
+pd		print disassembly for the current function
+pd [number]	print disassembly for specified number of lines
+pds		print summary of the disassembly of the current function
+		including strings, calls, jumps
+
+Info Commands:
+ii		return a string of the binary's import table
+iij		will return a JSON of the binary's import table
+
+
+Analysis Commands:
+aa		must run in order to perform analysis on the binary
+		must run it every time you load the binary
+
+Cross References:
+axt [address]	shows references to the provided address
+axf [address]	shows references from the provided address
+axg [address]	show a call stack for the ways a specified address
+		could be accessed.
+
+
+Flags:		Flags are named markers, similar to comments, except they 
+		can be used much like an address
+		Flag commands all begin with f
+
+f		list all the flags in the current flagspace
+f+ [len] [name]	will create a flag in the current flagspace with a length
+		of [len] and the provided name
+f-		can be used similarly instead of the f+ to remove a flag
+f. [name]	will create a flag of the provided name to the local
+		namespace. It will only have meaning with the function 
+		where it is defined.
+
+
+Flagspace Commands:
+fs		list all flagspaces
+fs [name]	will select the specified flagspace, and create it if it
+		does not exist
+fs- [name]	delete the specified flagspace
+
+
+Comments:
+CC!		will add/edit a comment on your current line. Will use 
+		whatever editor is set for $EDITOR
+C-		delete comments
+Cv		used to comment on variables
+Cvb! [name]	comment on the base pointer with the specified name
+Cvs! [name]	comment on stack pointer variables with the specified name
+Cvr! [name]	comment on register variables with the specified name
+
+
+Cutter -> GUI for Radare2
+https://github.com/radareorg/cutter/releases
+
+Cutter has a built-in console that allows you to use the above actions, those 
+	actions will be reflected in the GUI
+
+X-Refs is cross references
+
+apt-get install aisleriot
+cp /usr/games/sol /root/
+
+./Cutter-v1.7.4-x64.Linux.AppImage
+select file /root/sol
+click Open
+check "Load in write mode (-w)
+click "ok"
+Click the "Imports" tab
+filter for "rand" 				#RANDOM
+Double click g_rand_int_range
+Right click sys.imp.g_rand_init_range -> Show X-Refs
+Double click "call sym.imp.g_rand_int_range"
+Right click "call sym.imp.g_rand_int_range" -> Edit -> Instruction
+Change "call 0xd100" to "mov eax, 0"
+launch sol "./sol"
+Go to Spider Solitaire, Cards will not be random, etc.
+
+
+Scripting the above with python:
+
+# python
+Python 2.7.16rc1 (default, Feb 18 2019, 11:05:09) 
+[GCC 8.2.0] on linux2
+Type "help", "copyright", "credits" or "license" for more information.
+>>> import r2pipe
+>>> r2 = r2pipe.open('sol', flags=['-w'])
+>>> print r2
+<r2pipe.open_sync.open object at 0x7fc7cb9f8f90>
+>>> r2.cmd('aaa')
+[anal.jmptbl] Missing cjmp bb in predecessor at 0x0001e674
+[anal.jmptbl] Missing cjmp bb in predecessor at 0x0001e450
+[anal.jmptbl] Missing cjmp bb in predecessor at 0x0001e460
+u''
+>>> print r2.cmd('ii~g_rand_int_range')
+ 537 0x0000d100  GLOBAL    FUNC g_rand_int_range
+
+>>> a = r2.cmd('ii~g_rand_int_range').split()
+>>> print r2.cmdj('axtj {}'.format(a[1]))
+[{u'type': u'CALL', u'refname': u'sym.imp.g_rand_int_range', u'from': 87445, u'opcode': u'call sym.imp.g_rand_int_range', u'name': u'sub.AisleriotGame_14c30+2405'}]
+>>> b = r2.cmdj('axtj {}'.format(a[1]))[0]
+>>> r2.cmd('s {}; pd 1'.format(b['from']))
+u'            0x00015595      e8667bffff     call sym.imp.g_rand_int_range\n'
+>>> r2.cmd('wa mov eax, 0')			#write assembly
+u''
+>>> 
+
+launch sol. Play Klondike (set to 3 card deals) and you can see the non-random cards
+
+

@@ -1,0 +1,71 @@
+
+
+qemu-system-x86_64 -kernel bzImage -drive format=raw,file=rootfs.ext2,index=0,media=disk -boot c -m 256 -append "root=dev/sda rw" -nographic -smp 4 -netdev user,id=network0,hostfwd=tcp::22-:22,hostfwd=tcp::80-:80 -device e1000,netdev=network0
+
+
+qemu-system-mips -M malta -hda hda.img -kernel vmlinux* -append "root=/dev/sda1 console=ttyS0" -netdev user,id=network0,hostfwd=tcp::22-:22,hostfwd=tcp::80-:80 -device e1000,netdev=network0 -nographic
+
+
+ 
+
+
+
+
+
+
+
+
+
+*************************************************************************************
+
+How to install windows in QEMU - Requires GTK (GUI).
+
+apt install qemu qemu-kvm virt-manager virt-viewer libvirt-bin
+apt install xfce4 xfce4-goodies
+apt install tightvncserver
+vncserver -geometry 1600x1200
+	#if vncserver is just a gray screen make the ~/.vnc/xstartup file:
+		#!/bin/sh
+
+		xrdb $HOME/.Xresources
+		xsetroot -solid grey
+		#x-terminal-emulator -geometry 80x24+10+10 -ls -title "$VNCDESKTOP \				
+			Desktop" &
+		#x-window-manager &
+		# Fix to make GNOME work
+		#export XKL_XMODMAP_DISABLE=1
+		#/etc/X11/Xsession
+		startxfce4 &
+
+cp /home/jimmy/.Xauthority /root/
+
+
+If necessary:
+sudo ssh -L 5901:192.168.17.14:5901 jimmy.tharel@ibm.com@netsres45.watson.ibm.com -N
+VNC://127.0.0.1:5901
+
+
+sudo virt-manager
+	If using VNC go into VM Hardware info -> Display Spice -> 
+		change to 'VNC Server' 
+
+
+
+LEFT CTRL-LEFT ALT-G -> release the mouse 
+
+qemu-img create hd.img 50000M
+	creates a 50G harddrive image
+
+qemu-system-x86_64 -boot d -cdrom ./windows.iso -hda hd.img -m 4096
+
+once installed use the following flags:
+
+qemu-system-x86_64 -boot c -cdrom /dev/cdrom -hda hd.img -m 16192 -localtime -soundhw es1370 -net nic,model=rt18139 -display sdl
+
+qemu-system-x86_64 -boot c -drive format=raw,file=hd.img -m 16192 -display sdl
+
+	-m 4096		4G of Ram
+	-localtime	passes localtime to the guest os
+	-soundhw 	sound card
+	-net		network stuff
+	-display		sdl or gtk (gtk is default) use sdl if mouse lags

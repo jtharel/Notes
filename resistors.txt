@@ -1,0 +1,67 @@
+Note NEVER use a value of resistor that is LOWER than needed. You will put too much current through the LED  and damage it permanently. You could also damage other parts of your circuit.  
+
+
+The formula to work out what resistor you need is 
+
+R = (VS – VL) / I 
+
+where VS is the supply voltage, VL is the LED voltage, and I is the LED current. Your example LED has a voltage of 2v and a current of 35mA connected to a digital pin from an Arduino, which gives out 5 volts, so the resistor value needed would be 
+
+R = (5 – 2) / 0.035 
+
+which gives a value of 85.71. 
+
+Resistors come in standard values and the closest common value would be 100 Ω. Always choose the next standard value resistor that is HIGHER than the value needed. If you choose a lower value, too much current will flow through the resistor and will damage it. 
+
+So how do you find a 100Ω  resistor? A resistor is too small to contain easily readable labeling so resistors instead use a color code. Around the resistor you will typically find 4 colored bands; by using the color code in the table below you can find out the value of a resistor. Likewise, you can find the color code for a particular resistance. 
+
+Resistor color codes 
+Color	1st Band	2nd Band	3rd Band (multiplier) 	4th Band (tolerance) 
+Black 	0 		0 		x10^0  
+Brown 	1 		1 		x10^1 			±1% 
+Red 	2 		2 		x10^2 			±2% 
+Orange 	3 		3 		x10^3  
+Yellow 	4 		4 		x10^4  
+Green 	5 		5 		x10^5 			±0.5% 
+Blue 	6 		6 		x10^6 			±0.25% 
+Violet 	7 		7 		x10^7 			±0.1% 
+Grey 	8 		8 		x10^8 			±0.05% 
+White 	9 		9 		x10^9  
+Gold   					x10^-1 			±5% 
+Silver   				x10^-2 			±10% 
+None    							±20% 
+ 
+According to the table, for a 100Ω resistor you need 1 in the first band, which is brown, followed by a 0 in the next band, which is black. Then you need to multiply this by 10^1 (in other words add 1 zero), which results in brown for the third band. The final band indicates the tolerance of the resistor. If your resistor has a gold band, it has a tolerance of ±5 percent; this means the actual value of the resistor varies between 95Ω and 105Ω. Therefore, if you have an LED that requires 2 volts and 35mA, you need a resistor with a Brown, Black, Brown band combination. 
+
+If you need a 10K (or 10 kilo-ohm) resistor, you need a Brown, Black, Orange combination (1, 0, +3 zeros). If you need a 570K resistor, the colors would be Green, Violet, and Yellow. 
+
+
+100 ohm resistors 	Brown Black Brown Gold
+1000 ohm resistors	Brown Black Red Gold
+10000 ohm resistors	Brown Black Orange Gold
+
+
+Voltage across a resistor (volts) = Current through the resistor (amperes)* The Resistance of the resistor (ohms)
+V = I * R
+I = V / R
+R = V / I
+
+The V is for voltage, the R is for resistance and the I, confusingly, is for current
+
+
+
+*****************************************************************************************
+LCD pin out
+
+Pin No.		Symbol 		Level		Description1  		VSS 		0V  		Ground.2 		VDD 		+5.0V		Power supply for logic operating3 		V0 		--		Adjusting supply voltage for LCD driving4 		RS 		H/L		A signal for selecting registers:
+						1: Data Register (for read and write)						0: Instruction Register (for write), 
+						   Busy flag-Address Counter (for read).5 		R/W 		H/L		R/W = “H”: Read mode. 
+						R/W = “L”: Write mode.6 		E 		H/L		An enable signal for writing or reading 
+						data.7  		DB0 		H/L		This is an 8-bit bi-directional data bus.8  		DB1 		H/L		This is an 8-bit bi-directional data bus.9  		DB2 		H/L		This is an 8-bit bi-directional data bus.10 		DB3 		H/L		This is an 8-bit bi-directional data bus.11  		DB4 		H/L		This is an 8-bit bi-directional data bus.12  		DB5 		H/L		This is an 8-bit bi-directional data bus.13  		DB6 		H/L		This is an 8-bit bi-directional data bus.14  		DB7 		H/L		This is an 8-bit bi-directional data bus.15 		LED+ 		+5.0V		Power supply for backlight16 		LED- 		0V		The backlight ground.*****************************************************************************************
+Analog Temperature Sensor
+
+Flat side facing me:
+Left pin: 	2.7-5.5V in 
+Middle Pin:	Analog voltage out
+Right Pin:	Ground
+ 

@@ -1,0 +1,1848 @@
+Ruby
+
+Installing Ruby on a Mac - Use RVM
+RVM (Ruby Version Manager) is the Standard for upgrading your Ruby installation on OSX: https://rvm.io
+
+To get started, open a Terminal Window and issue the following command:
+
+curl -L https://get.rvm.io | bash -s stable --ruby
+
+rvm list known
+( shows you the latest available versions of Ruby )
+
+rvm install ruby-2.0.0-p247
+For a specific version, followed by
+
+rvm use ruby-2.0.0-p247
+or if you just want the latest (current) version:
+
+rvm install current && rvm use current
+( installs the current stable release - at time of writing ruby-2.0.0-p247
+
+
+
+
+3 Data types in Ruby:
+	numbers
+	booleans
+	strings
+
+
+class 		: Tell Ruby to make a new kind of thing.
+object		: Two meanings: the most basic kind of thing, and any instance of some 
+		  thing.
+instance 	: What you get when you tell Ruby to create a class.
+def 		: How you define a function inside a class.
+@ 		: Inside the functions in a class, @ is an operator for variables in the 
+		  instance/object being accessed.
+inheritance 	: The concept that one class can inherit traits from another class, much 
+		  like you and your parents.
+composition 	: The concept that a class can be composed of other classes as parts, much 
+		  like how a car has wheels.
+attribute 	: A property classes have that are from composition and are usually 
+		  variables.
+is-a 		: A phrase to say that something inherits from another, as in a Salmon 
+		  is-a Fish.
+has-a 		: A phrase to say that something is composed of other things or has a 
+		  trait, as in a Salmon has-a mouth.
+
+
+Comments:
+	#		single line comment
+	=begin =end	Multi-line comment
+			=begin
+			I'm a comment
+			Cool!
+			=end
+
+Math:
+	+	addition
+	-	subtraction
+	*	multiplication
+	/	division
+	**	exponentiation 2**3 is 2 to the 3rd power so, 2**3 = 8
+	%	modulo - returns the remainder of division: 25 % 7 would be 4
+		puts "what is 3 +2?", 3 + 2
+		puts "is it greater?", 5 > -2
+
+Output:
+	print	prints whatever you give it to the screen (does not contain CRLF)
+		print "Hello"
+		print "hello #{user_name}"
+	puts	stands for put string.  It adds a new blank line (CRLF) after it prints
+		Example 1:
+			my_eyes = 'Blue'
+			my_hair = 'Brown'
+			puts "He's got %s eyes and %s hair." % [my_eyes, my_hair]
+		
+		Example 2:
+			puts "." * 10
+			# display ..........
+
+		Example 3:
+			puts <<PARAGRAPH
+			There's something going on here.
+			With the PARAGRAPH thing
+			We'll be able to type as much as we like.
+			Even 4 lines if we want, or 5, or 6.
+			PARAGRAPH
+			#displays text between the key words "PARAGRAPH"
+
+
+Escapable sequences:
+	\a	bell/alert
+	\b	backspace
+	\r	carriage return
+	\n	new line
+	\s 	space
+	\t	tab
+		
+			
+		
+Input:
+	gets	gets input from the user.  gets always adds a new line.
+			use .chomp method to remove new line
+
+	command line arguments into a script:
+	Example 1:
+		first, second, third = ARGV
+
+		puts "The script is called: #{$0}"		# $0 is the script name
+		puts "Your first variable is: #{first}"		# 1st arg passed in
+		puts "your second variable is #{second}"	# 2nd arg passed in
+		puts "your third var is #{third}"
+	The ARGV is the "argument variable", a very standard name in programming, that you 
+	will find used in many other languages. It's in all caps because it's a constant, 
+	meaning you shouldn't change the value once it's been assigned. This variable 
+	holds the arguments you pass to your Ruby script when you run it.
+
+	STDIN - Standard Input
+	Example 1:
+		user = ARGV.first
+		prompt = '> '
+
+		puts "Hi #{user}, I'm the #{$0} script."
+		puts "I'd like to ask you a few questions"
+		puts "Do you like me #{user}?"
+		print prompt
+		likes = STDIN.gets.chomp()
+
+		puts "Where do you live #{user}?"
+		print prompt
+		lives = STDIN.gets.chomp()
+		
+		puts "What kind of computer do you have?"
+		print prompt
+		computer = STDIN.gets.chomp()
+
+		puts <<MESSAGE
+		Alright, so you said #{likes} about liking me.
+		You live in #{lives}.  No sure where that is.
+		And you have a #{computer} computer.  Nice.
+		MESSAGE
+	Also notice that we're using STDIN.gets instead of plain 'ol gets. That is because 
+	if there is stuff in ARGV, the default gets method tries to treat the first one as 
+	a file and read from that. To read from the user's input (i.e., stdin) in such a 
+	situation, you have to use it STDIN.gets explicitly.
+
+
+Reading and Writing files:
+	Example 1:	#Reading a file from command line argument and from interaction
+			#within the program and displaying it
+		filename = ARGV.first
+
+		prompt = "> "
+		txt = File.open(filename)
+
+		puts "Here's your file: #{filename}"
+		puts txt.read()				#prints entire file
+		txt.close()
+		
+		puts "I'll also ask you to type it again:"
+		print prompt
+		file_again = STDIN.gets.chomp()
+
+		txt_again = File.open(file_again)
+
+		puts txt_again.read()
+		txt_again.close()
+
+
+	Example 2:		#uses open, truncate, write and close (requires ruby 1.9)
+		filename = ARGV.first
+		script = $0
+
+		puts "We're going to erase #{filename}."
+		puts "If you don't want that, hit CTRL-C (^C)."
+		puts "if you do want that, hit RETURN."
+
+		print "? "
+		STDIN.gets
+	
+		puts "Opening the file..."
+		target = File.open(filename, 'w')	#w means to write
+
+		puts "Truncating that file.  Goodbye!"
+		target.truncate(target.size)
+
+		puts "Now I'm going to ask you for three lines."
+	
+		print "line 1:"; line1 = STDIN.gets.chomp()
+		print "line 2:"; line2 = STDIN.gets.chomp()
+		print "line 3:"; line3 = STDIN.gets.chomp()
+
+		puts "I'm going to write these to the file."
+	
+		target.write(line1)
+		target.write("\n")
+		target.write(line2)
+		target.write("\n")
+		target.write(line3)
+		target.write("\n")
+
+		puts "And finally, we close it."
+		target.close()
+
+
+	Example 3:		#writing from one file to another (copy)
+		from_file, to_file = ARGV
+		script = $0
+	
+		puts "Copying from #{from_file} to #{to_file}"
+		input = File.open(from_file)
+		indata = input.read()
+
+		puts "The input file is #{indata.length} bytes long"
+
+		puts "Does the output file exist? #{File.exists? to_file}"
+		puts "Ready, hit RETURN to continue, CTRL-C to abort."
+		STDIN.gets
+
+		output = File.open(to_file, 'w')
+		output.write(indata)
+
+		puts "Alright, all done."
+
+		output.close()
+		input.close()
+
+
+
+
+Methods:
+	.capitalize	capitalize first letter
+	.call		used to call procs directly.
+	.chomp		remove new line after input
+				gets.chomp
+				"joey" becomes "Joey"
+	.collect	takes a block and applies the expression in the block to every 
+			element in an array.  
+				my_nums = [1, 2, 3]
+				my_nums.collect { |num| num ** 2 }
+				# ==> [1, 4, 9]
+			If we look at the value of my_nums, though, we'll see it hasn't 
+			changed:
+				my_nums
+				# ==> [1, 2, 3]
+			.collect returns a copy of my_nums, but doesn't change (or mutate) 
+			the original my_nums array. If we want to do that, we can 
+			use .collect! with an exclamation point
+	.delete		delete from hash or symbol
+	.downcase	confer string to all lower case
+	.downto		print out specific range of values
+				10.downto(1) { |num| print num, " " }
+	.each		apply an expression to each element of an object, one at a time
+				array = [1, 2, 3, 4]
+				array.each do |x|
+				   x += 10
+				   print "#{x}"
+				end
+	.each_key	used to list all "keys" in a hash or symbol
+	.each_value	used to list all "values" in a hash or symbol
+	.even?		returns true when a number is an even number
+	.exist?		uses to see if a file exists, returns true or false
+				puts "does file exist? #{File.exists? filenamevar}"
+	.floor		rounds a float (number with a  decimal) down to the nearest 
+			integer
+	.gsub		global substitution
+			string_to_change.gsub!(/s/, "th")
+			see .include for example usage
+	.include	evaluates to true if it finds what it is looking for
+				print "enter your name"
+				user_input = gets.chomp
+				user_input.downcase!
+				if user_input.include? "s"
+					user_input.gsub!(/s/, "th"
+				end
+			looks for the letter s in the provided input and replaces with th
+	.intern		same at .to_sym - converts to a symbol
+	.length		prints the number of characters/bytes in a string.  I.E:
+				"I love ruby".length   returns 11
+	.next		will return the integer immediately following the integer it's 
+			called on.  4.next will return 5
+	.pop		will "pop" the last item in an array.
+				words.pop(1) Drops the last item in an array
+	.push		add an element to the end of an array (can also use << )
+	.respond_to?	takes a symbol and returns true if an object can receive that 
+			method and false otherwise.
+				[1, 2, 3].respond_to?(:push)  #would return true
+				[1, 2, 3].respond_to?(:to_sym) # would return false, you
+							       # can't turn an array into
+							       # symbol
+	.reverse	reverses string of characters.  I.E:
+				"Joey".reverse becomes "yeoJ" 
+	.select		select items in hashes or symbols
+	.sort!		sort items
+	.split		it takes in a string and returns an array. If we pass it a bit 
+			of text in parentheses, .split will divide the string wherever 
+			it sees that bit of text, called a delimiter. For example:
+				text.split(",")
+			tells Ruby to split up the string text whenever it sees a comma.
+	.times		perform a task on each item in an object a specified # of times
+				10.times {print "OSU"}
+	.to_i		short for "to integer" convert to an integer
+	.to_s		short for "to string" - allows you to convert a number (integer?)
+			or symbol to a string value.
+				puts word + " " + value.to_s
+	.to_sym		short for "to symbol" - allows you to convert to a symbol
+	.upcase		convert string to all upper case
+	.upto		print out specific range of values
+				95.upto(100) { |num| print num, " " }
+				"A".upto("Z") { |letter| print letter, " " }
+
+	Example:	"TeSt".length.reverse.upcase
+
+
+
+Creating your own Methods:
+	def	short for "define".  Methods have 3 parts:
+		header		included def keyword, name of method and arguments the
+				method takes
+		body		the code block that describes the procedures the method
+				carries out
+		end keyword	end
+
+	Example 1:
+	def puts_1_to_10
+	  (1..10).each { |i| puts i }
+	end
+	puts_1_to_10 
+
+	Example 2:		#uses a splat (*) argument.  Used when you don't know how
+				#many arguments will be passed in
+	def what_up(greeting, *bros)
+	  bros.each { |bro| puts "#{greeting}, #{bro}!" }
+	end
+ 	what_up("What up", "Justin", "Ben", "Kevin Sorbo")
+
+
+	Return 	Return value gathered from method
+	Example 1:
+	def add(numA, numB)
+	    return numA+numB
+	end
+	puts add(3, 4)
+
+	Example 2:
+	def greeter(name)
+	    return "Hello" + name + "how are you doing today"
+	end
+
+	def by_three?(number)
+	    if number % 3 == 0 
+	        return true
+	    else
+	        return false
+	    end
+	end
+	greeter(jim)
+	number(6)
+
+
+Private and Public methods
+	By default all methods are Public meaning they can be accessed from any other part 
+	of the program.  If you specific Public before your method everything after the 
+	public keyword through the end of the class definition will now be public unless 
+	we say otherwise.  Private methods - they're private to the object where they are
+	defined. This means you can only call these methods from other code inside
+	the object.
+
+	Example 1:
+	class Person
+	  def initialize(name, age)
+	    @name = name
+	    @age = age
+	  end
+	  
+	  public    # This method can be called from outside the class.
+	  
+	  def about_me
+	    puts "I'm #{@name} and I'm #{@age} years old!"
+	  end
+	  
+	  private   # This method can't!
+	  
+	  def bank_account_number
+	    @account_number = 12345
+	    puts "My bank account number is #{@account_number}."
+	  end
+	end
+	
+	eric = Person.new("Eric", 26)
+	eric.about_me
+	eric.bank_account_number	#this won't work because of the private method
+
+
+Sample program:
+
+	print "What is your first name? "
+	first_name = gets.chomp.capitalize!
+	print "What is your last name? "
+	last_name = gets.chomp.capitalize!
+	print "What city do you live in? "
+	city = gets.chomp.capitalize!
+	print "What state do you live in? "
+	state = gets.chomp.upcase!
+	puts "Your name is #{first_name} #{last_name} and you live in #{city}, #{state}."
+
+
+If / Else / Elsif:
+
+	if x < y
+	   puts "x is less then y"
+	elsif x > y
+	   puts "x is greater they y"
+	else 
+	   puts "x equals y"
+	end
+
+	Comparisons:
+	<
+	>
+	<=
+	>=
+	==
+	!=
+
+	&& (and)	10 > 5 && 3 < 4 is true
+	true && true 	true
+	true && false	false
+	false && true	false
+	false && false	false
+
+	||  (or)	false || 10 > 3 is true
+	true || true	true
+	true || false	true
+	false || true	true
+	false || false	false
+
+	Short-Circuit Evaluation:
+	This means that Ruby doesn't look at both expressions unless it has to; if it sees
+	false && true it stops reading as soon as it sees && because it knows false && 
+	anything must be false.
+	Example:
+		def a
+		  puts "A was evaluated!"
+		  return true
+		end
+	
+		def b
+		  puts "B was also evaluated!"
+		  return true
+		end
+	
+		puts a || b
+		puts "------"
+		puts a && b
+
+		This example returns:
+		A was evaluated!
+		true
+		------
+		A was evaluated!
+		B was also evaluated!
+		true
+
+
+	puts "It's true!" if true	#valid syntax on short simple expressions
+					# action if boolean
+					# action unless boolean
+	Example:
+	my_array = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+	my_array.each { |x| puts x if x.even? }		#returns only even numbers
+
+	More Exampls:
+	return "n must be an integer" unless Integer
+	
+
+	return "n must be greater than 0." if n <= 0
+
+	Ternary conditional expression	#boolean ? Do this if true: Do this if false
+	puts 3 < 4 ? "3 is less then 4" : "3 is not less then 4"
+
+Unless:
+	hungry = true
+
+	unless hungry = false
+	  puts "I'm writing Ruby programs!"
+	else
+	  puts "Time to eat!"
+	end
+
+	puts "It's true!" unless false	#valid syntax on short simple expressions
+					# expression unless boolean
+
+Assignment Operator:
+	counter += 1		this adds one to counter, then assigns that new value 
+				back to counter
+				counter = 1
+				while counter < 11
+					puts counter
+					counter += 1	#instead of counter = counter + 1
+				end
+	+=
+	-=
+	*=
+	/=
+
+
+For loop:
+	for num in 1..10
+	   puts num
+	end
+
+	..		two dots includes numbers 1 - 10
+	...		three dots 1...10 does not include last number in range	
+
+	Example 1:
+		the_count = [1, 2, 3, 4, 5]
+		fruits = ['apples', 'oranges', 'pears', 'apricots']
+		change = [1, 'pennies', 2, 'dimes', 3, 'quarters']
+	
+		for number in the_count
+		  puts "This is count #{number}"
+		end
+
+		fruits.each do |fruit|
+		  puts "A fruit of type: #{fruit}"
+		end
+
+		for i in change
+		  puts "I got #{i}"
+		end
+
+		elements = [] 			#creating an array
+
+		for i in (0..5)
+		  puts "Adding #{i} to the list."
+		  elements.push(i)
+		end
+	
+		for i in elements
+		  puts "Element was: #{i}"
+		end
+
+
+
+Loop method:
+	i = 20
+	loop do
+	  i -= 1
+	  print "#{i}"
+	  break if i <= 0
+	end
+
+	i = 20
+	loop do
+	  i -= 1
+	  next if i % 2 != 0	#looks for even numbers and only prints them
+	  print "#{i}"
+	  break if i <= 0
+	end
+
+While loops:
+	counter = 1
+	while counter < 11
+	  puts counter
+	  counter = counter + 1
+	end
+
+Until loops:
+	counter = 1
+	until counter > 10
+	  puts counter
+	  counter = counter+1
+	end
+
+Case Statement:
+	case language
+	when "JS"
+	  puts "Websites!"
+	when "Python"
+	  puts "Science!"
+	when "Ruby"
+	  puts "Web apps!"
+	else
+	  puts "I don't know!"
+	end
+
+	Also valid syntax:
+	case language
+	   when "JS" then puts "Websites!"
+	   when "Python" then puts "Science!"
+	   when "Ruby" then puts "Web apps!"
+	   else puts "I don't know!"
+	end
+
+	
+
+Arrays:
+	How to define an array
+	my_array = [1, 2, 3, 4]
+
+
+	You can access elements in the array using the following syntax:
+	print array[0]
+	print array[4]
+		array elements always start at 0
+
+	Example 1:
+	puts "User input 1 "
+	text = gets.chomp
+	words = text.split(" ")
+	puts "User input 2 "
+	redact = gets.chomp
+	words.each do |x|			#.each defines the array
+	    if x != redact
+	        print "#{x}" + " "
+	    else
+	        print "REDACTED" + " "
+	    end
+	end
+
+	Example 2 (2d array):
+	my_array = [1, 2, 3, 4], [5, 6, 7, 8]
+	print my_array[1][2]			#this will print 7
+						#[1] is second portion of array
+						#[2] is the number 2 element in 2nd array
+			
+
+	Eample 3:
+	s = [["ham", "swiss"], ["turkey", "cheddar"], ["roast beef", "gruyere"]]
+	s.each do |x|
+	    x.each do |y|
+        	puts y
+    	     end
+	end
+
+
+	Example 4:			#using push to populate array
+	strings = ["HTML", "CSS", "JavaScript", "Python", "Ruby"]
+	symbols = []
+	strings.each do |x|
+	    symbols.push(x.to_sym)
+	end
+
+	
+	Example 5:			#using concatenation operator <<
+	alphabet = ["a", "b", "c"]
+	alphabet << "d"
+	caption = "now is the time "
+	caption << "for all good men to come to the aid of their country"
+
+	prime_array << prime.next
+
+
+	Example 6:
+		the_count = [1, 2, 3, 4, 5]
+		fruits = ['apples', 'oranges', 'pears', 'apricots']
+		change = [1, 'pennies', 2, 'dimes', 3, 'quarters']
+	
+		for number in the_count
+		  puts "This is count #{number}"
+		end
+
+		fruits.each do |fruit|
+		  puts "A fruit of type: #{fruit}"
+		end
+
+		for i in change
+		  puts "I got #{i}"
+		end
+
+		elements = [] 			#creating an array
+
+		for i in (0..5)
+		  puts "Adding #{i} to the list."
+		  elements.push(i)
+		end
+	
+		for i in elements
+		  puts "Element was: #{i}"
+		end
+
+
+Hash and Symbols: 
+	pets = Hash.new			#Hash must be capitalized
+	pets["spoony"] = "cat"		#spoony is a "key", cat is a "value"
+	pets["orval" = "gerbil"		#keys must be unique, values can be repeated
+	pets["slimy" = "octopus"
+	print pets["spoony"]
+
+		or
+
+	pets = { "spoony" => "cat", 
+	   "orval" => "gerbil", 
+	   "slimy" => "octopus" 
+	}
+	print pets["slimy"]
+
+	Example2:
+	secret_identities = { "The Batman" => "Bruce Wayne",
+	  "Superman" => "Clark Kent",
+	  "Wonder Woman" => "Diana Prince",
+	  "Freakazoid" => "Dexter Douglas"
+	}
+	secret_identities.each { |key, value| puts "#{key}: #{value}" }
+
+
+	can't convert Fixnum into String - means you are missing .to_s method
+	EXAMPLE using .to_s:
+	puts "Enter your sentence: "
+	text = gets.chomp
+	words = text.split(" ")
+	frequencies = Hash.new(0)
+	words.each { |x| frequencies[x]+=1 }
+	frequencies = frequencies.sort_by { |k, v| v }
+	frequencies.reverse!
+	frequencies.each do |word, frequencie|
+	    puts word + " " + frequencie.to_s
+	end
+
+	Symbols:
+	there's a key behavior of symbols that makes them different from strings: while 
+	there can be multiple different strings that all have the same value, there's only 
+	one copy of any particular symbol at a given time.
+	
+	Symbols always start with a colon (:). They must be valid Ruby variable names, so 
+	the first character after the colon has to be a letter or underscore (_); after 
+	that, any combination of letters, numbers, and underscores is allowed (no spaces).
+
+	hash lookup is faster with symbol keys than with string keys. 
+
+	Example 1:
+	my_first_symbol = :blablabla
+
+	Example 2:
+	symbol_hash = { :one => 1,
+ 	   :two => 2,
+ 	   :three => 3
+	}
+
+	Example 3:		# Ruby symbols 1.9 format is different then < 1.9	
+	movies = { Raiders_of_the_lost_ark: "Awesome",
+	    Star_Wars: "Awesome",
+	    Bed_of_Roses: "Sucked!",
+	    Bonfire_of_the_Vanities: "Awful",
+	    Thor: "Good"
+	}
+
+	Example 4:			# using .select
+	movie_ratings = {
+	  memento: 3,
+	  primer: 3.5,
+	  the_matrix: 3,
+	  truman_show: 4,
+	  red_dawn: 1.5,
+	  skyfall: 4,
+	  alex_cross: 2,
+	  uhf: 1,
+	  lion_king: 3.5
+	}
+	good_movies = movie_ratings.select { |k, v| v > 3 }
+
+
+	Example 5:			# using .each_key / .each_value
+	movie_ratings = {
+	  memento: 3,
+	  primer: 3.5,
+	  the_matrix: 3,
+	  truman_show: 4,
+	  red_dawn: 1.5,
+	  skyfall: 4,
+	  alex_cross: 2,
+	  uhf: 1,
+	  lion_king: 3.5
+	}
+	movie_ratings.each_key { |k| puts k, " " }
+
+	Example 6:			# adding to an existing hash
+	movies = {
+	    "Raiders of the Lost Ark" => "5"
+	}
+	puts "User input"
+	choice = gets.chomp
+	case choice
+	when "add"
+	    puts "What movie would you like to add?"
+	    title = gets.chomp
+	    puts "What rating would you give this movie?"
+	    rating = gets.chomp
+	    movies[title]=rating		#where addition to hash happens
+	    puts "Added!"
+	when "update"
+	    puts "Updated!"
+	when "display"
+	    puts "Movies!"
+	when "delete"
+	    puts "Deleted!"
+	else
+	    puts "Error!"
+	end
+
+
+
+	# hash style
+	mystuff['apples']
+
+	# module style
+	mystuff.apples()
+	puts mystuff.tangerine
+
+	# class style
+	thing = MyStuff.new()
+	thing.apples()
+	puts thing.tangerine
+
+
+
+Blocks:	block are like nameless Methods
+	Example 1:
+	1.times do
+	  puts "I'm a code block!"
+	end
+	1.times { puts "As am I!" }
+
+	Example 2:
+	[1, 2, 3, 4, 5].each { |i| puts i * 5 }
+
+Comparison Operator:	The combined comparison operator looks like this: <=> and is used
+			in conjunction with .sort!. It returns 0 if the first operand 
+			(item to be compared) equals the second, 1 if first operand is 
+			greater than the second, and -1 if the first operand is less than
+			the second.
+		<=>
+		1	1st operand is > 2nd
+		0	operands are equal
+		-1	1st operand is < 2nd
+		
+		Example:
+		book_1 = "A Wrinkle in Time"
+		book_2 = "A Brief History of Time"
+		book_1 <=> book_2
+
+		This returns a 1
+		
+		Example 2:
+		books = ["Charlie", "War and Peace", "Utopia", "A History of Time"]
+		books.sort! { |firstBook, secondBook| firstBook <=> secondBook }
+
+		Example 3:		#reverse order (desdescending)
+		books = ["Charlie", "War and Peace", "Utopia", "A History of Time"]
+		books.sort! do |first, second|
+   		 if first < second
+		        1
+		    elsif first > second
+		        -1
+		    else
+		        0
+		    end
+		end
+
+More on Sorting:
+
+	def alphabetize(arr, rev=false)
+	  if rev
+	    arr.sort { |item1, item2| item2 <=> item1 }
+	  else
+	    arr.sort { |item1, item2| item1 <=> item2 }
+	  end
+	end
+	
+	books = ["Heart of Darkness", "Code Complete", "The Lorax", "The Prophet", 	"Absalom, Absalom!"]
+	
+	puts "A-Z: #{alphabetize(books)}"
+	puts "Z-A: #{alphabetize(books, true)}"
+
+	The first part we're defining a method, alphabetize. The first parameter (arr) is 	an array, rev=false tells Ruby that alphabetize has a second parameter, rev (for
+	"reverse") that will default to false if the user doesn't type in two arguments. 
+
+
+Conditional Assignment:
+	If you want to assign a variable if it hasn't already been assigned you use the
+	conditional assignment operator: ||=. It's made up of the or (||) logical operator
+	and the normal = assignment operator.  ||=
+		fav_movie ||= "Raiders"
+	This will assign "Raiders" to the fav_movie variable if nothing is already
+	assigned.  If something is assigned the command will be ignored.
+
+
+Yields:
+	Why do some methods accept a block and others don't? It's because methods that 
+	accept blocks have a way of transferring control from the calling method to the 
+	block and back again. We can build this into the methods we define by using the 
+	yield keyword.
+
+	Example 1:
+	def yield_name(name)
+	  puts "In the method! Let's yield."
+	  yield name
+	  puts "Block complete! Back in the method."
+	end
+	yield_name("Joey") { |name| puts "My name is #{name}." }
+
+	Example 2:
+	def double(number)
+	    yield number
+	end
+	double(4) { |number| number * 2 }
+
+	Example 3:
+		def greeter 
+		    yield 
+		end
+		
+		phrase = Proc.new { puts "Hello there!" }
+		greeter(&phrase)
+
+
+Procs:
+	Blocks are one of the few times in Ruby that are not objects.  Blocks can't be 
+	saved to variables and don't have all the powers and abilities of a real object. 	For that, we'll need... procs!  You can think of a proc as a "saved" block: just 
+	like you can give a bit of code a name and turn it into a method, you can name a 
+	block and turn it into a proc. Procs are great for keeping your code DRY, which 
+	stands for Don't Repeat Yourself. With blocks, you have to write your code out 
+	each time you need it; with a proc, you write your code once and can use it many 
+	times!
+	Example 1:
+		multiples_of_3 = Proc.new do |n|
+		  n % 3 == 0
+		end
+		(1..100).to_a.select(&multiples_of_3)		
+
+	Example 2:
+		floats = [1.2, 3.45, 0.91, 7.727, 11.42, 482.911]
+		round_down = Proc.new { |x| x.floor }
+    		ints = floats.collect(&round_down)
+
+	Example 3:
+		def greeter 
+		    yield 
+		end
+		
+		phrase = Proc.new { puts "Hello there!" }
+		greeter(&phrase)
+
+	Example 4:				#using the .call method
+		hi = Proc.new { puts "Hello!" }
+		hi.call
+
+	Example 5:				#convert integer to string
+						# "&" convert symbol to proc
+		numbers_array = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+		strings_array = numbers_array.collect(&:to_s)
+
+	Example 6:
+		ages = [23, 101, 7, 104, 11, 94, 100, 121, 101, 70, 44]
+		under_100 = Proc.new do |a|
+		    a < 100 
+		end
+		ages.select(&under_100)
+
+
+Lambda:		Like procs, lambdas are objects. The similarities don't stop there: with 
+		the exception of a bit of syntax and a few behavioral quirks, lambdas are 
+		identical to procs.
+			lambda { block }
+	Example 1:
+		def lambda_demo(a_lambda)
+		  puts "I'm the method!"
+		  a_lambda.call
+		end
+		lambda_demo(lambda { puts "I'm the lambda!" })
+
+	Example 2:				#convert from a string to a symbol
+		strings = ["leonardo", "donatello", "raphael", "michaelangelo"]
+		symbolize = lambda { |x| x.to_sym }
+		symbols = strings.collect(&symbolize)
+
+	There are only two main differences between Procs and Lamdas.
+	First, a lambda checks the number of arguments passed to it, while a proc does 
+	not. This means that a lambda will throw an error if you pass it the wrong number 
+	of arguments, whereas a proc will ignore unexpected arguments and assign nil to 
+	any that are missing.
+
+	Second, when a lambda returns, it passes control back to the calling method; when 
+	a proc returns, it does so immediately, without going back to the calling method.
+
+	To see how this works, take a look at the code below. Our first method 
+	calls a proc; the second calls a lambda
+
+		def batman_ironman_proc
+		  victor = Proc.new { return "Batman will win!" }
+		  victor.call
+		  "Iron Man will win!"
+		end
+		
+		puts batman_ironman_proc
+		
+		def batman_ironman_lambda
+		  victor = lambda { return "Batman will win!" }
+		  victor.call
+		  "Iron Man will win!"
+		end
+		
+		puts batman_ironman_lambda
+
+	See how the proc says Batman will win? This is because it returns immediately, 
+	without going back to the batman_ironman_proc method.
+
+	Our lambda, however, goes back into the method after being called, so the method 
+	returns the last code it evaluates: "Iron Man will win!"
+
+	Example 3:			# filters out symbols from array
+		my_array = ["raindrops", :kettles, "whiskers", :mittens, :packages]
+		symbol_filter = lambda { |x| x.is_a? Symbol }
+		symbols = my_array.select(&symbol_filter)
+	
+	Example 4:
+		odds_n_ends = [:weezard, 42, "Trady Blix", 3, true, 19, 12.345]
+		filter = lambda { |x| x.is_a? Integer }
+		ints = odds_n_ends.select(&filter)
+
+	Example 5:			# creating a lambda from a hash
+		crew = {
+		  captain: "Picard",
+		  first_officer: "Riker",
+		  lt_cdr: "Data",
+		  lt: "Worf",
+		  ensign: "Ro",
+		  counselor: "Troi",
+		  chief_engineer: "LaForge",
+		  doctor: "Crusher"
+		}
+		first_half = lambda { |x, y| y < "M" }
+		j = crew.select(&first_half)
+
+
+BLOCK
+A block is just a bit of code between do..end or {}. It's not an object on its own, but it 
+can be passed to methods like .each or .select.
+
+PROC
+A proc is a saved block we can use over and over.
+
+LAMBDA
+A lambda is just like a proc, only it cares about the number of arguments it gets and it 
+returns to its calling method rather than returning immediately.
+
+
+
+Class:
+	By convention, class names start with a capital letter and use CamelCase instead 
+	of relyingonunderscores.
+	In Ruby, we use @ before a variable to signify that it's an instance variable. 
+	This means that the variable is attached to the instance of the class.
+
+	Two catch phrases "is-a" and "has-a". You use the phrase is-a when you talk about 
+	objects and classes being related to each other by a class relationship. You use 
+	has-a when you talk about objects and classes that are related only because they 
+	reference each other.
+
+	Example 1:
+		class Person
+		    def initialize(name)
+		        @name = name	
+		    end
+		end
+		matz = Person.new("Yukihiro")
+
+	Example 2:
+		class Message
+		    @@messages_sent = 0
+		    def initialize(from, to)
+		        @from = from
+		        @to = to
+		        @@messages_sent += 1
+		    end
+		    
+		end
+		my_message = Message.new("dude@aol.com", "bob@aol.com")
+
+	Example 3:
+		class Machine
+		  @@users = {}
+		  
+		  def initialize(username, password)
+		    @username = username
+		    @password = password
+		    @@users[username] = password
+		    @files = {}
+		  end
+		  
+		  def create(filename)
+		    time = Time.now
+		    @files[filename] = time
+		    puts "#{filename} was created by #{@username} at #{time}."
+		  end
+		  
+		  def Machine.get_users
+		    @@users
+		  end
+		end
+		
+		my_machine = Machine.new("eric", 01234)
+		your_machine = Machine.new("you", 56789)
+		
+		my_machine.create("groceries.txt")
+		your_machine.create("todo.txt")
+		
+		puts "Users: #{Machine.get_users}"
+
+
+	# hash style
+	mystuff['apples']
+
+	# module style
+	mystuff.apples()
+	puts mystuff.tangerine
+
+	# class style
+	thing = MyStuff.new()
+	thing.apples()
+	puts thing.tangerine
+
+
+Inheritance Syntax:
+	In Ruby, inheritance works like this:
+		class DerivedClass < BaseClass
+		  # Some stuff!
+		end
+	where the derived class is the new class you're making and the base class is the 
+	class from which that new class inherits. You can read "<" as "inherits from."
+
+	You can also directly access the attributes or methods of a superclass with Ruby's 
+	built-in super keyword.
+	The syntax looks like this:
+
+		class DerivedClass < Base
+		  def some_method
+		    super(optional args)
+		      # Some stuff
+		    end
+		  end
+		end
+	When you call super from inside a method, that tells Ruby to look in the 
+	superclass of the current class and find a method with the same name as the one 
+	from which super is called. If it finds it, Ruby will use the superclass' version 
+	of the method.
+
+Variables:
+	Instance Variables - Recall that instance variables begin with an @. This isn't 
+	just a Ruby convention—it's part of the syntax! Always start your instance 
+	variables with @.
+
+	Class variables - are like instance variables, but instead of belonging to an 
+	instance of a class, they belong to the class itself. Class variables always start 
+	with two @s, like so: @@files.
+
+	Global variables - can be declared in two ways. You just define the variable 
+	outside of any method or class, and voilà! It's global. If you want to make a 
+	variable global from inside a method or class, just start it with a $, like so: 
+	$matz.  The variable must now be referenced with the $ no matter where you are 
+	calling it.  i.e. $matz
+
+
+
+Atribute read and writer:
+	attr_reader - to access a variable in a class
+	attr_writer - to change a variable in a class
+	attr_accessor - makes a variable both readable and writeable
+	
+	Example 1:	
+		class Person
+		  attr_reader :name
+		  attr_reader :job
+		  attr_writer :job
+		  
+		  def initialize(name, job)
+		    @name = name
+		    @job = job
+		  end
+		end
+
+	Example 2:
+		class Person
+		  attr_accessor :name
+		  attr_accessor :job
+		  attr_accessor :job
+		  
+		  def initialize(name, job)
+		    @name = name
+		    @job = job
+		  end
+		end
+	
+
+
+Modules:
+	Like class names, module names are written in CapitalizedCamelCase, rather than 
+	lowercasewithunderscores.
+	
+	It doesn't make sense to include variables in modules, since variables (by 
+	definition) change (or vary). Constants, however, are supposed to always stay the 
+	same, so including helpful constants in modules is a great idea.
+	
+	Ruby doesn't make you keep the same value for a constant once it's initialized, 
+	but it will warn you if you try to change it. Ruby constants are written in 
+	ALL_CAPS and are separated with underscores if there's more than one word.
+
+	Creating your own module:
+	Example 1:
+		module Circle
+		
+		  PI = 3.141592653589793
+		  
+		  def Circle.area(radius)
+		    PI * radius**2
+		  end
+		  	
+		  def Circle.circumference(radius)
+		    2 * PI * radius
+		  end
+		end
+
+	One of the main purposes of modules is to separate methods and constants into 
+	named spaces. This is called (conveniently enough) namespacing, and it's how Ruby 
+	doesn't confuse Math::PI and Circle::PI.
+	
+	See that double colon we just used? That's called the scope resolution operator, 
+	which is a fancy way of saying it tells Ruby where you're looking for a specific 
+	bit of code. If we say Math::PI, Ruby knows to look inside the Math module to get 
+	that PI, not any other PI (such as the one we created in Circle).
+
+	We can use the scope resolution operator to reach methods as well as constants. 
+	The trick here, though, is to remember that because modules can't be instantiated, 
+	we can't just use def some_name. That will make an instance method!
+
+	Example 2:			#calling a module we made
+		module Math
+		    PI = 3.14
+		end
+		puts Math::PI
+
+		Returns "3.14"
+
+	Example 3: 			#calling a module that comes with Ruby
+		require 'date'
+		puts Date.today
+
+	Example 4:			#using the extend option
+		module ThePresent
+		  def now
+		    puts "It's #{Time.new.hour > 12 ? Time.new.hour - 12 : Time.new.hour}:#{Time.new.min} #{Time.new.hour > 12 ? 'PM' : 'AM'} (GMT)."
+		  end
+		end
+	
+		class TheHereAnd
+		  extend ThePresent
+		end
+
+		TheHereAnd.now
+
+	Example 5:	
+		class Account
+		    attr_reader :name
+		    attr_reader :balance
+		    def initialize(name, balance=100)
+		        @name = name
+		        @balance = balance
+		    end
+		    
+		    private
+		    def pin
+		        @pin = 1234
+		    end
+		    
+		    private
+		    def pin_error
+		        return "Access denied: incorrect PIN."
+		    end
+		    
+		    public
+		    def display_balance(pin_number)
+		        if pin_number == pin
+		            puts "Balance: #{@balance}"
+		        else
+		            puts pin_error
+		        end
+		    end
+		    
+		    def withdraw(pin_number, amount)
+		        if pin_number == pin
+		            @balance = @balance - amount
+		            puts "Withrdrew #{amount}. New balance: #{@balance}."
+		        else
+		            puts pin_error
+		        end
+		    end
+		end
+
+		checking_account = Account.new("Jimmy", 200)
+		checking_account.display_balance(1234)
+		checking_account.withdraw(1234, 32)
+		checking_account.display_balance(1234)
+
+
+
+	# hash style
+	mystuff['apples']
+
+	# module style
+	mystuff.apples()
+	puts mystuff.tangerine
+
+	# class style
+	thing = MyStuff.new()
+	thing.apples()
+	puts thing.tangerine
+
+
+
+Libraries:
+	Example 1:
+	require 'open-uri'			#request web page
+
+	open("https://www.trustwave.com/home/") do |f|
+	  f.each_line {|line| p line}
+	  puts f.base_uri         # <URI::HTTP:0x40e6ef2 URL:http://www.ruby-lang.org/en/>
+	  puts f.content_type     # "text/html"
+	  puts f.charset          # "iso-8859-1"
+	  puts f.content_encoding # []
+	  puts f.last_modified    # Thu Dec 05 02:45:02 UTC 2002
+	end
+
+
+
+
+
+
+
+CLASS Game Example:  	#
+
+class Game
+
+  def initialize(start)
+    @quips = [
+      "You died.  You kinda suck at this.",
+      "Nice job, you died ...jackass.",
+      "Such a luser.",
+      "I have a small puppy that's better at this."
+    ]
+    @start = start
+  end
+
+  def prompt()
+    print "> "
+  end
+
+  def play()
+    next_room = @start
+
+    while true
+      puts "\n--------"
+      room = method(next_room)
+      next_room = room.call()
+    end
+  end
+
+  def death()
+    puts @quips[rand(@quips.length())]
+    Process.exit(1)
+  end
+
+  def central_corridor()
+    puts "The Gothons of Planet Percal #25 have invaded your ship and destroyed"
+    puts "your entire crew.  You are the last surviving member and your last"
+    puts "mission is to get the neutron destruct bomb from the Weapons Armory,"
+    puts "put it in the bridge, and blow the ship up after getting into an "
+    puts "escape pod."
+    puts "\n"
+    puts "You're running down the central corridor to the Weapons Armory when"
+    puts "a Gothon jumps out, red scaly skin, dark grimy teeth, and evil clown costume"
+    puts "flowing around his hate filled body.  He's blocking the door to the"
+    puts "Armory and about to pull a weapon to blast you."
+
+    prompt()
+    action = gets.chomp()
+
+    if action == "shoot!"
+      puts "Quick on the draw you yank out your blaster and fire it at the Gothon."
+      puts "His clown costume is flowing and moving around his body, which throws"
+      puts "off your aim.  Your laser hits his costume but misses him entirely.  This"
+      puts "completely ruins his brand new costume his mother bought him, which"
+      puts "makes him fly into an insane rage and blast you repeatedly in the face until"
+      puts "you are dead.  Then he eats you."
+      return :death
+
+    elsif action == "dodge!"
+      puts "Like a world class boxer you dodge, weave, slip and slide right"
+      puts "as the Gothon's blaster cranks a laser past your head."
+      puts "In the middle of your artful dodge your foot slips and you"
+      puts "bang your head on the metal wall and pass out."
+      puts "You wake up shortly after only to die as the Gothon stomps on"
+      puts "your head and eats you."
+      return :death
+
+    elsif action == "tell a joke"
+      puts "Lucky for you they made you learn Gothon insults in the academy."
+      puts "You tell the one Gothon joke you know:"
+      puts "Lbhe zbgure vf fb sng, jura fur fvgf nebhaq gur ubhfr, fur fvgf nebhaq gur ubhfr."
+      puts "The Gothon stops, tries not to laugh, then busts out laughing and can't move."
+      puts "While he's laughing you run up and shoot him square in the head"
+      puts "putting him down, then jump through the Weapon Armory door."
+      return :laser_weapon_armory
+
+    else
+      puts "DOES NOT COMPUTE!"
+      return :central_corridor
+    end
+  end
+
+  def laser_weapon_armory()
+    puts "You do a dive roll into the Weapon Armory, crouch and scan the room"
+    puts "for more Gothons that might be hiding.  It's dead quiet, too quiet."
+    puts "You stand up and run to the far side of the room and find the"
+    puts "neutron bomb in its container.  There's a keypad lock on the box"
+    puts "and you need the code to get the bomb out.  If you get the code"
+    puts "wrong 10 times then the lock closes forever and you can't"
+    puts "get the bomb.  The code is 3 digits."
+    code = "%s%s%s" % [rand(9)+1, rand(9)+1, rand(9)+1]
+    print "[keypad]> "
+    guess = gets.chomp()
+    guesses = 0
+
+
+    while guess != code and guesses < 10
+      puts "BZZZZEDDD!"
+      guesses += 1
+      print "[keypad]> "
+      guess = gets.chomp()
+    end
+
+    if guess == code
+      puts "The container clicks open and the seal breaks, letting gas out."
+      puts "You grab the neutron bomb and run as fast as you can to the"
+      puts "bridge where you must place it in the right spot."
+      return :the_bridge
+    else
+      puts "The lock buzzes one last time and then you hear a sickening"
+      puts "melting sound as the mechanism is fused together."
+      puts "You decide to sit there, and finally the Gothons blow up the"
+      puts "ship from their ship and you die."
+      return :death
+    end
+  end
+
+  def the_bridge()
+    puts "You burst onto the Bridge with the neutron destruct bomb"
+    puts "under your arm and surprise 5 Gothons who are trying to"
+    puts "take control of the ship.  Each of them has an even uglier"
+    puts "clown costume than the last.  They haven't pulled their"
+    puts "weapons out yet, as they see the active bomb under your"
+    puts "arm and don't want to set it off."
+
+    prompt()
+    action = gets.chomp()
+
+    if action == "throw the bomb"
+      puts "In a panic you throw the bomb at the group of Gothons"
+      puts "and make a leap for the door.  Right as you drop it a"
+      puts "Gothon shoots you right in the back killing you."
+      puts "As you die you see another Gothon frantically try to disarm"
+      puts "the bomb. You die knowing they will probably blow up when"
+      puts "it goes off."
+      return :death
+
+    elsif action == "slowly place the bomb"
+      puts "You point your blaster at the bomb under your arm"
+      puts "and the Gothons put their hands up and start to sweat."
+      puts "You inch backward to the door, open it, and then carefully"
+      puts "place the bomb on the floor, pointing your blaster at it."
+      puts "You then jump back through the door, punch the close button"
+      puts "and blast the lock so the Gothons can't get out."
+      puts "Now that the bomb is placed you run to the escape pod to"
+      puts "get off this tin can."
+      return :escape_pod
+    else
+      puts "DOES NOT COMPUTE!"
+      return :the_bridge
+    end
+  end
+
+  def escape_pod()
+    puts "You rush through the ship desperately trying to make it to"
+    puts "the escape pod before the whole ship explodes.  It seems like"
+    puts "hardly any Gothons are on the ship, so your run is clear of"
+    puts "interference.  You get to the chamber with the escape pods, and"
+    puts "now need to pick one to take.  Some of them could be damaged"
+    puts "but you don't have time to look.  There's 5 pods, which one"
+    puts "do you take?"
+
+    good_pod = rand(5)+1 
+    print "[pod #]>"
+    guess = gets.chomp()
+
+    if guess.to_i != good_pod
+      puts "You jump into pod %s and hit the eject button." % guess
+      puts "The pod escapes out into the void of space, then"
+      puts "implodes as the hull ruptures, crushing your body"
+      puts "into jam jelly."
+      return :death
+    else
+      puts "You jump into pod %s and hit the eject button." % guess
+      puts "The pod easily slides out into space heading to"
+      puts "the planet below.  As it flies to the planet, you look"
+      puts "back and see your ship implode then explode like a"
+      puts "bright star, taking out the Gothon ship at the same"
+      puts "time.  You won!"
+      Process.exit(0)
+    end
+  end
+end
+
+a_game = Game.new(:central_corridor)
+a_game.play()
+
+
+****************************************************************************************
+
+Web Site:
+Install the Sinatra web framework.
+		
+	gem install sinatra
+
+Create project
+	cd ruby/projects
+	bundle gem jimmy test
+	cd jimmytest/lib
+Edit the jimmytest.rb file and put the following in it to test:
+
+require "rubygems"
+require "sinatra"
+
+set :bind, '0.0.0.0'	#use if you want to access test site remotely
+
+get '/' do
+  greeting = "Hello, World!"
+  return greeting
+end
+
+Run your ruby script ruby jimmytest.rb
+	2014-03-07 13:50:29] INFO  WEBrick 1.3.1
+	[2014-03-07 13:50:29] INFO  ruby 1.9.3 (2012-04-20) [arm-linux-eabihf]
+	== Sinatra/1.4.4 has taken the stage on 4567 for..with backup from WEBrick
+	[2014-03-07 13:50:29] INFO  WEBrick::HTTPServer#start: pid=2704 port=4567
+
+Now access the site in your browser:  http://127.0.0.1:4567
+	
+Now lets spice it up with some color/HTML.  Create the lib/views/index.erb file:
+<html>
+  <head>
+    <title>Jimmy Test Page</title>
+  </head>
+  <body>
+		
+    <% if greeting %>
+      <p>I just wanted to say <em style="color: green; font-size: 2em;"><%= greeting %></em>.
+    <% else %>
+      <em>Hello</em>, world!
+    <% end %>
+
+  </body>
+</html>
+
+Now edit your lib/jimmytest.rb script again so that it looks like this:
+require "rubygems"
+require "sinatra"
+
+set :bind, '0.0.0.0'
+
+get '/' do
+  greeting = "Hello, World!"
+  erb :index, :locals => {:greeting => greeting}
+end
+
+get '/hello' do
+  name = params[:name] || "Nobody"
+  greet = params[:greet] || "hi"
+  greeting = "#{greet}, #{name}"
+  erb :index, :locals => {:greeting => greeting}
+end
+
+You can see where the index file is accessed from the erg method with the erg :index …
+The name and greet variables will pass the 
+Restart your jimmytest.rb script and access the web page again by going to:
+	http://127.0.0.1/hello?name=jimmy&greet=HOWDY
+
+
+Now lets get input from HTML forms:
+
+Create a new file called lib/views/hello_form.erb:
+<html>
+    <head>
+        <title>Sample Web Form</title>
+    </head>
+<body>
+
+<h1>Fill Out This Form</h1>
+
+<form action="/hello" method="POST">
+    A Greeting: <input type="text" name="greet">
+    <br/>
+    Your Name: <input type="text" name="name">
+    <br/>
+    <input type="submit">
+</form>
+
+</body>
+</html>
+
+Now modify the jimmytest.rb file to look like this:
+require "rubygems"
+require "sinatra"
+
+set :bind, '0.0.0.0'
+
+get '/' do
+  greeting = "Hello, World!"
+  erb :index, :locals => {:greeting => greeting}
+end
+
+get '/hello' do
+  erb :hello_form
+end
+
+post '/hello' do
+  greeting = "#{params[:greet] || "Hello"}, #{params[:name] || "Nobody"}"
+  erb :index, :locals => {:greeting => greeting}
+end
+
+Restart the jimmytest.rb script and go to http://127.0.0.1/hello
+
+
+Now we will create a layout template.  
+
+Writing a full web page each time will quickly become tedious. Luckily you can create a "layout" template, or a kind of shell that will wrap all your other pages with common headers and footers. Good programmers try to reduce repetition, so layouts are essential for being a good programmer.
+
+Change lib/views/index.erb to be like this:
+<% if greeting %>
+  <p>I just wanted to say <em style="color: green; font-size: 2em;"><%= greeting %></em>.
+<% else %>
+  <em>Hello</em>, world!
+<% end %>
+
+Change lib/views/hello_form.erb to be like this:
+<h1>Fill Out This Form</h1>
+
+<form action="/hello" method="POST">
+    A Greeting: <input type="text" name="greet">
+    <br/>
+    Your Name: <input type="text" name="name">
+    <br/>
+    <input type="submit">
+</form>
+
+All we're doing is stripping out the "boilerplate" at the top and the bottom which is always on every page. We'll put that back into a single lib/views/layout.erb file that handles it for us from now on:
+<html>
+  <head>
+    <title>Jimmy's test page</title>
+  </head>
+  <body>
+    <%= yield %>
+  </body>
+</html>
+
+Sinatra automatically looks for a layout template called layout by default to use as the base template for all other templates. You can customize which template is used as the base for any given page, too. Restart the application
+
+
+
+******************************************************************************************
+RUBY ON RAILS  http://guides.rubyonrails.org/getting_started.html
+******************************************************************************************
+
+
+Install Rails:
+	sudo gem install rails
+
+Create a blog from scratch:
+	rails new blog
+	cd blog
+
+File and Directory structure that is created from “rails new blog” command
+
+File/Folder 	Purpose
+-----------	-------
+app/ 		Contains the controllers, models, views, helpers, mailers and assets for 
+		your application. You'll focus on this folder for the remainder of this 
+		guide.
+
+bin/ 		Contains the rails script that starts your app and can contain other 
+		scripts you use to deploy or run your application.
+
+config/ 	Configure your application's routes, database, and more. This is covered 
+		in more detail in Configuring Rails Applications.
+		http://guides.rubyonrails.org/configuring.html
+
+config.ru 	Rack configuration for Rack based servers used to start the application.
+
+db/ 		Contains your current database schema, as well as the database migrations.
+
+Gemfile
+Gemfile.lock 	These files allow you to specify what gem dependencies are needed for your 
+		Rails application. These files are used by the Bundler gem. For more 
+		information about Bundler, see the Bundler website.
+		http://gembundler.com/
+
+lib/ 		Extended modules for your application.
+
+log/ 		Application log files.
+
+public/ 	The only folder seen by the world as-is. Contains static files and 
+		compiled assets.
+
+Rakefile 	This file locates and loads tasks that can be run from the command line. 
+		The task definitions are defined throughout the components of Rails. 
+		Rather than changing Rakefile, you should add your own tasks by adding 
+		files to the lib/tasks directory of your application.
+		
+README.rdoc 	This is a brief instruction manual for your application. You should edit 
+		this file to tell others what your application does, how to set it up, and 
+		so on.
+
+test/ 		Unit tests, fixtures, and other test apparatus. These are covered in 
+		Testing Rails Applications.
+		http://guides.rubyonrails.org/testing.html
+
+tmp/ 		Temporary files (like cache, pid, and session files).
+
+vendor/ 	A place for all third-party code. In a typical Rails application this 
+		includes vendored gems.
+
+
+Start up a web server from the blog directory:
+	rails server
+
+Goto http://localhost:3000
+
+
+To get Rails saying "Hello", you need to create at minimum a controller and a view.
+
+A controller's purpose is to receive specific requests for the application. Routing 
+decides which controller receives which requests. Often, there is more than one route to 
+each controller, and different routes can be served by different actions. Each action's 
+purpose is to collect information to provide it to a view.
+
+A view's purpose is to display this information in a human readable format. An important 
+distinction to make is that it is the controller, not the view, where information is 
+collected. The view should just display that information. By default, view templates are 
+written in a language called eRuby (Embedded Ruby) which is processed by the request cycle 
+in Rails before being sent to the user.
+
+To create a new controller, you will need to run the "controller" generator and tell it 
+you want a controller called "welcome" with an action called "index", just like this:
+
+	rails generate controller welcome index
+
+Rails will create several files and a route for you.
+
+Most important of these are of course the controller, located at app/controllers/welcome_controller.rb and the view, located at app/views/welcome/index.html.erb.
+
+Open the app/views/welcome/index.html.erb file in your text editor. Delete all of the existing code in the file, and replace it with the following single line of code:
+	<h1>Hello, Rails!</h1>
+
+Open the config/routes.rb file and uncomment the line:
+	root ‘welcome#index’
+
+This is your application's routing file which holds entries in a special DSL (domain-
+specific language) that tells Rails how to connect incoming requests to controllers and 
+actions. This file contains many sample routes on commented lines, and one of them 
+actually shows you how to connect the root of your site to a specific controller and 
+action. 
+
+root 'welcome#index' tells Rails to map requests to the root of the application to the 
+welcome controller's index action and get 'welcome/index' tells Rails to map requests to 
+http://localhost:3000/welcome/index to the welcome controller's index action. This was 
+created earlier when you ran the controller generator (rails generate controller welcome 
+index).
+
+Run the server again:
+	rails server
+
+Goto http://localhost:3000
+
+
+More information on routing: http://guides.rubyonrails.org/routing.html
+
+
+In the Blog application, you will now create a new resource. A resource is the term used 
+for a collection of similar objects, such as articles, people or animals. You can create, 
+read, update and destroy items for a resource and these operations are referred to as CRUD 
+operations.
+
+Rails provides a resources method which can be used to declare a standard REST resource. 
+Modify config/routes.rb to look like this:
+
+	Blog::Application.routes.draw do
+ 	  resources :articles
+ 	  root 'welcome#index'
+	end
+
+Run “rake routes”.  You should see references to ‘articles’ in the various columns
+
+Create a controller called ArticlesController:
+	rails g controller articles
+
+Edit app/controllers/articles_controller.rb so that it looks like the following:
+	lass ArticlesController < ApplicationController
+	  def new
+	  end
+	end
+
+Create a new file called app/views/articles/new.html.erb with the following content:
+	<h1>New Article</h1>
+
+Run the server again:
+	rails server
+
+Goto http://localhost:3000/articles/new
+
+
+Create the first form:
+create the file app/views/articles/new.html.erb and place the following in it:
+	<%= form_for :article do |f| %>
+	  <p>
+	    <%= f.label :title %><br>
+	    <%= f.text_field :title %>
+	  </p>
+ 
+	  <p>
+	    <%= f.label :text %><br>
+	    <%= f.text_area :text %>
+	  </p>
+ 
+	  <p>
+	    <%= f.submit %>
+	  </p>
+	<% end %>
+

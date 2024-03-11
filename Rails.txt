@@ -1,0 +1,38 @@
+Rails
+
+
+
+Create a basic site:
+
+rails new MySite
+
+Install Gemfiles:
+cd MySite
+bundle install
+
+rails server
+
+Generate a controller:
+rails generate controller Pages
+
+Edit:
+vi app/controllers/pages_controller.rb
+	class PagesController < ApplicationController 
+
+  	   def home
+  	   end
+	
+	end
+
+vi config/routes.rb
+	get 'welcome' => 'pages#home'
+
+vi app/views/pages/home.html.erb
+	<div class="main">
+  	   <div class="container">
+    	      <h1>Hello my name is __</h1>
+	      <p>I make Rails apps.</p>
+	   </div>
+	</div>
+
+Goto loclohst:3000/welcome

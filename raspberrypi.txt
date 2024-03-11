@@ -1,0 +1,127 @@
+Raspberry Pi General Purpose Input/Output (GPIO) pins:
+
+Pin	Function
+---	--------
+1	3.3V
+2	5V
+3	GPIO 0 (SDA)
+4	--
+5	GPIO 1 (SCL)
+6	GND
+7	GPIO 4
+8	GPIO 14 (TXD)
+9	--
+10	GPIO 15 (RXD)
+11	GPIO 17
+12	GPIO 18 (PWM)
+13	GPIO 21 (PWM)
+14	--
+15	GPIO 22
+16	GPIO 23
+17	--
+18	GPIO 24
+19	GPIO 10 (MOSI)
+20	--
+21	GPIO 9 (MISO)
+22	GPIO 25 
+23	GPIO 11 (SCKL)
+24	GPIO 8	
+25	--
+26	GPIO 7
+
+All the GPIO pins can be used as either digital inputs or outputs. The pins labelled SCL and SDA can be used for I2C. The pins labelled MOSI, MISO and SCKL can be used to connect to high speed SPI devices.
+
+All the pins have 3.3V logic levels and are not 5V-safe so the output levels are 0-3.3V and the inputs should not be higher than 3.3V. If you want to connect a 5V output to a Pi input, use a level shifter
+
+GPIO Python Module usage:
+http://sourceforge.net/p/raspberry-gpio-python/wiki/BasicUsage/
+
+
+#enable raspicam, location, etc.
+raspi-config
+
+#take picture with raspi cam:
+raspistill -o image.jpg
+
+#Capture a 10s video:
+raspivid -o video.h264 -t 10000
+
+#get picamera library
+apt-get install python-picamera
+
+#BerryCam for iOS - App that lets you control Pi Camera from phone
+#need berryCam.py python script running on Pi first:
+# https://bitbucket.org/fotosyn/fotosynlabs/src/9819edca8927/BerryCam/
+
+#install python GPIO support (accessing pins on the Pi board)
+apt-get install python-dev python-rpi.gpio python-setuptools python-pip
+easy_install -U distribute
+pip install rpi.gpio
+
+#install git for git-hub
+apt-get install git-core
+
+#install Adafruit Pi Python repository
+cd /usr/src/
+git clone http://github.com/adafruit/Adafruit-Raspberry-Pi-Python-Code.git
+
+#play an mp3 from command line:
+apt-get install mpg123
+mpg123 song.mp3
+
+#Relay email through Gmail Account
+apt-get install ssmtp mailutils mpack
+#edit /etc/ssmtp/ssmtp.conf:
+   root=postmaster
+   mailhub=smtp.gmail.com:587
+   rewriteDomain=gmail.com  	#is this change needed?
+   hostname=gmail.com		#is this change needed?
+   FromLineOverride=YES
+   AuthUser=jtharel@gmail.com
+   AuthPass=IheartBr@d
+   UseSTARTTLS=YES
+#send attachment:
+   mpack -s "test" ./intruder.jpg user@aol.com
+
+
+
+#install Web Cam accessible through a web browser (raspicam)
+apt-get install libjpeg8-dev imagemagick libv4l-dev
+ln -s /usr/include/linux/videodev2.h /usr/include/linux/videodev.h
+wget http://sourceforge.net/code-snapshots/svn/m/mj/mjpg-streamer/code/mjpg-streamer-code-182.zip
+unzip mjpg-streamer-code-182.zip
+cd mjpg-streamer-code-182/mjpg-streamer
+make mjpg_streamer input_file.so output_http.so
+cp mjpg_streamer /usr/local/bin
+cp output_http.so input_file.so /usr/local/lib/
+cp -R www /usr/local/www
+mkdir /tmp/stream
+# start the camera: 
+# -t 9999999 is 2 hours of run time (setting to 0 waits forever)
+raspistill --nopreview -w 640 -h 480 -q 5 -o /tmp/stream/pic.jpg -tl 100 -t 9999999 -th 0:0:0 &
+# Start MJPG-Streamer
+LD_LIBRARY_PATH=/usr/local/bin mjpg_streamer -i "input_file.so -f /tmp/stream -n pic.jpg" -o "output_http.so -w /usr/local/www"
+#Watch the stream: http://<IP-Addr>:8080
+
+
+
+# Experimental section:
+
+#install i2c-tools
+apt-get install python-smbus
+apt-get install i2c-tools
+#edit the /etc/modprobe.d/raspi-blacklist.conf
+#  comment out spi-bcm2708 and i2c-bcm2708
+#  reboot the Pi
+#  run: sudo i2cdetect -y 1  (512MB pi model)
+#  or run: sudo i2cdetect -y 0 (256MB pi model)
+
+#install Web IO Pi -> web site for managing Pi and IO
+wget http://webiopi.googlecode.com/files/WebIOPi-0.7.0.tar.gz
+tar xvzf WebIOPi-0.7.0.tar.gz
+cd WebIOPi-0.7.0
+sudo ./setup.sh
+sudo update-rc.d webiopi defaults
+# reboot Pi
+# go to http://<Pi IP>:8000 
+# user:  webiopi    Password:  raspberry
