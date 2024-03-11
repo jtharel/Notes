@@ -1,0 +1,27 @@
+XPATH -> Pull information from XML
+	* is a wildcard
+	@ is used to select attributes
+	. and .. current and parent node respectively
+	//Members 	->returns all of the members in a phonebook
+	[Name="Tony*"]	->return names that start with Tony
+	//@type="office" ->return all attributes of a specific type
+	
+	Expected Input:
+		Brenna
+	Attacker Input:
+		Brenna" or "*"="
+
+	Finding Web Services on Google
+		filetype:wsdl wsdl site:site.com
+
+
+	Entity's
+	<!ENTITY intra SYSTEM "http://intranet/index.html">
+	<!ENTITY pass SYSTEM "/etc/passwd">
+
+	Just like SQL injection, XPath allows you to do boolean logic, and you can try:
+	' and '1'='1 
+	' or '1'='1 and you should get all results.
+
+Xpath Blind Explorer -> xpath explotation tool.
+	https://code.google.com/p/xpath-blind-explorer/
