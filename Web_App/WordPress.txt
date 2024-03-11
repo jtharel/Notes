@@ -1,0 +1,46 @@
+WPScan 		-Wordpress Security Scanner
+		 http://code.google.com/p/wpscan/
+		 Install:
+			apt-get install libcurl4-gnutls-dev
+			gem install --user-install mime-types typhus xml-simple
+			svn checkout http://wpscan.googlecode.com/svn/trunk/ ./wpscan 
+			
+		Execute:
+			cd wpscan/trunk
+			./wpscan.rb --url globosferro.org --enumerate p
+		Brute force admin password:
+			./wpscan.rb --url http://site.org/ --wordlist ./list.txt --username Admin
+
+		-Do wordlist password brute force on enumerated users using 50 threads ...
+			ruby ./wpscan.rb --url www.example.com --wordlist darkc0de.lst --threads 50
+
+		-Do wordlist password brute force on the 'admin' username only ...
+			ruby ./wpscan.rb --url www.example.com --wordlist darkc0de.lst --username admin
+
+		-Enumerate installed plugins ...		
+			ruby ./wpscan.rb --url www.example.com --enumerate p
+
+		-Enumerate installed themes ...
+			ruby ./wpscan.rb --url www.example.com --enumerate t
+
+		-Enumerate users ...
+			ruby ./wpscan.rb --url www.example.com --enumerate u
+
+		-Enumerate installed timthumbs ...
+			ruby ./wpscan.rb --url www.example.com --enumerate tt
+
+		-Use a HTTP proxy ...
+			ruby ./wpscan.rb --url www.example.com --proxy 127.0.0.1:8118
+
+		-Use a SOCKS5 proxy ... (cURL >= v7.21.7 needed)
+			ruby ./wpscan.rb --url www.example.com --proxy socks5://127.0.0.1:9000
+
+		-Use custom content directory ...
+			ruby ./wpscan.rb -u www.example.com --wp-content-dir custom-content
+
+		-Use custom plugins directory ...
+		ruby ./wpscan.rb -u www.example.com --wp-plugins-dir wp-content/custom-plugins
+
+		-Update ...
+			ruby ./wpscan.rb --update
+
