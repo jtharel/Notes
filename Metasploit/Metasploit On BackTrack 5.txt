@@ -1,0 +1,19 @@
+Metasploit Framework and Community Edition on Backtrack:
+
+/opt/framework/uninstall
+startx
+wget http://downloads.metasploit.com/data/releases/metasploit-latest-linux-x64-installer.run
+chmod u+x ./metasploit-latest-linux-x64-installer.run
+./metasploit-latest-linux-x64-installer.run
+http://localhost:3790
+
+You must register the community edition to get a license for use
+
+
+The files in this branch that are not in the master currently are: file_autopwn.rb db_autopwn.rb
+https://raw.github.com/neinwechter/metasploit-framework/autopwn-modules/modules/auxiliary/server/file_autopwn.rb
+https://raw.github.com/neinwechter/metasploit-framework/autopwn-modules/plugins/db_autopwn.rb
+
+file_autopwn.rb goes into "modules/auxiliary/server" and db_autopwn.rb goes into "plugins/".
+
+Once you have these two files placed into the proper directories, use file_autopwn as you would any other auxiliary module (except now it will actually load most of the applicable modules) and use the command "load db_autopwn" to load the db_autopwn plugin, following which you can issue it commands as normal.
