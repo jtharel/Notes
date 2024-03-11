@@ -1,0 +1,126 @@
+
+Bluetooth Hacking on Kali:
+
+Get "LightBlue Explorer" by Punch Through in the iTunes app store
+
+
+Have Bluetooth service start at bootup:
+	update-rc.d bluetooth enable
+
+Check to see bluetooth devices:
+	hcitool dev
+	
+
+
+Install bluepy:
+	git clone https://github.com/IanHarvey/bluepy.git
+	cd bluepy
+	sudo python setup.py build
+	sudo python setup.py install
+
+Install bleah:
+	git clone https://github.com/evilsocket/bleah.git
+	cd bleah
+	python setup.py build
+	sudo python setup.py install
+
+
+In terminal one:
+/usr/local/lib/python2.7/dist-packages/bluepy-1.1.4-py2.7.egg/bluepy/bluepy-helper 0
+	le on
+		rsp=$mgmt code=$success
+	
+
+In terminal two:
+	hcitool lescan		#shows bluetooth items to connect too
+
+	gatttool -b <address returned from above> -I
+		-I == interactive
+
+		connect
+		primary		#get the primary UUIDs
+				#shows a list of available "services" running
+
+		char-desc	#Get available handles	
+				#handles are connect points where you can read and write
+				#  access data. i.e. battery level of device
+	
+		char-read-hnd <handle>		#shows info for corresponding handle
+						#Decode as Ascii hex to read value
+
+
+	gatttool -b <address> -i 0 --char-write-req -a <handle> -n $(echo -n "<value>"|xxd -ps)
+
+
+
+	List Handles:
+		gatttool -b <address> -i 0 --char-desc
+
+	Write a value to a handle:
+		gatttool -b <address> -i 0 --char-write-req -a <handle> -n $(echo -n "<value>"|xxd -ps)
+
+	Read a value stored in a handle:
+		gatttool -b 30:AE:A4:7D:69:BE --char-read -a 0x0040
+
+	Listen for a notification and indications - # requires you write to the handle to listen
+		gatttool -b  30:AE:A4:7D:69:BE --char-write-req -a 0x0040 -n 0100 --listen
+
+		Notification don't need acknowledged, so they are faster. Hence, server does not know if the message 		reached to the client.
+		Indications need acknowledgement to communicated. The client will send a confirmation message back 
+		to the server, this way the server knows that message reached the client. One interesting thing 
+		defined by the ATT protocol is that a Server can't send two consecutive indications if the 
+		confirmation was not received. In other words, you have to wait for the confirmation of each 
+		indication in order to send the next indication.
+
+	
+
+Ubertooth:
+	mkfifo /tmp/btle
+	ubertooth-btle -f -c /tmp/btle
+
+	wireshark -k -i /tmp/btle
+
+
+ 
+btmon - Bluetooth monitor
+
+bluetoothctl -> 
+	connect <addr>
+	info			#shows alternate name and alias of device.
+	help			#shows available commands
+
+
+bluesnarfer -r 1-100 -C 7 -b 50:33:8B:26:EF:A4
+
+
+sdptool browse --tree --l2cap 50:33:8B:26:EF:A4
+
+
+hcidump -i hci0
+
+hcitool info 50:33:8B:26:EF:A4
+
+
+When btle communicates with Android device:
+	Android device will sniff all BTLE traffic for us
+
+	Developer Options -> Bluetooth HCI snoop log -> Enable
+
+	adb bugreport
+		unzip file	
+			go to FS/data/misc/bluetooth/logs/
+		open btsnooz_hci.log file in wireshark
+			set filter -> btatt
+
+			In wireshark goto > Wireless menu -> Bluetooth ATT Server Attributes
+				this shows characteristics for each handle
+
+
+
+NRF52840 - Dongle - uses NRF connect desktop and mobile application. Also a desktop app but must have dongle
+
+
+Bleak python library
+https://pypi.org/project/bleak
+
+https://github.com/nmatt0/bletools
