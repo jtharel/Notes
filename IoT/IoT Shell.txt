@@ -1,0 +1,11 @@
+If the command is called with system(), a shell is involved,
+and we can use redirection to redirect the stdin of the parent
+process (i.e., the cli shell) to the child system shell process as stdin
+using the < shell operator. Using the PPID environment variable, we
+can obtain the PID of the parent process. With the parent’s PID, we
+can then access the stdin file descriptor in /proc with /proc/<parent
+PID>/fd/1. Putting this all together gives us the following payload:
+
+ping 127.0.0.1;sh</proc/${PPID}/fd/1
+
+This should return a shell.
