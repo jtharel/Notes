@@ -1,3 +1,6 @@
+Example here is you get a shell through a UART or Telnet that has limited commands like just ping or ps
+On a router or similar IoT device the command may run as root.
+
 If the command is called with system(), a shell is involved,
 and we can use redirection to redirect the stdin of the parent
 process (i.e., the cli shell) to the child system shell process as stdin
@@ -9,3 +12,8 @@ PID>/fd/1. Putting this all together gives us the following payload:
 ping 127.0.0.1;sh</proc/${PPID}/fd/1
 
 This should return a shell.
+
+
+
+This example lanuches a telnet daemon on port 24. ${IFS} act as spaces
+ping 127.0.0.1;/usr/sbin/telnetd${IFS}-p24${IFS}-l${IFS}/bin/sh
