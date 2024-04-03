@@ -176,3 +176,11 @@ Reverse shell should be created. Run the following in the shell:
 	getuid
 	execute -f cmd.exe -H -c -i
 
+***************************************************************************
+
+DLL Proxying:
+https://www.ired.team/offensive-security/persistence/dll-proxying-for-persistence
+https://github.com/tothi/dll-hijack-by-proxying
+
+
+***************************************************************************
