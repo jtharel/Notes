@@ -1,0 +1,573 @@
+http://jazzynupe.net/blog	-Instructor Blog
+
+WMI requires port 135 for remote scripting
+
+Remoteing using Powershell v1:
+	http://blogs.msdn.com/powershell/archive/2008/02/29/remoting-using-powershell-v1.aspx
+
+winrm	-Windows remote management
+
+Get cmdlets for IIS, Exchange, SQL, etc, download them and install them
+	Must create a console file that has these snap-ins loaded
+		or
+	create a profile that loads this automatically
+		
+		add-pssnapin NewPSSnapIn
+		export-console -path NewPsSnapinConsole.psc1
+		powershell -psconsolefile NewPsSnapinConsole.psc1
+
+`		-escape sequence much like \ in linux
+`n = new line
+`t = tab
+`r = carriage return
+
+http://msdn.microsoft.com/
+	url for getting method info for objects
+
+Parameters for normal commands i.e. del, cd, etc
+	-confirm
+	-suspend
+	-whatif			-shows you what would have if you ran the command
+	
+	-erroraction silentlycontine	-what to do when an error occurs
+
+get-executionpolicy	-shows if you can run scripts or not
+set-executionpolicy 	-change the policy
+			 set-executionpolicy remotesigned or allsigned
+				requires scripts to be signed
+				get-help Set-AuthenticodesSignature
+			 set-executionpolicy unrestricted
+
+
+cmdlets:
+
+4 essential cmdlets:
+	get-command	-shows you all cmdlets available on your system
+	get-help	-help
+	get-member	-tell you methods and properties on your objects
+	get-psdrive	-tells you all drives on the system
+
+
+get-command		-list of cmdlets available
+			 get-command *service
+			 get-command -noun *serv*
+			 get-command get-variable |format-list *
+				command shows properties for object get-variable
+			 
+
+get-help <command>	-shows help on the command specified
+			 get-help <cmd> -full 	  -shows technical help***the shiznit
+			 get-help <cmd> -detailed -shows detailed help
+			 get-help <cmd> -examples -shows examples
+			 get-help about* 	-specific help topics
+			 get-help dir
+			 get-help a*
+			 get-help export-console -full
+			 get-command get-variable |format-list *
+				command shows properties for object get-variable
+
+get-member		-tells you what methods and properties (what you can do) you have with 
+			 your objects.  Must return ojbects to work.
+			 dir | get-member
+			 get-service | get-member
+			 get-service | get-member -type property
+			 get-service | get-member -type method		
+			 get-member -inputobject (get-childitem)
+				runs get-childitem first and sends it to get-member	 			
+
+get-psdrive		-tells you all available drives on the system
+
+
+select-string		-like grep
+			 ipconfig /all |select-string -pattern lease
+
+where			-like grep
+			  get-service |where {$_.name -eq "bits"}
+			  get-service |where {$_.DisplayName -match "server"}
+
+$error[1]		-go back and sh
+ow the [n] last error, 2nd to last error, 3rd to last 
+			 error, etc
+			 
+
+get-variable		-shows all variables on system
+
+
+get-service		-lists all services/daemons on the system
+			 get-service wmi |format-table Status
+
+
+Examples:
+	"Hello World" |get-member
+	"hello world".length		-gives length in characters
+	"hello world".toupper()	-convertes to uppercase
+	"hello world".split()		-splits strings into two objects "hello" and "world"
+	("hello world".split())[1]	-splits string into two objects and prints the "1" 
+	"hello world".substring(4,1)
+
+
+
+get-process		-lists processes running
+			 get-process lsass
+			 get-process lsass
+
+
+get-history		-shows commands you have run
+invoke-history		-run a command from the list in the above command
+
+export-csv		-export output to a csv file
+			 dir |export-csv file.csv
+
+start-transcript	-Creates a record of all or part of a powershell session.
+stop-transcript		-stops recording
+
+
+get-childitem		-Gets the items and child items in one or more locations
+			 dir c:\* -include *.exe,*.xml -recurse
+				The dir command is an alias of get-childitem
+
+alias			-will show you list of all the aliases
+
+
+
+format-list		-formats the output as a list of properties in which each property
+			 appears on a new line.
+			 dir |format-list
+			 dir |format-list -property creationtime
+			 dir |format-list -property name, length
+			 dir |format-list -property name,length,lastwritetime
+
+format-wide		-formats objects as a wide table that displays only one property
+			 of each object
+
+format-table		-formats the output as a table
+			 dir |format-table -property name,length,lastwritetime
+				changes the columns in the table
+
+
+sort-object		-sorts output alphabeticaly
+			 get-alias g* |sort-object -property definition
+				sort alaphabeticly by the "Definition" field
+
+
+Scripting:
+	get data
+	filtering data 	(select where)
+	sort data	(sort)
+	format data	(format convert)
+	output data	(out export)
+
+
+$wshell - Log events, popups, read registry, registry delete, registry write, run programs, etc	
+	$wshell = new-object -comobject "wscript.shell"  -must run this first
+	$wshell.run("calc.exe")
+	$wshell.popup("My Popup")
+
+	$wshell | get-member		-will show you what you can do
+
+	$wshnetwork = New-Object -comobject "Wscript.network"
+	$wshnetwork.EnumPrinterConnections()	-shows you connected printers
+	$wshnetwork.EnumNetworkDrives()		-shows network drives
+
+Profile in PowerShell
+
+	$profile	-shows file containing the settings for the curent profile
+ $wshnetwork = New-Object -comobject "Wscript.network"
+	new-item -path $profile -itemtype file -force
+
+
+
+
+
+
+Automatic_variables
+	$$	-Contains the last token in the last line received by the session	
+	$?	-Containts the execution status of the last operation.  It contains
+		 TRUE if the last operation succeeded and FALES it if failed
+	$^	-Contains the first token in the last line received by the session
+	$_	-Contains the current object in the pipeline object.  You can use
+		 this variable in commands that perform an action on every object
+		 or on selected ojbects in a pipeline
+	get-help about_automatic_variables
+
+
+
+
+where-object	-Creates a filter that controls which objects will be passed along
+		 a command pipeline
+		 dir |where-object {$_.LastWriteTime}
+		 dir |where-object {$_.LastWriteTime gt "7/16/2008"}
+
+get-pssnapin	-show installed snapin's
+		 get-pssnampin -registered		-show regestered plugins
+
+
+
+get-psprovider	-Gets information about the specified Windows PowerShell provider
+		 
+Providers:
+
+  Certificates:
+	cd cert:
+	dir
+	ls currentuser
+
+	cd currentuser
+	cd root
+	dir
+	dir | where-object {$_.subject -like "*verisign*"}
+
+
+  Env:
+	cd Env:
+	dir
+	get-content os
+	
+	$env:username
+	get-content env:os
+	dir |sort-object name
+	dir |sort-ebject name -descending
+
+	new-item dummy -value "Something Stupid" -creates an environment var called dummy
+	new-item env:dummy -value "something stupid"
+
+  Filesystem:
+	get-psdrive -psprovider filesystem
+	
+	dir | where {$_.psiscontainer}		-show all directories
+	dir | where {!$_.psiscontainer}		-show all files
+
+	dir | get-member | where {$_.membertype -eq "property"}
+
+	new-item dummy -itemtype directory	-creates the dir "dummy"
+
+	New-Item -Path . -Name myfile.txt -ItemType -value "my text `r`n" 	-creates a file
+		`r`n	carriage return line feed
+	add-content myfile.txt -value "more stuff"	-appends content to file
+		carriage return line feed is included
+		
+	set-content myfile.txt -value "my stuff"	-overwrites existing content 
+
+	get-process | out-file myfile.txt	
+	get-process | out-file myfile.txt -append
+
+
+	$error |convertto-html | out-file myerrors.htm -encoding UTF8
+		creates an html file of your errors, etc
+		invoke-item myerrors.htm
+
+
+  Function:
+	cd function:
+	ls
+	
+	function jimmy {set-location filesystem:\\server\share}
+	jimmy
+
+
+  registry:
+	get-psdrive -psprvider registry
+	cd hklm:
+	cd software
+	ls
+	cd microsoft\"windows nt"	
+	ls
+
+	new-item dummy		-creates a reg key
+	ls
+	
+	get-command -noun *property*	
+	Get-ItemProperty -path .\CurrentVersion
+	cd dummy
+	New-ItemProperty -path . -name "somestring" -value "somestring"
+	cd ..
+	ls
+		or
+	New-ItemProperty -path . -name "someint" -value 0x20 -propertytype dword
+
+	new-psdrive -name HKCR -psprovider registry -root HKEY_CLASSES_ROOT
+		allows you to create a "drive" of registry classes not added by default
+
+	reg export "HKLM\software\microsoft\window nt\dummy" c:\regbackup.reg
+		reg commandline registry editor.
+
+	Search reg:
+		dir hklm:\software\* -include jimmy -recurse
+		dir hklm:\software\* -include hotfix -recurse |dir
+
+	Show HotFixes:
+		dir 'hklm:\software\microsoft\windows nt\currentversion\hotfix'
+
+	
+  variable:
+	cd variable:
+	dir
+	dir | sort name
+
+	$a = ps
+	remove-variable a
+
+Example:
+	$args = "localhost","loopback","127.0.0.1","servername"
+
+	foreach ($i in $args)
+	   {$strFile = "c:\mytest\"+ $i +"Processes.txt"
+	    Write-Host "Testing" $i "please wait ..."; 
+	    Get-WmiObject -computername $i -class win32_process | 
+	    Select-Object name, processID, Priority, ThreadCount, PageFaults, PageFileUsage | 
+	    Where-Object {!$_.processID -eq 0} | Sort-Object -property name | 
+	    Format-Table | Out-File $strFile}	
+
+	#This will perform this action against remote computers with WMI	
+
+
+Another Example:
+	$args = "localhost","servername"
+
+	foreach ($i in $args)
+	   {Write-Host "Connecting to" $i "please wait ..."; 
+	    Get-WmiObject -computername $i -class win32_UserAccount | 
+	    Select-Object Name, Disabled, PasswordRequired, SID, SIDType | 
+	    Where-Object {$_.PasswordRequired -eq 0} | 
+	    Sort-Object -property name | Write-Host }
+
+	#This will check computers for users with no password on their account
+
+
+If scheduling powershell scripts:
+	powershell.exe -command script.ps1
+
+
+
+
+
+Associative Array
+	$myAssoArray = @{"Zip" = "80421"; "City" = "Denver"; "State" = "CO"}
+	$myAssoArray
+		Name	Value
+		----	-----
+		City	Denver
+		State	CO
+		Zip	80421
+
+	$myAssoArray["City"]
+		Denver
+
+	$myAssoArray["City","State"]
+		Denver
+		CO
+
+	$myAssoArray.Zip
+		80421
+
+
+
+2 demential array
+	$a+=,(1..5)	#created array with 1,2,3,4,5
+	$a+=,(10..15)
+	$a+=,(20-25)
+	
+	$a[0]
+		1
+		2
+		3
+		4
+		5
+	$a[1]
+		10
+		11
+		12
+		13
+		14
+		15
+	$a[1][2]
+		12
+
+
+Operator
+	-eq	equal
+	-ne	not-equal
+	-gt	greater-than
+	-ge	greater-than or equal to
+	-lt	less-than
+	-le	less-than or equal to
+	-like	Matching using wildcard operator
+
+
+
+Sample scripts of loops:
+
+	ForEach-object
+		ColorCodeProcessOutput.ps1
+		must use $_.<value> in script
+
+	For
+		PingArange.ps1
+
+	Do ...While
+		CountDownTimer.psq
+
+	Do ...Until
+		ReadTxtFile.ps1
+
+
+
+
+Decision statements:
+	If ... Elseif ... Else
+		GetCPUinfo.psq
+
+	Switch
+		DisplayComputerRoles.ps1
+
+
+Write-Host	-much like echo.  Plus you can specify colors
+		 write-host "Hello World" -forgroundColor blue
+
+format-table	-used to format objects into nice viewable tables
+		gwmi win32_environment | format-table name, variableValue -Autosize
+
+
+WMI:
+	WMI must be used to perform remote admin tasks
+
+	get-wmiobject -class __namespace -namespace root |format-list name
+		List just like the one from Computer Management console
+
+
+	get-wmiobject	-Gets instances of WMI classes or information about available
+			 classes.
+	
+			 get-wmiobject -list -namespace root
+				list of all namespaces
+			 get-wmiobject -class __namespace -namespace root |format-list name
+				
+			 CIMV2 is the location we will use the most (Hardware level)
+			 	get-wmiobject -list -namespace root\cimv2
+			 
+			 get-wmiobject -list -namespace root\cimv2 |where-object {$_.name -like "win32*"}
+			 get-wmiobject -list -namespace root\cimv2 -pscredential (get-credential) |where-object {$_.__class -like "win32*"} |sort-object name
+				or
+			 get-wmiobject -list -namespace root\cimv2 -pscredential |where-object {$_.__class -like "win32*"} |sort-object name
+			 get-wmiobject -class win32_bios -namespace root\cimv2
+			 get-wmiobject -class win32_operatingsystem -namespace root\cimv2
+			 get-wmiobject -class win32_share -namespace root\cimv2 -computername <servername> 
+				performs the action on remote server
+
+			 get-wmiobject -class win32_share -namespace root\cimv2 -computername <servername>,<servername2>,<servername3> |format-list __server,name,path 
+				performs the action on multiple servers at the same time.  The __server will print server name
+
+			get-wmiobject -class win32_share -namespace root\cimv2 -computername (get-content servers.txt) |format-list __server,name,path 
+				performs the action on multiple servers that it pulled from a file at the same time.  The __server will print server name
+			
+	
+			get-wmiobject -query "select __class,tag,capacity,devicelocator from win32_physicalmemory"
+			get-wmiobject -query "select name,path from win32_share"
+			get-wmiobject -query "select name,path from win32_share where name='C$'"
+
+			Services Starting and Stopping:
+			get-wmiobject -class win32_service |where {$_.name -eq "bits"}
+				filter out the object (service) that you want
+			get-wmiobject -class win32_service |where {$_.name -eq "bits"}|get-member
+				This will show you what methods (like stopservice) you have
+			$j=get-wmiobject -class win32_service |where {$_.name -eq "bits"}
+				This puts the object into a variable
+			$j.stopservice()
+				This will stop the service
+			get-wmiobject -class win32_service |where {$_.name -eq "bits"}
+				This will requery WMI to insure that the service is stopped
+			$j.changestartmode('Disabled')
+				This will change the startmode of bits to disabled
+
+
+ADSI Providers:		Providers are case sensetive and must be typed as shown
+	WinNT
+	LDAP
+	NDS
+	NWCOMPAT
+
+
+Active Directory
+	$objUser = [ADSI]"LDAP://cn=jimmy,ou=myTestOU,dc=nwtraders,dc=com" 
+		This will make the jimmy user account an object
+	$objuser
+		This will show you your object
+	$objuser.samaccountname
+		This will show you your Sam account (pre win2k login value)
+	$objuser.samaccountname="jimmy"
+		This will set the Sam account value to jimmy which matches the ldap name
+	$objuser.setinfo()
+		Applies your changes
+
+	
+	$rootdomain = [adsi] ""
+		That will give you the domain object
+	$rootdomain
+		Will show you the distinguished name
+	$rootdomain.psbase | get-member
+		.psbase Will show you more than Properties.  It will show you the methods
+	$rootdomain.psbase.children
+		Shows you more info from AD, the root level of AD
+	$myou = [adsi]"LDAP://OU=MyTestOU,DC,nwtraders,DC=com
+		Creates myou object linked to AD OU
+	$myou
+		That will put me in that OU
+	$myou.psbase.children
+		Shows me objects in the myou OU
+	$myou.psbase.children |format-table cn,name,givenname
+
+	
+	
+
+
+
+
+Troubleshooting:
+	wbemtest		-WMI Test tool
+			 	 Namespace: root\cimv2
+				 can connect locally or remotely:
+					Namespace: \\servername\root\cimv2
+	
+	Computer Management	-WMI Control Snap-In
+				 Will show you the WMI NameSpaces for wbemtest
+
+	Scriptomatic tool 
+	  for Powershell	-Pick Namespace and class.  It will show you the object and
+				 the classes/options for it
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
