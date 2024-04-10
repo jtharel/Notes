@@ -1,0 +1,828 @@
+All-in-one whois site:
+	www.ratite.com/whois/whois.html
+
+www.mapquest.com - satellite view of the location
+maps.google.com - "
+
+www.anybirthday.com - check birthday
+
+packetstorm
+
+Investigative Recon
+	System Uptime:			uptime
+	OS type and kernal build:	uname -a
+	date and time:			date
+	boot date:			cat /var/log/boot.log
+	partition map			fdisk -l
+
+lsof - stands for "list of open files"
+	-i		-list internet connections, like netstat
+	-t		-list process ids, like ps
+	-n		-do not perform lookups
+	-p <proc id>	-look at specific process
+
+pcat - copy process memory from live system
+	pcat <process id> | strings | less 
+	pcat <process id> | nc 192.168.2.1 31337
+
+FINDING CLUES USING INODES
+	ls -lit |sort |more		-sort puts output in order by inode #
+					 helps you find root kits if inode
+					 numbers are not close together
+
+MAC_DADDY
+	perl mac_daddy.pl <path name>
+	perl ./mac_daddy.pl / | ./nc 192.168.2.1 31337
+		creates a times line of the last time all files where 
+		accessed, used, or modified on the file system starting in /
+
+MEMDUMP
+	Dumps all memory in ram to a file
+	Memory may contain details of:
+		Bits from the OS
+		Running process
+		Files and directories that have been accessed recently
+		Info from deleted files
+		Exited Process
+	memdump | ./nc 192.168.2.1 31337
+
+
+INCIDENT RESPONSE STEP-BY-STEP
+	Dump Memory (memdump)
+	Collect Time Information (mac_daddy.pl)
+	Collect Process Information (lsof)
+	Collect Network Information (lsof -ni)
+	Image System
+
+
+md5sum
+	md5sum /dev/sda1	-calculate a hash for partition 1 of disk sda
+
+md5deep
+	md5deep -r / | ./nc 192.168.2.1 31337	-performs md5sum against 
+						 entire hard drive
+	md5deep -r / > allfiles.txt
+	nc hash.cymru.com 43 < allfiles.txt > cymru_hash_analysis.txt
+		Sends md5 of all files to hash.cymru.com and outputs a report.  Finds
+		malicious files sometimes.
+
+NATIONAL SOFTWARE REFERENCE LIBRARY
+	Collection of hash values of files for all OSs
+	also includes Office, McAfee, Norton
+	also included hashes for known hacker tools
+	ftp://ftp.nist.gov/pub/itl/div897/nsrl/ver_2_0/nsrl_2_0.iso
+
+COMPARISION OF IMAGING TOOLS
+	http://www.sans.org/rr/special/forensicimaging.php
+
+IMAGING HARD DRIVES:
+
+  DD
+	-used to create "true bit image" copies of tapes, disks, partitions
+	 or files
+
+	dd if=IFILE of=OFILES [options]
+		bs= block size		-sets the block size
+		count=N			-copy only N blocks from FILE
+		skip=N			-skip ahead N blocks on input FILE
+		conv=noerror,sync	-skip over unreadable sections
+
+	dd if=/dev/hda1 of=/newdisk/sda.dd
+		makes a 'bit image' copy of a disk partition into a file
+
+  DCFLDD
+	-new improved DD, shows status, performs integrity checks while
+	 imaging and write a log file.
+
+	ddfldd if=/dev/sda of=/dev/hdb hashwindow=0 hashlog=drive.md5.txt
+		hashwindow=0 -creates the md5 hash after complete
+		hashlog=drive.md5.txt -creates a log file and puts md5 hash 
+			in the log file
+
+	dffldd if=/dev/sda hashwindow=0 | ./nc 192.168.2.1 31337
+		sends image to net cat session on computer x.x.x.x port 31337
+
+  MMLS
+	-allows you to view logical pratitions from the physical image 
+	 taken with dcfldd
+	-mmls reads the partition table and extened partition tables and sorts
+	 and lists the partitions
+	-it needs the '-t dos' flag to specify partition type
+	-the locations of the disks that are not allocated by partitions are 
+	 listed
+	
+	mmls -t dos <image file (used with net cat)>
+	mmls -t dos disk.img
+	
+DOS Partition Table
+Units are in 512-byte sectors
+
+     Slot    Start        End          Length       Description
+00:  -----   0000000000   0000000000   0000000001   Primary Table (#0)
+01:  -----   0000000001   0000000062   0000000062   Unallocated
+02:  00:00   0000000063   0000112454   0000112392   Linux (0x83)
+03:  00:01   0000112455   0004192964   0004080510   DOS Extended (0x05)
+04:  -----   0000112455   0000112455   0000000001   Extended Table (#1)
+05:  -----   0000112456   0000112517   0000000062   Unallocated
+06:  01:00   0000112518   0000642599   0000530082   Linux Swap / Solaris x86
+(0x82)
+07:  01:01   0000642600   0004192964   0003550365   DOS Extended (0x05)
+08:  -----   0000642600   0000642600   0000000001   Extended Table (#2)
+09:  -----   0000642601   0000642662   0000000062   Unallocated
+10:  02:00   0000642663   0004192964   0003550302   Linux (0x83)
+
+	-Now use dcfldd to extract the partitions from the image
+	  dcfldd if=disk.img bs=512 skip=63 count=112392 of=part1.img
+       	  dcfldd if=disk.img bs=512 skip=112518 count=112518 of=part2.img
+	  dcfldd if=disk.img bs=512 skip=642663 count=3550302 of=part3.img
+
+  Now we must mount the partitions
+
+  mount -o ro,loop /tmp/part1.img /mnt/part1
+  mount -o ro,loop /tmp/part2.img /mnt/part2
+
+
+mount for LVM partitions:
+
+http://www.forensicswiki.org/wiki/Linux_Logical_Volume_Manager_(LVM)
+
+If you have an image mount the LVM read-only on a loopback device (e.g. /dev/loop1) by:
+
+	sudo losetup -r -o $OFFSET /dev/loop1 image.raw
+		-o $OFFSET can be left off
+
+	lvm pvscan
+
+To list the Volume Groups (VG) run:
+
+	pvs
+
+To list information about a Volume Group (VG) run:
+
+	lvdisplay $VOLUMEGROUP
+
+The field "LV Name" provides the volume name
+To make the volume group known to the system
+	
+	vgexport $VOLUMEGROUP
+
+And active the volumes in the volume group
+
+	vgchange -a y $VOLUMEGROUP
+
+The individual volume devices are now available in:
+
+	/dev/mapper/$VOLUMEGROUP-$VOLUMENAME
+
+These now can be analyzed with e.g. a tool like the Sleuthkit or loop-back mounted.
+To read-only loop-back mount an individual volume:
+
+	mount -o ro /dev/mapper/$VOLUMEGROUP-$VOLUMENAME filesystem/
+
+
+
+I have imaged all the LVM volumes and imported them into Autopsy.  There was md RAID devices that used LVM partitions.  I dd’d each into the directory /forensics/LVM_images/ and imported those into Autopsy.  They are reasonably named.
+ 
+Long version:
+I logged into the F5 and ran mdadm –D /dev/md*  Here is the pertinent information:
+Md0 (/shared)
+       0     253       15        0      active sync   /dev/vg-db-sda/mdm.dat.share
+       1     253        0        1      active sync   /dev/vg-db-sdb/mdm.dat.share
+Md1 (/var/log)
+       0     253       16        0      active sync   /dev/vg-db-sda/mdm.dat.log
+       1     253        1        1      active sync   /dev/vg-db-sdb/mdm.dat.log
+Md3 (/)
+       0     253       18        0      active sync   /dev/vg-db-sda/mdm.set.1.root
+       1     253        3        1      active sync   /dev/vg-db-sdb/mdm.set.1.root
+Md4 (/usr)
+       0     253       19        0      active sync   /dev/vg-db-sda/mdm.set.1._usr
+       1     253        4        1      active sync   /dev/vg-db-sdb/mdm.set.1._usr
+Md5 (/config)
+       0     253       20        0      active sync   /dev/vg-db-sda/mdm.set.1._config
+       1     253        5        1      active sync   /dev/vg-db-sdb/mdm.set.1._config
+Md6 (/var)
+       0     253       21        0      active sync   /dev/vg-db-sda/mdm.set.1._var
+       1     253        6        1      active sync   /dev/vg-db-sdb/mdm.set.1._var
+ 
+df –h:
+Filesystem            Size  Used Avail Use% Mounted on
+/dev/md3              248M  144M   92M  62% /
+/dev/md5              496M   15M  457M   4% /config
+/dev/md4              1.4G  994M  285M  78% /usr
+/dev/md6              3.0G  187M  2.7G   7% /var
+/dev/md0               30G  1.1G   28G   4% /shared
+/dev/md1              6.9G  166M  6.4G   3% /var/log
+none                  3.9G  408K  3.9G   1% /dev/shm
+none                  3.9G   14M  3.9G   1% /var/tmstat
+none                  3.9G  1.1M  3.9G   1% /var/run
+prompt                4.0M   12K  4.0M   1% /var/prompt
+ 
+Now we need to get the LVM volumes on the forensics box.  Jimmy had the sdx mounted as loopback devices, load the devices:
+kpartx -a -v /dev/loop2
+kpartx -a -v /dev/loop3
+ 
+And set up the LVM volume groups:
+vgchange -a y
+ 
+Let’s see what we’ve god:
+ls /dev/mapper/
+control                        vg--db--sda-mdm.set.3._var
+vg--db--hda-dat.maint.1        vg--db--sdb-mdm.dat.log
+vg--db--sda-mdm.dat.log        vg--db--sdb-mdm.dat.share
+vg--db--sda-mdm.dat.share      vg--db--sdb-mdm.dat.swapvol
+vg--db--sda-mdm.dat.swapvol    vg--db--sdb-mdm.set.1._config
+vg--db--sda-mdm.set.1._config  vg--db--sdb-mdm.set.1.root
+vg--db--sda-mdm.set.1.root     vg--db--sdb-mdm.set.1._usr
+vg--db--sda-mdm.set.1._usr     vg--db--sdb-mdm.set.1._var
+vg--db--sda-mdm.set.1._var     vg--db--sdb-mdm.set.2._config
+vg--db--sda-mdm.set.2._config  vg--db--sdb-mdm.set.2.root
+vg--db--sda-mdm.set.2.root     vg--db--sdb-mdm.set.2._usr
+vg--db--sda-mdm.set.2._usr     vg--db--sdb-mdm.set.2._var
+vg--db--sda-mdm.set.2._var     vg--db--sdb-mdm.set.3._config
+vg--db--sda-mdm.set.3._config  vg--db--sdb-mdm.set.3.root
+vg--db--sda-mdm.set.3.root     vg--db--sdb-mdm.set.3._usr
+vg--db--sda-mdm.set.3._usr     vg--db--sdb-mdm.set.3._var
+ 
+Great.  Now we have to create the md devices, which we use the mdadm output above for:
+mdadm --assemble /dev/md0 /dev/mapper/vg--db--sda-mdm.dat.share /dev/mapper/vg--db--sdb-mdm.dat.share
+mdadm --assemble /dev/md5 /dev/mapper/vg--db--sda-mdm.set.1._config /dev/mapper/vg--db--sdb-mdm.set.1._config
+mdadm --assemble /dev/md1 /dev/mapper/vg--db--sda-mdm.dat.log /dev/mapper/vg--db--sdb-mdm.dat.log
+mdadm --assemble /dev/md3 /dev/mapper/vg--db--sda-mdm.set.1.root /dev/mapper/vg--db--sdb-mdm.set.1.root
+mdadm --assemble /dev/md4 /dev/mapper/vg--db--sda-mdm.set.1._usr /dev/mapper/vg--db--sdb-mdm.set.1._usr
+mdadm --assemble /dev/md6 /dev/mapper/vg--db--sda-mdm.set.1._var /dev/mapper/vg--db--sdb-mdm.set.1._var
+ 
+For some reason, they don’t mount, but I tried a dd and it worked.
+dd if=/dev/md0 of=share.img
+dd if=/dev/md0 of=share.img &
+dd if=/dev/dm5 of=_config.img
+dd if=/dev/md5 of=_config.img
+dd if=/dev/md1 of=log.img
+dd if=/dev/md3 of=root.img
+dd if=/dev/md4 of=usr.img
+dd if=/dev/md6 of=var.img
+ 
+I then imported those into Autopsy as symlinks.  I then cleaned up the md devices with an mdadm –D /dev/md*.
+
+
+Example of mounting LVM partitions with multiple mount points:
+
+mdadm --assemble /dev/md5 /dev/mapper/vg--db--sda-mdm.set.1._config /dev/mapper/vg--db--sdb-mdm.set.1._config
+dd if=/dev/dm5 of=_config.img
+dd if=/dev/md5 of=_config.img
+bg
+du -hs *
+pwd
+ls
+ssh 10.200.1.206
+ls
+mdadm --assemble /dev/md1 /dev/mapper/vg--db--sda-mdm.dat.log /dev/mapper/vg--db--sdb-mdm.dat.log
+dd if=/dev/md1 of=log.img
+ls
+mdadm --assemble /dev/md3 /dev/mapper/vg--db--sda-mdm.set.1.root /dev/mapper/vg--db--sdb-mdm.set.1.root
+dd if=/dev/md3 of=root.img
+ls
+mdadm --assemble /dev/md4 /dev/mapper/vg--db--sda-mdm.set.1._usr /dev/mapper/vg--db--sdb-mdm.set.1._usr
+dd if=/dev/md4 of=usr.img
+ls
+mdadm --assemble /dev/md6 /dev/mapper/vg--db--sda-mdm.set.1._var /dev/mapper/vg--db--sdb-mdm.set.1._var
+dd if=/dev/md6 of=var.img
+mdadm -D /dev/md0
+mdadm -D /dev/md*
+history | less
+ls /dev/mapper/
+history | grep mdadm
+history | grep dd
+mdmdadm -D /dev/md*
+mdadm -D /dev/md*
+
+
+
+
+
+
+
+
+
+Don't know if I need this stuff:
+
+Note that the offset is in bytes.
+
+If you need to write to the image, e.g. for recovery, use xmount to write the changes to a shadow file (or cachefile in xmount terminology).
+
+	sudo xmount --in dd --cache sda.shadow sda.raw image/
+
+You can then safely mount the LVM in read-write mode (just omit the -r in the previous losetup command).
+To remove this mapping afterwards run:
+
+	sudo losetup -d /dev/loop1
+
+To scan for new physical volumes:
+
+	lvm pvscan
+
+You cannot unmount an active volume group. To detach (or deactivate) the volume group:
+	
+	vgchange -a n $VOLUMEGROUP
+
+Where $VOLUMEGROUP is the corresponding name of the volume group
+
+The individual volume devices are now available in:
+	/dev/mapper/$VOLUMEGROUP-$VOLUMENAME
+
+
+
+
+
+
+
+
+
+
+****************************
+MOUNT IMAGES CREATED USING DD
+/bin/mount -o ro,loop,noexec,noatime /images/hda8.dd /mnt/mountname
+/bin/mount -o ro,loop,noexec,noatime /images/hda1.dd /mnt/mountname/usr/
+
+
+HELIX CD
+
+get latest cd at www.e-fense.com
+
+
+linux-ir-sh -script on cd that checks all kinds of things
+
+****************************
+
+GRAB
+	grab is the gui front-end to dcfldd
+	can use with HELIX CD
+
+
+
+CRITICAL TOOLS
+
+  khexedit -linux hex editor
+  winhex   -windows hex editor
+
+  file		-checks header in a file to tell you what kind of file it is
+	file [options] <filename>
+	   -k	don't stop at the first matched test
+	   -z   try to look inside of compressed files
+	file image.jpg
+	file -k *.jpg
+	file *
+
+  strings 	-determines the contests of binary (non-text) files
+		 displays printable character sequences that are at 
+		 lesat 4 characters long
+	strings [options] <filename>
+	   -a		grab all strings
+	   --radix=d	output offset in bytes of string found
+	   -f		print the filename beside the string
+	   -n min	grab strings of (at least) min length
+
+	strings --radix=d imagefile
+
+	strings -a ls
+		shows all strings in the file ls.  Good for getting comments
+		in programs or malware.
+
+  grep
+	grep [options] pattern filename
+	 -i 		 	- -i means ignore case
+	 -A #			- print number of lines after pattern match
+	 -B #			- print number of lines before pattern match
+
+   strings --radix=d ./vmware_dev_sda6.img | grep -f dirtyword > results.txt
+	or
+   strings --radix=d ./vmware_dev_sda6.img > vmware_dev_sda6.str
+   grep -f dirtyword ./vmware_dev_sda6.str > results.txt
+	this is faster than the first option
+
+   less -less <filename> once inside of less type / to do search 
+
+
+CORONER'S TOOLKIT
+   get it at http://www.fish.com/tct
+
+SLEUTH KIT
+	get it at http://sleuthkit.sourceforge.net
+		autopsy - gui front end for sleuthkit
+	File System Layer Tools
+		fsstat 		-displays details about the file system
+
+	Content Layer Tools
+		dcat		-displays the contents of a disk block
+		dls		-(unrm in TCT) lists contents of deleted
+				 file blocks
+		dcalc		-maps between dd images and dls results
+		dstat		-lists statistics associated with specific
+				 disk blocks 
+
+	Metadata Layer Tools
+		ils		-display inode details
+		istat		-displays info about a specific inode
+		icat		-displays contents of disk blocks allocated
+				 to an inode
+		ifind		-determine which inode has allocated a block
+				 in an image
+
+TSK Programs
+	Human Interface Layer
+		fls		-displays file and directory entries in a 
+				 directory node
+		ffind		-determine which file has allocated an inode
+				 in an image
+		fsstat		-displays file system details in ASCII
+
+	Journal Layer
+		jls		-displays list of entries in a file system 
+				 journal
+		jcat		-displays contents of a block in a file
+				 system journal
+
+	Media Management Layer (partitions, BSD disk slices, etc)
+		mmls		-displays list of partitions or disk slices
+				 in a disk image
+
+	Disk Layer
+		diskstat	-displays size information about a hard disk
+
+
+SLEUTH KIT SYNTAX
+
+	fsstat -f linux-ext2 vmware_dev_sda6.img
+		get block size
+	dstat -f linux-ext2 vmware_dev_sda6.img 368055
+		368055 is the block number
+		tells us weather file is allocated or not
+	dcat -f linux-ext2 -h vmware_dev_sda6.img 368055 | less
+		-h gives us hex dump
+		leaving the -h off gives you ascii ouput
+	dls -f linux-ext2 vmware_dev_sda6.img > vmware_dev_sda6.dls
+		-s is used on NTFS to get slack space 
+	strings --radix=d vmware.dev_sda6.dls > vmware_dev_sda6.str
+	grep -f dirtywords vmware_dev_sda6.str > results.dls.txt
+	dcalc -f linux-ext2 -u 233429 vmware_dev_sda6.img
+		233429th block into the image
+		should return "368055"
+	
+
+LAZARUS
+	-like "file" for disk blocks
+		very slow
+	lazarus -h memory_dump
+		mozilla memory_dump.frame.html	-to view file
+
+FOREMOST
+	-carves out files based on headers
+	bad ass tool!
+	foremost.conf -configuration file to tell it what you want to see
+	use to search memory
+	whatsit.org  --lists file type for .conf file
+	foremost -o /home/jimmy/foremost -c /usr/local/foremost/foremost.conf
+		/home/jimmy/vmware_dev_sda6.dls
+			/home/jimmy/foremost  --empty directory for output
+			/usr/local/foremost/foremost.conf  --config file loc
+			/home/jimmy/vmware_dev_sda6.dls	   --dls file to searc
+
+		Look at audit.txt file.
+		Divid "Found at Byte" by the block size (4096)
+		dcalc -f linux-ext2 -u <number from line above> ./file.img
+		dcat -f linux-ext2 -h ./file.img <number from line above> 2
+			2 is the number of data blocks you want to extract
+			keep incrementing the 2 util you get the EOF
+
+
+ISTAT
+	istat tool displays statistics about a given metadata structure
+	-z	timezone
+	-s	clock skew in seconds
+	-b	force blocks to be shown
+
+	istat -f linun-ext2 ./vmware_dev_sda6.img 2
+		2 is the inode
+
+IFIND
+	given a block node number it will map it back to the inode number
+	ifind -f linux-ext2 ./vmware_dev_sda6.img -d 500
+		500 is the block number
+
+ILS
+	List inode information
+	-e 	display all inodes
+	-r	removed files
+	-s	timeskew of system in seconds
+	
+	ils -rf linux-ext2 ./vmware_dev_sda6.img
+
+ICAT
+	File undeletion
+	-h	do not display holes in the file
+	-H	do not display holes
+	-s	include slack space
+	-r	perform file recovery
+	
+	ifind -f linux-ext2 ./vmware_dev_sda6.ing -d 8171	
+		returns inode info
+	istat -f linux-ext2 ./vmware_dev_sda6.img 2880
+	icat -f linux-ext2 ./vmware_dev_sda6.img 2880 > ./lk.tgz
+	tar -xzvf ./lk.tgz
+
+FLS
+	Show deleted files and coresponding inode number
+	-a	display . and ..
+	-d 	display deleted entries only
+	-u	display undeleted entries only
+	-D	display Directory entires only
+	-F	Display file entries only
+	-r	recurse on directories
+	-p	display full path when recursing
+	-m	display in timeline import format
+	-l	display long version
+	-z	specify time zone
+	-s	clock skew
+
+	fls -f linux-ext2 ./vmware_dev_sda6.img
+	fls -rpd -f linux-ext2 ./vmware_dev_sda6.img
+
+FFIND
+	a mapping tool that finds the filename for a metadata address
+	ffind -f linux-ext2 ./vmware_dev_sda6.img 34489
+
+
+		
+ALLOCATED IMAGE
+	1.  grep the string in your strings file to get your OFFSET
+		grep -f linux-ext2 ./vmware_dev_sda6.str
+	2.  divide the OFFSET by the BLOCKSIZE of the filesystem
+	    to get the BLOCK the string exists in
+	3.  dcat the BLOCK to double check it exists in that block
+		dcat -f linux-ext2 ./vmware_dev_sda6.img 67778
+	4.  ifind the BLOCK to get the INODE that points to that block
+		ifind -f linux-ext2 ./vmware_dev_sda6.img -d 67778
+	5.  ffind the INODE to get the FILENAME that point to that INODE
+		ffind -f linux-ext2 ./vmware_dev_sda6.img 67778	
+
+UNALLOCATED IMAGE
+        1.  grep the string in your strings file to get your OFFSET
+        2.  divide the OFFSET by the BLOCKSIZE of the filesystem
+            to get the BLOCK the string exists in
+	3   dcalc the unallocated_BLOCK to determine the ACTUAL_BLOCK
+		dcalc -f linux-ext2 -u 233434 ./vmware_dev_sda6.img
+        4.  dcat the ACTUAL_BLOCK to double check it exists in that block
+        5.  ifind the ACUTAL_BLOCK to get the INODE that points to that 
+	    ACTUAL_BLOCK 
+        6.  ffind the INODE to get the FILENAME that point to that INODE
+	
+
+
+JLS
+ 	lists contents of a journal
+	output shows which file system blocks are saved in the journal
+	
+JCAT
+	used to extract blocks from the journal
+	takes a journal block address as an argument
+	jcat -f linux-ext3 image.dd 4
+
+
+AUTOPSY
+	1. Create Case
+	2. Add every logical image...including Memory
+	3. Create TimeLine using File Activity Timelines
+	4. View Timeline using vi in a separate window "resized" so
+	   text is easier to see
+	5. Click on Keyword Search
+	   A. Generate strings files of the image (near bottom)
+	   B. Create unallocated data file of the image (near bottom)
+	   C. Search for IP addresses
+	   D. Search for Keywords
+	6. Click on File Type and run sorter
+	7. Click on File Analysis
+	   A. Recover all deleted files
+	   B. Examine directories and files highlighed earlier
+	8. Examine inodes of files highlighted in investigations
+	9. Examine data units of files in unallocated and allocated space
+	   from search results
+	10. Create your report using the notes you have been taking using
+	    event sequencer and notes pages
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+WINDOWS
+
+date
+time
+uptime		-gets uptime of server
+psinfo		-gives uptime, Install Date, WinVer
+pslist		-list processes on machine
+fport		-lists open ports and maps back to application
+netstat -na	-lists open ports
+mac.exe		-Modified, Accessed, Created timeline of files
+		 mac.exe -d c:\ -s
+wft		-windows forensic toolchest
+ 		 visually appealing HTML report
+		 wft -cfg <config file> -dst <destination> -shell <cmd>
+			cfg -configuration file
+			dst -destination ouput
+		wft -dst \\servername\sharename\
+			must include the trailing backslash
+
+Volume_dump
+	volume_dump \\.\C:\     -enumerates just the c: drive
+	volume_dump		-enumerates all of the volumes
+		Tells you volume information for use with DD
+
+dd		- for windows
+	found at http://users.erols.com/mggarner/forensics/
+
+	Physical Drives
+	dd \\.\X
+		X = drive number (0,1,2)
+		\\. = Represents the local machine
+
+	Logical Drives
+	dd \\.\C:
+	dd \\.\D:
+		or unique volume names acquired from Volume_dump
+
+   Examples:
+
+	dd if=\\.\PhycicalDrive0 of=D:\drive0.img
+
+	dd if=\\.\PhysicalMemory of=\\srvname\shrname\memory.img conv=noerror
+
+	dd if=\\.\C: of=D:\CDrive.img --md5sum --verifymd5 --md5out=D:\md5.md5
+
+
+STEP-BY-STEP IMAGING
+	1. Obtain Physical Memory
+	2. Obtain Volume Information
+	3. Image Drives (Logical and Physical)
+	4. Image Removable Media
+
+
+USE LINUX to MOUNT the WINDOWS IMAGE
+
+mount -t ntfs -o loop,ro,umask=0222, uid=forensic,gid=users ./hacked_ntfs.img
+/mnt/hacked
+
+more info on Linux and NTFS is at http://linux-ntfs.sourceforge.net/
+
+Extracting Unallocated and Slack Space
+	Can't do this through Autopsy
+	Must use DLS
+	dls -f ntfs hacked_ntfs.img > ntfs.dls
+
+	dls -f ntfs hacked_ntfs.img -s > ntfs.slack
+		-s extracts the slack space
+	
+		tools to examine output:
+			Lazarus
+			Foremost
+			Dirty Word Search
+
+
+PASCO
+	parses the index.dat file from internet history
+	pasco index.dat
+
+RECYCLE BIN
+	hidden files in the Recycle Bin 
+		INFO
+		INFO2
+			Maps filename to the actual name and path it was 
+			deleted from
+	
+	rifiuti  	-examines the INFO2 file from a linux machine
+
+	sid2user	-maps sid to user so you can determine what 
+			recycle bin belongs to each user
+
+
+REGISTRY
+     Hkey_current_user
+	c:\documents and settings\username\NTUSER.DAT
+
+     Search History
+	HKCU\Software\Microsoft\Internet Explorer\Explorer Bars\
+		{C4EE31fe-4768-11d2-BE5C-00A0C9A83DA}\FilesNamedMRU
+ 
+     Typed URLs	
+	HKCU\Software\Microsoft\Internet Explorer\TypeedURLs
+
+     Last Commands Executed
+	HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\RunMRU
+
+     Last Files Saved
+	HKEY_USERS\S-1-5-21-1801674531-1563985344-839522115-1000\
+		Software\Microsoft\Windows\CurrentVersion\Explorer\
+			ComDlg32\OpenSaveMRU\*
+
+     Registry Key Last Write Time
+	keytime
+		keytime "HKEY_LOCAL_MACHINE\Software\Microsoft\Windows"
+		NOTE: the name of the hive MUST be included and capitalized
+
+STEPS FOR RECOVERING SEIZED_FLOPPY.IMG
+	file seized_floppy.img
+		fat 12
+	fsstat -f fat12 seized_floppy.img
+		sector size: 512
+		clustor size: 512
+ 	fls -f fat12 seized_floppy.img
+		shows 3 files and inode of each
+	mount -o loop,ro seized_floppy.img
+		allows you to browse non-deleted files on floppy
+	istat -f fat12 seized_floppy.img 5
+		5 is the inode number
+	dcat -f fat12 seized_floppy.img 33 40 > jimmy.doc
+		recovers jimmy.doc starting at sector 33 and get next 40 sec
+	   or
+	dd if=seized_floppy.img bs=512 skip=33 count=40 of=jimmy.doc
+
+	istat -f fat12 seized_floppy.img 8
+		8 is the inode number
+	dcat -f fat12 seized_floppy.img
+	istat -f fat12 seized_floppy.img 11
+		shows file size of 1000, two sectors...that is not right
+	dcat -f fat12 seized_floppy.img 73 31 > coverpage.jpg
+		recovers coverpage.jpg
+	dcat -f fat12 seized_floppy.img 104
+	dcat -f fat12 seized_floppy.img 104 -h 2
+	dcat -f fat12 seized_floppy.img 104 -h 3
+	dcat -f fat12 seized_floppy.img 104 -h 4
+
+	notes:
+		fsstat would have showed the two file sizes; 73-103 and 104-108
+	
+	dcat -f fat12 seized_floppy.img 104 -h 5
+	dcat -f fat12 seized_floppy.img 104 5 > schedule.exe
+
+	khexedit coverpage.jpg
+		at the bottom of the file you can get the password
+
+	istat -f fat12 seized_floppy.img
+
+
+
+LDD
+	"L"ist "d"ynamice "d"ependencies	
+	Displays a list of the shared libraries each program requires
+
+	ldd /bin/ls
+
+
+UNIX CODE ANALYSIS
+
+	gdb		-debugger
+	objdump		-info from object files
+	readelf		-ELF format object files
+	strace		-system call tracer
+	ald		-assembly language debugger
+
+	strace -p 12345	
+		12345 is the process id
+		-ff (watch child processes and write to file)
+		-e trace= read, write
+		-o output.file
+		
+		ps -aux |grep sshd
+		strace -p 5042 -e trace=read -o outputfile.txt
+			captures all keys strokes entered in sshd session
+
+
+	apptrace  -strace wrapper for applications
+		apptrace /usr/local/bin/ssh
+
+
+
+WINDOWS BINARY ANALYSIS
+   Monitor Registry access
+	run regmon
+	run winalysis
+	run trojan executable
+	stop regmon, get winalysis snapshot
+	observe logs for suspicious entries	
+
+	(regshot - will do the above put export to a text file.)
+
+   Monitor File Acess
+	Run filemon and winalysis
+	run trojan executable for some time
+	stop filemon, get winalysis snapshot
+	observe log for suspicious entries
+	may combine with registry monitoring steps to save time
+
+	windebug 	-similar to strace on linux
+
+
+MALWARE ANALYSIS
+
+	file ./x2
+	strings -a ./x2
+	gdb ./x2
+	objdump -x ./x2
+	readelf -h ./x2
+		check the entry point
+	tcpdump	-watch for connections to other machines
+	
