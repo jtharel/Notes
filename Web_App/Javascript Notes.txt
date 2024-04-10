@@ -1,0 +1,334 @@
+Javascript
+
+Pop-up boxes:
+	confirm("I am ok");
+	prompt("are you ok?";
+
+******************************************************************************************
+Comments:
+	// comments out single line
+	/* these will comment out all lines in between them
+	   this get commented out as well
+	*/
+
+******************************************************************************************
+Data types:
+	number
+	string
+	booleans  i.e. false, 5 > 4
+
+******************************************************************************************
+Conditions:
+	if ( 4 === 4) {
+		confirm("It's true");
+	}
+	else {
+		confirm("it's false");
+	}
+
+******************************************************************************************
+Math:
+	When % is placed between two numbers, the computer will divide the first number by 
+	the second, and then return the remainder of that division.
+	So if we do 23 % 10, we divide 23 by 10 which equals 2 with 3 left over. So 
+	23 % 10 evaluates to 3.
+
+******************************************************************************************
+Substrings:
+	"some word".substring(x, y)
+		Where x is where you start chopping and y is where you finish chopping the
+		original string
+	"hello".substring(0,2);
+		Think of there being a marker to the left of each character, like this: 
+		0-h-1-e-2-l-3-l-4-o-5.
+
+		If you chop at 0 and again at 2 you are left with just he.
+		he
+
+******************************************************************************************
+Variables:
+	var varName = data type;
+		var myName = "Leng";
+		var myAge = 30;
+		var isOdd = true;
+
+******************************************************************************************
+Looping:
+	for (variable=startvalue; variable<endvalue; variable=variable+increment)
+  	{
+  	    code to be executed
+  	}
+
+	for (var counter = 1; counter <= 5; counter = counter + 1 ) 
+	{
+	    console.log(counter);
+	}
+
+	console.log("All done with the loop!");
+
+ ******************************************************************************************
+Function:
+	A function is a block of reusable code.  To define a function use var like
+	declaring a variable
+
+	EXAMPLE 1:
+	var hello = function () {
+  	// Print hello on the console.
+  	console.log("i am saying hello");
+	};
+	hello();
+
+	EXAMPLE 2:
+	var isOdd = function (n) {
+	  if (n % 2 === 0) {
+	    return false;
+	  } else {
+	    return true;
+	  }
+	};
+	console.log(isOdd(1));
+	console.log(isOdd(2));
+	console.log(isOdd(999));
+
+	EXAMPLE 3:
+	var quarter = function(n) {
+	    return n / 4;
+	};
+
+	if (quarter(4) === 1) {
+	    console.log("The statement is true.");
+	} else {
+	    console.log("The statement is false.");
+	}
+
+******************************************************************************************
+Arrays:
+	Syntax: var arrayName = [data, data, data];
+		var junk = ["jimmy", "brad", 1, 2];
+
+	Any time you see data surrounded by [ ], it is an array.	
+
+******************************************************************************************
+Conditions:
+	|| is OR
+	if (count >= 20 || count < 6)
+
+	&& is AND
+	if (count = 20 && total > 100)
+
+******************************************************************************************
+Switch (case) Statement:
+	var jacketColor = "";
+	var result;
+
+	switch (jacketColor) {
+    
+	  case "black":
+	    result = "Pay $300";
+	    break;
+	    
+	  case "brown":
+	    result = "Pay $200";  
+	    break;
+	    	
+	  case "green":
+	    result = "Pay $5";
+	    break;
+    
+	  default:
+	    result = "This color does not match my eyes!";
+	}
+
+	// You must always have a DEFAULT case
+
+
+	Switch/Case statement in a function:
+		var getReview = function (movie) {
+		switch (movie) {
+			case "Matrix":
+				return "good trip out";
+				break;
+			case "Princess Bride":
+				return "awesome date night movie";
+				break;
+			case "Welcome to America":
+				return "Amjad's favorite";
+				break;
+			case "Remember the Titans":
+				return "love the sports";
+			break;
+			default:
+				return "I don't know!";
+			};
+		};
+		console.log(getReview("Matrix"));
+
+
+
+
+******************************************************************************************
+Ternary operators (short cuts!!!):
+	var x = 10
+	var y = 5
+
+	if (x > y) {
+	  result = "good job";
+	}
+	else {
+	  result = 20;
+	}
+
+	//Below is the above code written using the ternary operator
+	var x = 10
+	var y = 5
+	result = x > y ? "good job" : 20;
+
+	The question mark looks kind of random! But think of the ternary operator as 
+	asking whether a condition holds. You put a question mark at the end of a question
+	so it should be there!
+
+******************************************************************************************
+Random Numbers:
+	var dice = Math.floor(Math.random()*6 +1);
+	console.log("You rolled a " + dice);
+
+	(a) Math.random( ) returns a random number between 0 and 1. Then we multiply it by 
+	6 and add 1. This will give us a random number between 1 and 7.  
+
+	(b) Math.floor takes whatever number is in the parentheses, and rounds it down to
+	the nearest whole number. This will give us a random number between 1 and 6.  So,
+	any number between 6 and 7 will be rounded down to 6...hence the need for + 1
+
+	This means our die variable will always be a random number between 1 and 6 every 
+	time we run the code.
+
+
+	Math.random() - To get a random value between 0 and 1. That value is just a 
+	regular return value like any other function, so you can assign it to variables 
+	in the same way.
+	
+	To assign a random integer value between 1 and 10. This means you will have to 
+	multiple your result from Math.random() by 10 to make the number in the correct 
+	range.
+		var randomRating = Math.floor(Math.random() * 10);
+
+
+******************************************************************************************
+Objects
+	var Spencer = {
+		age: 22,
+		sex: "Male",
+		country: "United States"
+	};
+	var age1 = Spencer.age;
+	var country1 = Spencer.country;
+	var sex1 = Spencer["sex"];
+
+	// all legal syntax
+
+Objects using a constructor
+	var susan2 = new Object();
+   		susan2.name = "Susan Jordan",
+   		susan2.age = 24;
+
+******************************************************************************************
+Methods
+
+Methods are used to change object property values.  Notice below we change Bob's
+age from 30 (as defined in the object) to 20.  Methods can also be used to make
+calculations based on object properties.
+
+	// here is bob again, with his usual properties
+	var bob = new Object();
+	bob.name = "Bob Smith";
+	bob.age = 30;
+	// this time we have added a method, setAge
+	bob.setAge = function (newAge){
+	  bob.age = newAge;
+	};
+	// here we set bob's age to 40
+	bob.setAge(20);
+
+	//instead of 'var =' we use 'bob.setAge ='
+
+
+Another example:
+
+var setAge = function (newAge) {
+  this.age = newAge;
+};
+// now we make bob
+var bob = new Object();
+bob.age = 30;
+bob.setAge = setAge;
+  
+var susan = new Object();
+susan.age = 25;
+susan.setAge = setAge;
+
+console.log(susan.age);
+susan.setAge(35);
+console.log(susan.age);
+
+
+Yet another example:
+function Person(job, married) {
+    this.job = job;
+    this.married = married;
+    // add a "speak" method to Person!
+    this.speak = function () {
+    	console.log("Hello!");
+    }
+};
+
+******************************************************************************************
+Object Constructor
+
+A constructor is a way to make a new object
+When we write spencer2 = new Object( ) we are using a built-in constructor called Object. 
+This constructor is already defined by the JavaScript language and just makes an object with 
+no properties or methods.  This means we have to add our properties one at a time. 
+
+var spencer2 = new Object();
+	spencer2.age = 22;
+	spencer2.country = "United States";
+
+
+
+
+function Person(name,age) {
+  this.name = name;
+  this.age = age;
+  this.species = "Homo Sapiens";
+}
+
+var sally = new Person("Sally Bowles", 39);
+var holden = new Person("Holden Caufield", 16);
+	
+console.log("sally's species is " + sally.species + " and she is " + sally.age);
+console.log("holden's species is " + holden.species + " and he is " + holden.age);
+
+
+
+
+Constructor with an Array:
+
+    // Our Person constructor
+function Person (name, age) {
+    this.name = name;
+    this.age = age;
+}
+// Now we can make an array of people
+var family = new Array ();
+family [0] = new Person ("alice", 40);
+family [1] = new Person ("bob", 42);
+family [2] = new Person ("michelle", 8);
+family [3] = new Person ("timmy", 6);
+// loop through our new array
+for (i=0; i<family.length; i++) {
+    console.log (family[i].name);
+
+} ;
+
+// note that i<family.length indicates the length of the array.  In this case the length
+/ is the 4 entries in the array 
