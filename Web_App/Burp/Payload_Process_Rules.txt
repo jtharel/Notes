@@ -1,0 +1,7 @@
+Payload processing rules for Intruder:
+
+Replace [{base}] with base value of payload position
+Replace [\{domain\}] with collaborator interaction id
+Match [\{FILE\}] replace with [/etc/passwd]
+Match [<youremail>] replace with [jimmy.tharel@ibm.com]
+
