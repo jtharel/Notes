@@ -1,0 +1,15 @@
+Piper Burp Exension 
+  Executes anything within Burp Suite (Interpeters, CLI and GUI tools...)
+
+Sample Use Cases:
+  Display JSON data using gron
+    gron is a command line tool for grepping JSON
+  Open a PDF file using Okular
+    Okular is a universal document viewer
+  Compare messages using diff or meld
+    diff is a file compare tool
+    meld is a GUI tool for comparing files and directories
+  Uniquely identify bodies using md5sum
+  Detect JWT-authenticate requests using grep
+  Bypass WAF by modifying Scanner payloads using sed
+
