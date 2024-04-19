@@ -1,7 +1,9 @@
 Session Handler+ burp extension
 
 Allows you to pull a JWT token from a server response that has it in the parameter access_token
+  this can be renamed to whatever the parameter name is in the response. It will then apply it 
+  to all requests that have failed auth.
 
 When creating the session handling rule have it invoke this burp extension instead of a macro
 
-See Session_Handler.png file for the config.
+See https://github.com/jtharel/Notes/blob/main/Web_App/Burp/Session_Handler.png file for the config.
