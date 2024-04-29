@@ -406,6 +406,8 @@ Dump Memory:
 			jobs kill <UUID>
 		ios jailbreak disable		-> disable jailbreak detection
 		ios keychain dump --smart	-> dump iOS keychain
+		ios nsurlcredentialstorage	-> dump credential storage
+		ios nsuserdefaults		-> work with user defaults
 		ios plist cat <myfile.plist>	-> show contents of plist file
 		file download info.plist i.plist	-> downloads info.plist to i.plist
 			!cat i.plist
