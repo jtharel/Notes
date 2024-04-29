@@ -72,8 +72,29 @@ Enable an installed CA Certificate: Settings -> General -> About -> Certificate 
 		can pull down cache from applications.
 
 	Cydia tools to install:
-		adv-cmds		Erica Utilities		applist		appsync		basic-cmds		BigBoss Recommended Tools
-		Darwin CC Tools		Class Dump		ClutchPatched		cURL		Cycript		Developer-cmds		Diff Utilities		Make		network-cmds		OpenSSH		OpenSSL		pcre		Python		sbutils		Vim		wget
+		adv-cmds
+		Erica Utilities
+		applist
+		appsync
+		basic-cmds
+		BigBoss Recommended Tools
+		Darwin CC Tools
+		Class Dump
+		ClutchPatched
+		cURL
+		Cycript
+		Developer-cmds
+		Diff Utilities
+		Make
+		network-cmds
+		OpenSSH
+		OpenSSL
+		pcre
+		Python
+		sbutils
+		Vim
+		wget
+
 
 	Install IPA from command line
 		IPA Installer Console from within Cydia
@@ -100,7 +121,9 @@ Enable an installed CA Certificate: Settings -> General -> About -> Certificate 
 		Find binary file (usually largest file in the directory)
 		otool -l -v <name of file from above>
 
-		otool –I –v <appname> | grep _objc_release		otool –hv <appname>		otool –I –v <appname> | grep stack
+		otool –I –v <appname> | grep _objc_release
+		otool –hv <appname>
+		otool –I –v <appname> | grep stack
 
 	PlistEdit Pro
 		https://www.fatcatsoftware.com/plisteditpro/
@@ -374,8 +397,10 @@ Dump Memory:
 
 	objection --gadget="AppName" explore
 		env 				-> show storage locations of the app
+						   shows directories to bin and data folders
 		ls				-> ls and current directory
 		pwd print			-> print pwd
+
 		ios sslpinning disable		-> disable ssl pinning for app
 			jobs list
 			jobs kill <UUID>
@@ -396,9 +421,8 @@ Dump Memory:
 		ios ui biometrics_bypass	-> bypass faceid and touchid
 			jobs list
 			jobs kill <UUID>
-
-
-	
+		
+			
 Static Analysis:
 	Mobile Security Framework (MobSF) https://github.com/MobSF/Mobile-Security-Framework-MobSF
 	
