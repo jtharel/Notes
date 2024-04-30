@@ -1,0 +1,3 @@
+Create a custom column in the proxy history that shows the server's response time in milliseconds
+
+return (int) (requestResponse.timingData().timeBetweenRequestSentAndStartOfResponse().getNano() / 1_000_000);
