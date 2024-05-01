@@ -167,7 +167,7 @@ Enable an installed CA Certificate: Settings -> General -> About -> Certificate 
 					watch
 						watch backlog of messages and new ones as they arrive
 			/var/mobile/Applications/<applicationID>/Library... #path below?		
-			~/Library/Logs/CrashReporter/MobileDevice/<Device>/private/var/log/system.log
+			/Library/Logs/CrashReporter/MobileDevice/<Device>/private/var/log/system.log
 
 		idevicesyslog	- iOS log viewer from MAC laptop
 			brew install libimobiledevice	
