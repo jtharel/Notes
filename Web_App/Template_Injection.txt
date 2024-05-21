@@ -8,6 +8,12 @@ Server-Side Template Injection:
 	${self}
 	${_self}
 
+	${user.name}
+	${os.version}
+	${os.name}
+	${os.arch}
+	${java.version}
+
 	${facesContext.getExternalContext().getResponse().setContentType("text/plain;charset=\"UTF-7\"")}
 		Does this change the content-type header to UTF7
 
