@@ -7,3 +7,19 @@ return (int) (requestResponse.timingData().timeBetweenRequestSentAndStartOfRespo
 Create a custom column in the proxy history to show the GraphQL operation.
 return requestResponse.request().parameterValue("operationName", HttpParameterType.JSON);
 
+
+Create a custom column in the proxy history that highlights potential CORS vulnerabilities
+/**
+ * Check the CORS vulnerability
+ * @author https://github.com/JaveleyQAQ/
+ **/
+
+if (requestResponse.hasResponse() && requestResponse.request().hasHeader("Origin") && requestResponse.response().hasHeader("Access-Control-Allow-Origin"))
+{  
+    var requestOrigin = requestResponse.request().headerValue("Origin");
+    var responseOrigin = requestResponse.response().headerValue("Access-Control-Allow-Origin");
+    return requestOrigin.equals(responseOrigin) ? Character.toString(0x2757).concat("CORS?") : responseOrigin;
+    
+} else {
+    return "";
+}
