@@ -23,3 +23,9 @@ if (requestResponse.hasResponse() && requestResponse.request().hasHeader("Origin
 } else {
     return "";
 }
+
+
+Create a custom column to show the contents of the "Server" header.
+return requestResponse.hasResponse() && requestResponse.response().hasHeader("Server")
+  ? requestResponse.response().headerValue("Server")
+  : "";
