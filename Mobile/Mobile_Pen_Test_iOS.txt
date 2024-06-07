@@ -177,6 +177,9 @@ Enable an installed CA Certificate: Settings -> General -> About -> Certificate 
 	
 	Xcode - View Crash logs via Xcode
 		Launch Xcode -> Window -> Devices 
+
+	iOS Crash Logs:
+		Settings -> Privacy -> Analytics & Improvements -> Analytics Data -> click log -> click share
 	
 
 	Autocorrect / Keyboard Caching:
