@@ -1,0 +1,26 @@
+PowerShell script to check if a Windows binary (EXE/DLL) has been compiled with ASLR, DEP, SafeSEH, StrongNaming, Authenticode, Control Flow Guard, and HighEntropyVA.
+
+Get PowerSploit:
+	https://github.com/PowerShellMafia/PowerSploit
+
+download Get-PESecurity from:
+	https://github.com/NetSPI/PESecurity/blob/master/Get-PESecurity.psm1
+
+May need to run these in Powershell
+"$Env:windir\System32\WindowsPowerShell\v1.0\Modules"
+"$Env:HomeDrive$Env:HOMEPATH\Documents\WindowsPowerShell\Modules"
+
+In Powershell:
+  import-module .\PowerSploit.psm1
+  import-module .\Get-PESecurity.psm1
+
+
+Check individual file:
+	Get-PESecurity -file c:\windows\System32\kernel32.dll
+
+Check all EXEs and DLLs in a directory:
+	Get-PESecurity -directory c:\windows\System32\
+	
+Check all EXEs and DLLs in a directory recursively
+	Get-PESecurity -directory c:\windows\System32\ -recursive
+
