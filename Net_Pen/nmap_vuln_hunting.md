@@ -22,8 +22,12 @@ PORT    STATE   SERVICE
 |    CVE-2016-10009  7.5  https://vulners.com/cve/CVE-2016-10009
 ```
 
-# apt-get install exploitdb   or    brew install exploitdb   to get searchsploit program
-# searchsploit <service> <version>
+Install searchsploit program:
+```
+apt-get install exploitdb   or    brew install exploitdb   
+searchsploit <service> <version>
+```
+
 searchsploit openssh 7.2
 ```
 ----------------------------------------- ----------------------------------------
