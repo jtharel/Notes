@@ -1,16 +1,3 @@
-https://hiddenlayer.zoom.us/j/82982416064?pwd=RYKj750lbmL6owNy0xocVa5IQgB2rc.1
-
-
-chmod 400 ibm-training.pem
-ssh -i ibm-training.pem -L 8000:localhost:8888 ubuntu@3.10.23.112
-http://localhost:8000
-pw: hiddenlabs
-Lab Machine: ibm-training-14
-
-
-Tracking Spreadsheet for Lab Machines: https://docs.google.com/spreadsheets/d/1YHv471y4RFIYNLEgpuC1bzP0m5bdYsDT2f4WHebwm2k/edit?usp=sharing
-
-
 Jupyter platform the labs are built on:
 https://jupyter.org/install
 
