@@ -1,0 +1,27 @@
+This is a custom burp extension for grabbing a JWT from a response and using it as an Authorization header.
+
+Session Handling Rules:
+	Add -> 
+		Rules description -> JWT
+		Rule actions -> Add -> 
+			Issue Current Request
+			Inspect response to determine session validity:
+				Location: Response body
+			Look for Expressions: UNAUTHORIZED
+			Match type: Literal string
+			Case-sensitivity: Insensitive
+			Match indicates: Invalid session
+			
+			Define behavior dependent on session validity:
+			If session is invalid, perform the action below: Run a macro
+
+			Select macro: Get JWT
+
+			After running the macro, invoke a Burp extension action handler: Jimmy JWT
+
+
+Macros:
+	Add -> 
+		Macro Description: GET JWT
+
+		Select request that returns the JWT
