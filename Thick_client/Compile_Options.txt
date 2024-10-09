@@ -24,3 +24,11 @@ Check all EXEs and DLLs in a directory:
 Check all EXEs and DLLs in a directory recursively
 	Get-PESecurity -directory c:\windows\System32\ -recursive
 
+
+If you receive the error that the module is "not digitially signed" run the following:
+	Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+	Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+
+To see list of policy definitions:
+	Get-ExecutionPolicy -List
+
