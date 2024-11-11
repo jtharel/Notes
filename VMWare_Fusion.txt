@@ -1,0 +1,1 @@
+brew install vmware-fusion --cask
