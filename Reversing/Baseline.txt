@@ -1,0 +1,29 @@
+Establish Filesystem Baseline:
+	Tools like WinMerge or TreeSize can be used
+	or powershell:
+		Get-ChildItem -Path C:\ -Recurse | Out-File ".\baseline_filesystem.txt"
+
+		powershell "tail" command:
+			Get-Content baseline_filesystem.txt -Wait -Tail 30
+
+Registry Snapshot:
+	reg export HKLM\SOFTWARE C:\baseline_registry_hklm.reg
+	reg export HKCU C:\baseline_registry_hkcu.reg
+
+
+Install software
+
+
+Compare Filesystem Changes:
+	Rerun snapshot tool (WinMerge) and compare against the baseline:
+
+	Powershell:
+		Get-ChildItem -Path C:\ -Recurse | Out-File "C:\postinstall_filesystem.txt"
+		Compare-Object -ReferenceObject (Get-Content "C:\baseline_filesystem.txt") -DifferenceObject (Get-Content "C:\postinstall_filesystem.txt")
+
+Compare Registry Changes:
+	reg export HKLM\SOFTWARE C:\postinstall_registry_hklm.reg
+	reg export HKCU C:\postinstall_registry_hkcu.reg
+
+	Use a tool like WinMerge or RegShot for easier comparision
+
