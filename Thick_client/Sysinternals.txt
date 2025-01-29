@@ -1,0 +1,158 @@
+http://technet.microsoft.com/sysinternals
+
+AccessChk - command-line tool for viewing the effective permissions on files, registry keys, services, processes, kernel objects and more.
+
+AccessEnum - shows who has what access to directories, files and registry keys on your systems. 
+
+AdExplorer - Active Directory Explorer is an advanced AD viewer and editor
+
+AdInsight - An LDAP real-time monitoring tool aimed at troubleshooting AD client applications
+
+AdRestore - Undelete Server 2003 AD objects
+
+Autologin - Bypass password screen during login
+
+Autoruns - See what programs are configured to startup automaticallly when your system boots. Also shows list of registry and file locations where applications can configure auto-start settings.
+
+Autorunsc - 
+
+BgInfo - Fully-configurable program automatically generates desktop backgrounds that include important info about the system including IP addresses, computer name, network adapters, and more.
+
+CacheSet - CacheSet is a program that allows you to control the Cache Manager's working set size using functions provided by NT. It's compatible with all version of NT.
+
+ClockRes - View the resolution of the system clock, which is also the maximum timer resolution.
+
+Contig - Defrag frequently used files. Can optimize individual files, or to create new files that are contiguous.
+
+Coreinfo - command-line utililty that shows you the mapping between logical processors and the physical processor, NUMA node, and socket on which they reside, as well as the cache's assigned to each logical processor.
+
+CPUSTRES - 
+
+Ctrl2cap - This is a kernel-mode driver that demonstrates keyboard input filtering just above the keyboard class driver in order to turn caps-lock into control keys. Filtering at this level allows conversion and hiding of key before NT even "sees" them. Ctrl2cap also shows how to use NtDisplayString() to print messages to the initialization blue-screen.
+
+DebugView - Intercepts calls made to DbgPrint by device drivers and OutputDebugString made by Win32 programs. It allows for viewing and recording of debug session output on your local machine or across the Internnet without an active debugger.
+
+Desktops - Create up to 4 virtual desktops and to use a tray interface or hotkeys to preview each desktop.
+
+Disk2vhd - simplifies the migration of physical systems into virtual machines (p2v)
+
+DiskExt - Display volume disk-mappings
+
+Diskmon - Captures all hard disk activity or acts like a software disk activity light in your system tray
+
+DiskView - Graphical disk sector utility
+
+Disk Usage (DU) - View disk usage by directory, same has linux utility du
+
+EFSDump - View information for encrypted files.
+
+Findlinks - 
+
+Handle - command-line utility will show you what files are open by which processes, and more.
+
+Hex2dec - Convert hex numbers to decimal and vice versa.
+
+Junction - Create Win2K NTFS symbolic links
+
+LDMDump - Dump the contents of the Logical Disk Manager's on-disk database, which describes the partitioning of a Windows 2000 Dynamic disks.
+
+ListDLLs - List all the DLLs that are currently loaded, including where they are loaded and their versions numbers.
+
+LiveKd - Use Microsoft kernel debuggers to examine a live system.
+
+LoadOrder - See the order in which devices are loaded on your WinNT/2k system.
+
+LogonSessions - List the active sessions on a system.
+
+MoveFile - Allows you to schedule move and delete commands for the next reboot
+
+notmyfault - 
+
+NTFSInfo - Detailed NTFS volume information, including size and location of the Master File Table (MFT) and MFT-zone, as well as the sizes of the NTFS meta-data files.
+
+PageDefrag - Degragment your paging files and Registry hives.
+
+PendMoves - Enumerate the list of file rename and delete commands that will be execute the next reboot.
+
+PipeList - Displays the named pipes on your system, including the number of maximum instances and active instances for each pipe.
+
+PortMon - Monitor serial and parallel port activity with this tool. It knows about all standard serial and parallel IOCTLs and even shows you a portion of the data being sent and received.
+
+ProcDump - command-line utility used to capture process dumps of otherwise difficult to isolate and reproduce CPU spikes. It also servers as a general process dump creation utility and can also monitor and generate process dumps when a prcess has a hung window or unhandled exception.
+
+Process Explorer - Find out why files, registry keys and other objects processes have open, which DLLs they have loaded, and more. 
+
+Process Monitor - Monitor file system, Registry, process, thread and DLL activity in real-time
+
+ProcFeatures - This applet reports processor and Windows support for Physical Address Extenstions and No Execute buffer overflow protection.
+
+PsExec - Execute processos on remote systems
+
+PsFile - See what files are opened remotely
+
+PsGetSid - Displays the SID of a computer or a user.
+
+PsInfo - Obtain information about a system.
+
+PsKill - Terminate local or remote processes.
+
+PsList - Show inforamtion about processes and threads.
+
+PsLoggedOn - Show users logged on to a system
+
+PsLogList - Dump event log records
+
+PsPasswd - Changes account passwords
+
+PsPing - 
+
+PsService - View and control services.
+
+PsShutdown - Shuts down and optionally reboots a computer.
+
+PsSuspend - Suspend and resume processes.
+
+RAMMap - An advanced physical memory usage analysis utility that presents usage information in different ways on the its tabs
+
+RDCMan - 
+
+RegDelNull - Scan for and delete registry keys that contain embedded null-characters that are otherwise undeletable by standard registry editing tools.
+
+RegJump - Jump to the registry path you specify in Regedit.
+
+RootkitRevealer - scan your system for rootkit-based malware.
+
+Ru - 
+
+SDelete - Securely overwrite your sensitive files and cleanse your free space of previously deleted files using this DoD-compliant secure delete program.
+
+ShareEnum - Scan file shares on your network and view their security settings to close security holes.
+
+ShellRunas - Launch programs as a different user via a shell context-menu entry.
+
+Sigcheck - Dump file version information and verify that images on your system are digitally signed.
+
+Streams - Reveal NTFS alternate streams.
+
+Strings - search for ANSI and UNICODE strings in binary images.
+
+Sync - Flush cached data to disk
+
+Sysmon - 
+
+tcpvcon - 
+
+TCPView - Active socket command-line viewer
+
+Testlimit - 
+
+VMMap - a process virtual and physical memory analysis utility.
+
+VolumeId - Set Volume ID of FAT or NTFS drives.
+
+Whois - See who owns an Internet address.
+
+WinObj - The ultimate Object Manager namespace view 
+
+ZoomIt - Presentation utility for zooming and drawing on the screen
+
