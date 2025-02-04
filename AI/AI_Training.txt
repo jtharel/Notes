@@ -1,0 +1,35 @@
+A Hackers’ Guide to Language Models (This one is not as useful for pentesting purposes but gives you some background on how LLMs work)
+https://www.youtube.com/watch?v=jkrNMKz9pWU
+
+Indirect Prompt Injections in the Wild – Real World exploits and mitigations Johann Rehberger (This one was quite interesting)
+https://www.youtube.com/watch?v=ADHAokjniE4
+https://embracethered.com/blog/index.html
+
+This is more of a traditional Web vulnerabilities applied to LLMs:
+https://portswigger.net/web-security/llm-attacks
+
+If you wanna practice your prompt injections:
+https://gandalf.lakera.ai/intro
+https://promptairlines.com/
+
+We’ve had a lot of success with some of the prompts from this doc:
+https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/Prompt%20Injection/README.md
+
+This is one the most complete CTF like, but it takes time to complete each challenge:
+https://crucible.dreadnode.io/
+YouTubeYouTube | Jeremy Howard
+
+A Hackers' Guide to Language Models 
+YouTubeYouTube | Ekoparty Security Conference
+
+Indirect Prompt Injections in the Wild – Real World exploits and mitigations  Johann Rehberger 
+
+portswigger.netportswigger.net
+Web LLM attacks | Web Security Academy
+
+Organizations are rushing to integrate Large Language Models (LLMs) in order to improve their online customer experience. This exposes them to web LLM ... (75 kB)
+https://portswigger.net/web-security/llm-attacks
+
+gandalf.lakera.aigandalf.lakera.ai
+Gandalf | Lakera – Test your prompting skills to make Gandalf reveal secret information.
+Trick Gandalf into revealing information and experience the limitations of large language models firsthand. (366 kB)
