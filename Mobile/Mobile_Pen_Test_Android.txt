@@ -551,6 +551,7 @@ Jimmy’s Methodology:
 	Get Minmum SDK version:
 		aapt dump badging app.apk | grep sdkVersion
 			aapt is in android SDK or apt-get install aapt
+			'sdkVersion' shows min version 
 
 	Search for:
 		Strings and Variables:
