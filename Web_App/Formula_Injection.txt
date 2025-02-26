@@ -1,0 +1,6 @@
+#In Excel use VBA Editor to add the following code that will execute Calc on both Win and Mac
+
+Private Sub Workbook_Open()
+    Shell "open /System/Applications/Calculator.app"
+    Shell "calc.exe"
+End Sub
