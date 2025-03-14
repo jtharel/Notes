@@ -19,7 +19,7 @@ class BurpExtender(IBurpExtender, IHttpListener):
     def registerExtenderCallbacks(self, callbacks):
         self.callbacks = callbacks
         self.helpers = callbacks.getHelpers()
-        self.callbacks.setExtensionName("Jimmy OAuth Extension v1.4")
+        self.callbacks.setExtensionName("Jimmy OAuth Extension v1.1")
         self.callbacks.registerHttpListener(self)
     
     def processHttpMessage(self, tool_flag, message_is_request, request_response):
