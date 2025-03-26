@@ -1,0 +1,7 @@
+https://github.com/LaurieWired/GhidraMCP
+
+MCP server that allows LLMs to interface with some functions of Ghidra
+
+  Decompile and analyze binaries in Ghidra
+  Automatically rename methods and data
+  List methods, classes, imports, and exports
