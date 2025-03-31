@@ -394,7 +394,7 @@ Dump Memory:
    Objection - gui for frida - connect via USB by default; has network option.  ##Working on Mac now!!!!
 	Installation: pip3 install -U objection
 
-	frida-ps -U -i		-> lists processes on device and can help identify names of processes
+	frida-ps -U -i -a		-> lists processes on device and can help identify names of processes
 
 	objection --gadget 4876 -N -h 192.168.1.123 explore
 
