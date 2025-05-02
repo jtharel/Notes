@@ -1,4 +1,6 @@
 Examples of AI models you can install locally.
 
+https://ollama.com/
+
 https://lmstudio.ai/
 
