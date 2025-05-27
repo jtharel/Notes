@@ -1,0 +1,24 @@
+metadata:
+     language: v1-beta
+     name: "Security.txt detected"
+     description: "Checks to see if a security.txt is published on the host"
+     author: "Jimmy Tharel"
+     tags: "security.txt"
+
+run for each:
+     potential_path =
+          "/security.txt",
+          "/.well-known/security.txt"
+
+given host then
+     send request called check:
+          method: "GET"
+          replacing path: {potential_path}
+     
+     if {check.response.status_code} is "200" then
+          report issue:
+               severity: info
+               confidence: firm
+               detail: `Security.txt found at {check.request.url.protocol}://{check.request.url.host}:{check.request.url.port}{potential_path}.`
+               remediation: "Read security.txt file and make sure you document the contact info and PGP keys (if any)."
+     end if
