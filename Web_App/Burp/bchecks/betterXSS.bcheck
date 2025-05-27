@@ -1,0 +1,37 @@
+metadata:
+    language: v2-beta
+    name: "Better XSS (bcheck)"
+    description: "Sends basic XSS payloads"
+    author: "Troy E. Fisher (tdotfish)"
+
+define:
+    basecase = `><{random_str(10)}`
+
+run for each:
+    attacks = `<script>alert(123)</script>`, `<img src=x onerror=prompt(234)/>`
+
+given insertion point then
+
+    send payload:
+        appending: {basecase}
+
+        if {basecase} in {latest.response} then
+
+            send payload:
+                appending: {attacks}
+                if {attacks} in {latest.response} then
+                    report issue and continue:
+                    severity: high
+                    confidence: firm
+                    detail: "Likely XSS - Payload reflected in response."
+                    remediation: "Manual investigation is advised."
+      
+                else then
+                    report issue:
+                    severity: low
+                    confidence: tentative
+                    detail: "Possible XSS - Payload reflected in response."
+                    remediation: "Manual investigation is advised."
+                end if
+
+        end if
