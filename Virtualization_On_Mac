@@ -1,0 +1,10 @@
+Install VMware Fusion:
+brew install vmware-fusion --cask
+
+
+UTM:
+https://mac.getutm.app/
+
+
+Virtual Box:
+https://www.virtualbox.org/
