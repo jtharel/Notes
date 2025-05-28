@@ -71,6 +71,9 @@ Enable an installed CA Certificate: Settings -> General -> About -> Certificate 
 	iFunBox -> lets you browse filesystem on iPAD
 		can pull down cache from applications.
 
+	Sideloadly -> sideload iOS applications
+		https://sideloadly.io
+
 	Cydia tools to install:
 		adv-cmds
 		Erica Utilities
