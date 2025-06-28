@@ -1,4 +1,4 @@
-
+Can be found here: https://github.com/chipsec/chipsec/tree/main
 
 Chipsec:
 
