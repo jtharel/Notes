@@ -1,0 +1,24 @@
+#garak works with language models and any tech using them to determine where the security holes can be with each solution. 
+
+#Install on Mac:
+
+virtualenv garak
+cd garak
+source bin/activate 
+
+pip install Cmake
+git clone https://github.com/google/sentencepiece.git 
+cd sentencepiece
+mkdir build
+cd build
+cmake .. -DSPM_ENABLE_SHARED=OFF -DCMAKE_INSTALL_PREFIX=./root
+make install
+cd ../python
+python setup.py bdist_wheel
+pip install dist/sentencepiece*.whl
+cd ../..
+
+python -m pip install -U garak
+
+#test run:
+python -m garak --model_type test.Blank --probes test.Test
