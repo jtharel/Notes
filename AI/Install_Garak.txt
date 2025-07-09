@@ -6,6 +6,7 @@ virtualenv garak
 cd garak
 source bin/activate 
 
+pin install setuptools
 pip install Cmake
 git clone https://github.com/google/sentencepiece.git 
 cd sentencepiece
