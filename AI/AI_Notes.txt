@@ -98,12 +98,15 @@ Offensive Security Frameworks:
 	LLM Attack Tools:
 	  	LLM Fuzzer - submits a prompt, evaluates success based on looking for text in 
 			response; no longer maintained
+			https://github.com/mnns/LLMFuzzer
 
 		Garak - Probes for hallucination, data leakage, prompt injection, jailbreaks, 
 			misinformation
+			https://docs.garak.ai/garak
 
 		PyRIT - automation framework for testing GenAI risk. Static and dynamic prompt 
 			analysis. Using AI to automate the attack of an LLM
+			https://github.com/Azure/PyRIT
 
 
 Search Adversarial AI testing on github
