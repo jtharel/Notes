@@ -1,5 +1,7 @@
 #Burp Suite, save the request and response. Disable the Base64 option when you save.
 # this script will create the JSON file used with garak.
+# Usage:
+# python burp_to_garak.py --file ~/folder/request
 
 import xml.etree.ElementTree as ET
 import json
