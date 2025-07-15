@@ -69,3 +69,16 @@ python3 -m garak --model_type huggingface --model_name ibm-granite/granite-3.1-1
 
 python3 -m garak --model_type openai --model_name gpt-3.5-turbo -G ./garak-config.json --probes xss.MarkdownImageExfil
 
+
+Proxy - add to garak-config.json file?:
+{
+    "rest": {
+        "RestGenerator": {
+           "uri": "http://my_internal_llm_endpoint",
+           "proxies": {
+              "http": "http://localhost:8080",
+              "https": "https://localhost:8443",
+           }
+        }
+    }
+}
