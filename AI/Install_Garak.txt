@@ -69,6 +69,10 @@ python3 -m garak --model_type huggingface --model_name ibm-granite/granite-3.1-1
 
 python3 -m garak --model_type openai --model_name gpt-3.5-turbo -G ./garak-config.json --probes xss.MarkdownImageExfil
 
+# python3 -m garak --list_probes		-> shows test cases
+# To run all the tests within the plugin family, use -p <pluginFamilyName>
+# to only run one test within the plugin family, use -p <pluginFamilyName>.<specificPluginName>
+
 
 Proxy - add to garak-config.json file?:
 {
