@@ -5,7 +5,8 @@ ollama run <model name>
 ollama run deepseek-r1
 or 
 ollama run llama3
-
+or
+ollama run llama2-uncensored
 
 APIs:
 Generate a response
