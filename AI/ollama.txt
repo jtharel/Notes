@@ -2,6 +2,9 @@ https://ollama.com/
 
 ollama run <model name>
 
+models: https://ollama.com/search
+
+
 ollama run deepseek-r1
 or 
 ollama run llama3
