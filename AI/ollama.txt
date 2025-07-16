@@ -1,0 +1,23 @@
+https://ollama.com/
+
+ollama run <model name>
+
+ollama run deepseek-r1
+or 
+ollama run llama3
+
+
+APIs:
+Generate a response
+curl http://localhost:11434/api/generate -d '{
+  "model": "llama3.2",
+  "prompt":"Why is the sky blue?"
+}'
+
+Chat with a model
+curl http://localhost:11434/api/chat -d '{
+  "model": "llama3.2",
+  "messages": [
+    { "role": "user", "content": "why is the sky blue?" }
+  ]
+}'
