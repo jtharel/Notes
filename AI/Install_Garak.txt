@@ -62,6 +62,7 @@ Create file garak-config.json:
 
 # $KEY value is acquired from an environment variable on the system.
 # export REST_API_KEY=<authorization_key>
+# export OPENAI_API_KEY=<auth_key> ??
 
 python3 -m garak --model_type huggingface --model_name gpt2 -G ./garak-config.json --probes lmrc.Profanity
 
