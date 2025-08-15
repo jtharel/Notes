@@ -1,0 +1,500 @@
+
+AWS Account - Root user
+
+IAM User - IAM stands for Identity And Access Management
+
+
+AZ - Availability Zone - 36 regions around the globe
+	114 Availability zones
+	also 43 "local" zones. These are limited AWS environments that can be used when you need minimal latency
+	700+ CloudFront POPs - Points of presence and 13 regional edge caches. Caching servers closer to users
+	https://aws.amazon.com/about-aws/global-infrastructure/?p=ngi&loc=0
+
+	
+
+S3 - Simple Storage Service
+
+VPC - Virtual Private Cloud
+
+EC2 - Elastic Compute Cloud - virtual host
+
+AMI - Amazon Machine Image - is a template that contains an OS and Additional software needed to launch an EC2 instance
+	Key pairs
+
+RDS - Relational Database Service - managed service that automates the provisioning of databases
+	PostgresSQL MySQL MariaDB, Oracle SQL Server, Amazon DynamoDB
+
+Infrastructure as a Service (IaaS) - Virtualization, Servers, Storage, Networking
+
+Platform as a Service (PaaS) - Operating System, Middleware and Runtime plus all in IaaS
+
+Software as a Service (SaaS) - Application, Database plus all in PaaS and IaaS. Everything needed to run and host an app
+
+
+3 Cloud models
+	Public
+	Private
+	Hybrid
+
+**********************************************************************************************
+
+Policy -> JSON template to define who can do what
+
+Two types of policies:
+  AWS Managed
+  Customer Managed
+
+
+Example Policy JSON
+{
+	"Sid": "Statement1",		#SID is the unique ID for this statement 
+	"Effect": "Allow",		#can be Allow or Deny
+	"Action": [],			#create s3 bucket, list service, etc
+	"Resource": []			#on which resource is this to be enabled
+}
+
+{
+	"Version": "2012-10-17",
+	"Statement": [
+		{
+			"Effect": "Allow",
+			"Resource: [
+				"arn:aws:logs:ap-south-1:557181621614:log-group:/aws/codebuild/jimmy-blog", 
+				"arn:aws:logs:ap-south-1:557181621614:log-group:/aws/codebuild/jimmy-blog:*"
+			],
+			"Action": [
+				"logs:CreateLogGroup",
+				"logs:CreatLogStream",
+				"logs:PutLogEvents"
+			]
+		{
+		 
+									
+}
+
+
+
+**********************************************************************************************
+
+
+
+3 types of storage: 
+
+Block Storage	- Operating Systems use block storage. Direct access to individual blocks (virtual disk)
+		  ideal for high-performance apps like databases, virtual machines and systems that require
+			low-latency access
+
+			EBS - Elastic Block Storage
+
+File Storage	- Like NAS -> hierarchical system with files and directories. Accessed using a file system 
+		  protocol (NFS or SMB)	
+
+			EFS/FSX - Elastic File Storage
+				EFS - Linux
+				FSX - Windows
+
+Object Storage data	- distinct individual objects with unique identifier and associated metadata. Used for
+			  data storage, backups, archives, media, scalable and cost-effective storage.
+
+			S3 - simple storage service
+
+
+Bucket -> is a container, must be globally unique. S3 is the global service
+	create S3 bucket 
+	Permissions must be enabled plus a Resource Policy (JSON file) must be defined to access content
+	Sample resource policy (allows getobject action):
+		{
+			"Version":"2012-10-17",
+			"Statement":[
+				{
+					"Sid":"PublicReadGetObject",
+					"Effect":"Allow",
+					"Principal":"*",
+					"Action":"s3:GetObject",
+					"Resource":"arn:aws:s3:::<bucketname>/*"
+				}
+			]
+		}
+
+
+Bucket Versioning -> backups/snapshot in time. When enabled, multiple variants of an object can be stored in the bucket to easily recover from unintended user actions and application failures.
+
+S3 security:
+	S3 bucket is private by default
+	Only Bucket owner and root has access to the bucket created
+	Every thing else is explicitly granted access
+
+
+IAM or Resource Policy is how you assign permissions
+	Allows all actions:
+		{
+			"Version":"2012-10-17",
+			"Statement":[
+				{
+					"Sid":"PublicReadGetObject",
+					"Effect":"DENY",
+					"Principal":"*",
+					"Action":"s3:*",
+					"Resource":"arn:aws:s3:::<bucketname>/*"
+					"Condition": {
+						"BoolIfExists": {
+							"aws:MultiFactorAuthPresent": false
+						}
+					}	
+				}
+			]
+		}
+
+	
+
+
+Resource Policy vs. Identity Policy:
+	The "Principal" directive/element defines users that can access the resource. 
+		
+	if no "Principal" directive is in the policy it is a Identity policy, not a Resource policy
+
+	Identity Policy does not include a "Principal" element because the principal is the 
+		identity to which the policy is attached.
+
+	Resource policy must include a "Principal" element, which specifies the IAM user, role, AWS account
+		or even anonymous users ("Principal": "*") that are allowed or denied access to the resource
+		used for wider audience
+
+
+Principal defines who can access the resource
+
+
+Bucket Policy is a kind of resource policy. Used to assign permissions to other users besides root and bucket owner
+
+
+Example Bucket Policy to Explicitly Deny access
+		{
+			"Version":"2012-10-17",
+			"Statement":[
+				{
+					"Sid":"ExplicitDeny",
+					"Effect":"Deny",
+					"Principal": {
+						"AWS":"arn:aws:iam::ACCOUNT-ID-WITHOUT-HYPHENS:user/DeniedUser"
+					},
+					"Action":"s3:*",
+					"Resource": [
+						"arn:aws:s3:::<bucketname>",		#denies access to bucket
+						"arn:aws:s3:::<bucketname>/*"		#denies access to all data in bucket
+					]
+					
+				}
+			]
+		}
+
+
+Access Control Lists (ACLs) for limiting access in S3 bucket is deprecated
+
+	5 types of permissions:
+		FULL_CONTROL
+		READ
+		WRITE		create, overwrite and delete
+		READ_ACP	Grants permission to read the bucket ACL
+		WRITE_ACP	Grants permission to write the bucket ACL
+
+	very limited, hence why it is deprecated
+
+
+Block public access settings
+	by default it is turned on which blocks all access. Must set to "OFF" and a Resource or Identity policy must be applied as well
+
+EBS - Elastic Block Storage. Can attach an EBS volume to a EC2 instance.
+	Can not be moved between Availability Zones
+	
+EFS - Elastic File System. - Automatically scales based on usage. 
+
+
+
+**********************************************************************************************
+
+Virtual Private Cloud (VPC) - isolated network and resources
+
+IGW - internet gateway -> must define it for public subnet to be accessed
+	create IGW and then attach it 
+
+	create route table destination and target
+		Destination: 0.0.0.0/0
+		Target: Internet Gateway
+		Igw created above
+
+	edit subnet associations -> add the public subnet created above
+
+
+
+
+Create an EC2 instance in the Public subnet
+
+Create a NAT GW in the public subnet
+
+**********************************************************************************************
+
+
+**********************************************************************************************
+
+Relational Databases (RDS) 
+	use S3 for storage
+
+
+**********************************************************************************************
+AWS Command Line Interface:
+
+Installation:
+	Mac:
+		curl "https://awscli.amazonaws.com/AWSCLIV2.pkg" -o "AWSCLIV2.pkg"
+		sudo installer -pkg AWSCLIV2.pkg -target /
+
+	Linux:
+		curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+		unzip awscliv2.zip
+		sudo ./aws/install
+
+	Windows:
+		google "aws cli windows" in browser
+
+IAM user requires username, password and 12-digit AWS account ID or account alias
+
+
+Regions
+	us-east-1
+	us-east-2
+	us-west-1
+	us-west-2
+
+
+need access key to use cli tools
+	AWS -> Security credentials -> Access keys
+		lists access keys you can use and/or create new ones
+		You need the "Secret Access Key" which is presented when creating a new Access Key. 
+			if the secret access key value is lost, new key must be created and old one
+			deactivated.
+
+To configure CLI to use access keys:
+	aws configure
+		AWS Access Key
+		AWS Secret Access Key
+		Region: us-east-2
+		Default output format: json
+
+	Set up a CLI profile for multiple users:
+	aws sts get-caller-identity		#shows current user
+	aws configure --profile <profile-name>	#creates profile with the given name
+		AWS Access Key
+		AWS Secret Access Key
+		Region: us-east-2
+		Default output format: json
+	aws s3 ls --profile <profile-name>	#show s3 buckets in the other profile
+
+Cli commands:
+aws s3 ls					# list S3 buckets
+aws s3 ls s3://<bucketname>/			# will show any uploaded files, etc.
+aws s3 cp file1.txt s3://<bucketname>		# copy file to s3 bucket
+
+
+aws iam list-users				# list all users	
+							'Arn' value returned contains the AccountID (number) used to 
+							login to the Web Console with IAM name and pw
+aws sts get-caller-identity --query Account -output text
+aws iam get-user				# list user associated with configured Access Key and Secret
+aws sts get-caller-identity			# 
+aws configure get region			# show region being used
+
+aws iam list-groups				#list all groups
+aws iam list-groups-for-user --username bagel	#show groups the Bagel user is in
+
+
+
+
+**********************************************************************************************
+
+VPC - Virtual Private Cloud
+
+To create a Public VPC you must add an Internet Gateway, Route Table 
+	Create Internet Gateway first
+	Create route table
+		select VPN -> Create route table
+		Edit Routes -> Add Route -> 
+			Destination: 0.0.0.0/0
+			Target: Local
+			Local: Internet Gateway -> select the above created Internet Gateway
+		Actions -> Edit subnet associations -> select all public Subnets you want -> Save
+
+
+To create a Private VPC that can access the Internet (outbound) add a NAT Gateway
+
+Security Group and NACL -> both act as virtual firewalls
+	Security Group -> filter traffic to and from an EC2 instance. It is instance-level security
+
+	NACL -> Network access control list -> controls traffic to and from a subnet.
+		works at subnet level of VPC
+
+
+jtharel-public-subnet-2
+
+**********************************************************************************************
+
+Elastic Compute Cloud (EC2) - virtual machines (instances)
+
+AMI - Amazon Machine Image -> prebuilt instances or virtual machines
+	Create key pair for access
+
+	User data section allows you to enter command to run on the new host. i.e:
+		#!/bin/bash
+		sudo yum update -y
+		sudo amazon-linux-extras install nginx1 -y
+		sudo systemctl enable nginx
+		sudo systemctl start nginx
+
+
+Instance Naming Convention:
+	Full name is an Instance Type i.e. "M6g.2xLarge"
+	M		Instance Family			
+	6		Instance Generation		
+	g		Additional Capability		
+	.2xLarge	Instance Size
+
+
+	Instance Family options:
+		General-purpose Instance 	-> balance of compute, memory and networking resources 
+						   web servers, caching fleets, distributed data store
+			M			M-Series -> Balanced baseline performance
+			T			T-Series -> burstable CPU performance
+			A			A-Series -> ARM based Graviton processors
+			Mac			Mac-serices -> MacOS
+	
+		Compute-optimized Instance 	-> high performance processors/CPU
+						   batch processing, scientific modeling, server engines,
+						   machine learning, gaming servers
+			C			Higher performance computing
+			HPC
+		Memory-optimized Instance	-> huge memory to process large data sets
+						   databases, memory caches, real-time data analytics
+			R
+			X
+			High Memory
+			Z
+		Storage-optimized Instance	-> read and write to massive data sets
+						   MySQL, NoSQL database, PostgreSQL
+			I
+			D
+			H
+	
+
+	Instance Generation options:
+		higher numbers indicate newer generation
+	
+	Additional Capability options:
+		a	AMD
+		g	Graviton2 (Graphics Capability / GPU)
+		d	Local NVMe SSD
+		n	High networking(100Gps)
+		e	Extra Capacity
+
+	Instance Size options:
+		.16xlarge	64 vCPU	256GB Memory	25Gb Network
+		.12xlarge	48 vCPU	192GB Memory	12Gb Network
+		.8xlarge	32	128		10Gb Network
+		.4xlarge	16	64		Up to 10Gb
+		.2xlarge	8	32		Up to 10Gb
+		.xlarge		4	16		Up to 10Gb		
+		.large		2	8		Up to 10Gb
+		.medium		1	4		Up to 10Gb
+
+
+Create a new instance (virtual host):
+	Launch Instances -> Quick Start section -> select Ubuntu
+
+		Network Settings -> Edit -> Select correct VPC -> Select correct Subnet -> Auto-Assign Public IP: enable
+
+		Network Settings -> Edit -> Firewall (Security groups) -> Create Security Group -> Assign Name, SSH, IP -> Add Sec Group
+
+		Advanced Details -> IAM Instance Profile -> Select role created for access (in my case ec2-s3-access)
+				
+		Configure Storage -> Advanced -> Add New Volume -> 
+
+		Key Pair (login) -> Create new key pair or select existing
+
+		Launch Instance
+
+		chmod 040 private-key-file.pem 
+		ssh ec2-user@<ip> -i ./private-key-file.pem
+
+ 	
+		If Windows -> Instances -> Connect -> RDP Client -> Get  Password -> upload PEM file -> Decrypt Password
+			Use RDP to connect as Administrator with the decrypted password.
+
+
+**********************************************************************************************
+
+ECS - Elastic Container Server (i.e. docker)
+
+
+Fargate launch type -> a serverless option that abstracts the underlying infrastructure management.
+
+Elastic Beanstalk (EB) -> service for deploying and scaling web applications
+
+Serverless - the infrastructure used to run your app no longer needs to be provisioned or maintained by your team
+
+Lambda -> serverless service that lets you run code without provisioning or managing servers
+		functions run for up to 15 minutes per invocation
+		
+
+**********************************************************************************************
+
+
+
+RDS - Relational Database Service - managed service that automates the provisioning of databases
+	PostgresSQL MySQL MariaDB, Oracle SQL Server, Amazon DynamoDB
+
+
+1. Search for RDS on the main page
+2. Click Aurora and RDS
+3. Click Subnet groups -> create DB subnet group
+	Name:			DataBase-SubnetGroup
+	Description: 		Subnet Group for MySQL
+	VPC:			(select an existing VPC i.e. jtharel-vpc)
+	Availability Zone:	Us-east-1a and us-east-1b
+	Subnets:		(Select the private subnets for each AZ)
+	
+	click Create
+
+4. Click on Databases from the left side of the browser -> Create Database
+	Select Standard Create
+	Select MySQL
+	Edition: MySQL Community
+	Engine Version: 		select the latest version
+	Templates: 			Free tier
+	DB instance Identifier:		database-MySQL
+	Master username:		admin
+	Credentials Management:		Self managed	
+	Master password:		XXXXXXXXX
+	Instance Configuration:		Burstable classes
+		db.t4g.micro
+	Storage type:			General Purpose SSD (gp2)
+	Allocated storage:		20GB
+	Virtual Private cloud VPC:	(select the VPC from above i.e. jtharel-vpc)
+	DB subnet group:		(select the subnet group from above i.e DataBase-SubnetGroup)
+	Public Access:			No
+	VPC Security Group Firewall:	Create New
+	New VPC security group name:	mysql-security-group
+	Availability Zone:		No preference (do not select us-east-1a or 1b)
+	Database authentication:	Password authentication
+
+	Expand Additional Configuration
+	Initial database name:		(something like 'users')
+	DB parameter group:		default.mysql8.4
+	Option group:			default:mysql-8-4
+	Select Enable Automated backups
+	Click create database
+	Click on the DB Instance Identifier name (i.e. database-mysql).
+	
+
+Elasticache - fully managed in-memory database caching solution from AWS
+
+Amazon Redshift - fast, fully managed, petabyte-scale SQL-based data warehouse offering from AWS. Paid as you go
+		keeps 3 copies of your data
+
