@@ -1,0 +1,3 @@
+PowerShell command to return permissions on a network share.
+
+get-acl -Path "\\server\sharename" | Format-List
