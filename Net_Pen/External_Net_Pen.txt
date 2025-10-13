@@ -1,0 +1,93 @@
+
+
+BBOT -> subdomain enumeration
+
+	https://github.com/blacklanternsecurity/bbot
+	bbot -t myvictim.com -f subdomain-enum email-enum cloud-enum web-basic
+
+	scan output logs are stored in ~/.bbot/scans/<dir>
+
+
+Gowitness -> will access web pages on discovered domains and take a screen shot
+	Feed subdomains from bbot into this tool
+
+	https://github.com/sensepost/gowitness/
+
+	##gowitness scan --cidr 192.168.0.0/24 --threads 20
+
+	gowitness file -f subdomains.txt	#subdomains.txt was created by bbot
+
+		need to play with this:
+			gowitness nmap -f nmap.xml --open --service-contains http
+
+	gowitness server
+		sets up a webserver on localhost:7171
+
+	
+
+Cyber Six Gill -> data breach exposure stuff/dark web (search for customer domains)
+	Ask in Slack External COI workflow
+
+Google Dork -> customer domain as well
+
+
+Directory and File Fuzzing
+Go Buster
+apt install -y gobuster
+
+gobuster dir -u https://www.havertys.com -w /usr/share/dirbuster/wordlists/directory-lists-2.3-small.txt -b 403,404
+	-s -> show 200 responses
+	-b -> blacklist ""          (empty string) responses 
+	-b 403,404
+
+
+Check email security
+	dig -t TXT _dmarc.{domain}.com +short
+	DMARC set to none - this is bad
+
+HTTP Headers on www.{domain}.com
+	nmap --script http-methods --script-args=test-all -p 443 www.{domain}.com
+
+SSLscan on subdomains
+
+
+
+cisco vpn
+	ike 
+	nmap -sU -p 500 12.129.89.3
+	nmap -sU -p 500 --script ike-version 12.129.89.3
+	
+	ike-scan -M 12.129.89.3
+	ike-scan -A 12.129.89.3
+		aggressive mode? Can use that to crack session
+
+
+
+WordPress:
+	https://domain.com/wp/wp-admin
+	https://domain.com/wp/wp-login.php
+
+	wpscan --url domain.com --random-user-agent
+
+	wpscan --url domain.com --random-user-agent -e vp --api-token wfpz2hHvsQelNWHq9XsrWJ2WGjdRQ80WbaD81iXoHYA
+		-e vp		-> vulnerable plugins
+		-api-token	-> API token used when checking VPs
+
+	wpscan --url ir.havertys.com --random-user-agent -e vp --api-token wfpz2hHvsQelNWHq9XsrWJ2WGjdRQ80WbaD81iXoHYA
+		-e vt		-> vulnerable themes
+
+	wpscan --url ir.havertys.com --random-user-agent -e u --api-token wfpz2hHvsQelNWHq9XsrWJ2WGjdRQ80WbaD81iXoHYA
+		-e u		-> enumerate users
+
+
+'wayback' for subdomains
+	https://github.com/tomnomnom/waybackurls
+
+	Accept line-delimited domains on stdin, fetch known URLs from the Wayback Machine for *.domain and output them on stdout.
+
+	Usage example:
+		cat domains.txt | waybackurls > urls.txt
+
+	Install:
+		go install github.com/tomnomnom/waybackurls@latest
+
