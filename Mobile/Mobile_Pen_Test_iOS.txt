@@ -57,8 +57,7 @@ Enable an installed CA Certificate: Settings -> General -> About -> Certificate 
 
 	Applications are stored in:
 		/private/var/mobile/Containers/Data/Application/ -> App data stored here
-		/private/var/mobile/Containers/Bundle/Application/ -> App unzipped / binary
-		/private/var/containers/Bundle/Application/ -> App Unzipped / binary -> iOS 11
+		/private/var/containers/Bundle/Application/ -> App Unzipped / binary 
 		
 
 			tar -cf app.tar mcdonalds.app/
@@ -691,6 +690,7 @@ Watchdog - A filemonitor that's useful for grabbing temporary files that are qui
 watchmedo shell-command --patterns="*" --ignore-directories --command='pid=[process ID]; kill -STOP "$pid"; unique="$RANDOM"; echo "$unique": copying "${watch_src_path}"; cp `basename "${watch_src_path}"` /var/root/filemonitor/"$unique"`basename "${watch_src_path}"` | tee --append /var/root/filemonitor/watchdog.log; kill -CONT "$pid"' .
 
 Just cd to the application's directory (should be /var/mobile/Applications/[APP ID]). That should dump copies of all created/deleted files (with a random number appended to the name, I really need to change this to the time it was copied…) into ~/filemonitor and create a log file at ~/filemonitor/watchdog.log.
+
 
 
 
