@@ -1,6 +1,6 @@
 metadata:
     language: v2-beta
-    name: "Find PRIVATE KEY in reponse"
+    name: "PRIVATE KEY in reponse"
     description: "Searches response bodies for a text string."
     author: "Jimmy Tharel"
     tags: "PRIVATE KEY"
