@@ -1,6 +1,6 @@
 metadata:
     language: v2-beta
-    name: "Find AWS Key in response"
+    name: "AWS Key in response"
     description: "Searches response bodies for a text string."
     author: "Jimmy Tharel"
     tags: "AWS"
