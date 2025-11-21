@@ -1,0 +1,15 @@
+metadata:
+    language: v2-beta
+    name: "Find AWS Key in response"
+    description: "Searches response bodies for a text string."
+    author: "Jimmy Tharel"
+    tags: "AWS"
+
+given response then
+    if {latest.response.body} matches "AWS" then
+            report issue:
+                severity: high
+                confidence: firm
+                detail: "AWS Key found in response"
+                remediation: "Do not store AWS Key in response"
+    end if
