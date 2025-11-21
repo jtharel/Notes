@@ -1,0 +1,15 @@
+metadata:
+    language: v2-beta
+    name: "Find PRIVATE KEY in reponse"
+    description: "Searches response bodies for a text string."
+    author: "Jimmy Tharel"
+    tags: "PRIVATE KEY"
+
+given response then
+    if {latest.response.body} matches "PRIVATE KEY" then
+            report issue:
+                severity: high
+                confidence: firm
+                detail: "PRIVATE KEY found in response"
+                remediation: "Do not store in response"
+    end if
