@@ -127,6 +127,12 @@ Enable an installed CA Certificate: Settings -> General -> About -> Certificate 
 		otool –hv <appname>
 		otool –I –v <appname> | grep stack
 
+		check for random number generator:
+		otool -I -v <appname> |grep -w "_rand"		rand() random() srandom()
+
+		check for malloc, popen, etc:
+		otool -I -v <appname> |grep "malloc"
+
 	PlistEdit Pro
 		https://www.fatcatsoftware.com/plisteditpro/
 		View and/or edit *.plist files.
@@ -690,6 +696,7 @@ Watchdog - A filemonitor that's useful for grabbing temporary files that are qui
 watchmedo shell-command --patterns="*" --ignore-directories --command='pid=[process ID]; kill -STOP "$pid"; unique="$RANDOM"; echo "$unique": copying "${watch_src_path}"; cp `basename "${watch_src_path}"` /var/root/filemonitor/"$unique"`basename "${watch_src_path}"` | tee --append /var/root/filemonitor/watchdog.log; kill -CONT "$pid"' .
 
 Just cd to the application's directory (should be /var/mobile/Applications/[APP ID]). That should dump copies of all created/deleted files (with a random number appended to the name, I really need to change this to the time it was copied…) into ~/filemonitor and create a log file at ~/filemonitor/watchdog.log.
+
 
 
 
