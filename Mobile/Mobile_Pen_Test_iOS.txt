@@ -404,11 +404,11 @@ Dump Memory:
 
 	frida-ps -U -i -a		-> lists processes on device and can help identify names of processes
 
-	objection --gadget 4876 -N -h 192.168.1.123 explore
+	objection -n 4876 -N -h 192.168.1.123 start
 
-	objection --gadget=“AppName” explore --startup-command "ios jailbreak disable"
+	objection -n “AppName” start --startup-command "ios jailbreak disable"
 
-	objection --gadget="AppName" explore
+	objection -n "AppName" start
 		env 				-> show storage locations of the app
 						   shows directories to bin and data folders
 		ls				-> ls and current directory
@@ -696,6 +696,7 @@ Watchdog - A filemonitor that's useful for grabbing temporary files that are qui
 watchmedo shell-command --patterns="*" --ignore-directories --command='pid=[process ID]; kill -STOP "$pid"; unique="$RANDOM"; echo "$unique": copying "${watch_src_path}"; cp `basename "${watch_src_path}"` /var/root/filemonitor/"$unique"`basename "${watch_src_path}"` | tee --append /var/root/filemonitor/watchdog.log; kill -CONT "$pid"' .
 
 Just cd to the application's directory (should be /var/mobile/Applications/[APP ID]). That should dump copies of all created/deleted files (with a random number appended to the name, I really need to change this to the time it was copied…) into ~/filemonitor and create a log file at ~/filemonitor/watchdog.log.
+
 
 
 
