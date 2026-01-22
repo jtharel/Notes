@@ -74,6 +74,9 @@ python3 -m garak --target_type openai --target_name gpt-3.5-turbo -G ./garak-con
 # To run all the tests within the plugin family, use -p <pluginFamilyName>
 # to only run one test within the plugin family, use -p <pluginFamilyName>.<specificPluginName>
 
+#View Report:
+python3 -m garak.analyze --report /home/<username>/.local/share/garak/garak_runs/garak.YOUR_REPORT_ID.report.jsonl
+
 
 Proxy - add to garak-config.json file?:
 {
