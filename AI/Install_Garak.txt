@@ -22,7 +22,7 @@ cd ../..
 python -m pip install -U garak
 
 #test run:
-python -m garak --model_type test.Blank --probes test.Test
+python -m garak --target_type test.Blank --probes test.Test
 
 
 #Using Garak:
@@ -64,11 +64,11 @@ Create file garak-config.json:
 # export REST_API_KEY=<authorization_key>
 # export OPENAI_API_KEY=<auth_key> ??
 
-python3 -m garak --model_type huggingface --model_name gpt2 -G ./garak-config.json --probes lmrc.Profanity
+python3 -m garak --target_type huggingface --target_name gpt2 -G ./garak-config.json --probes lmrc.Profanity
 
-python3 -m garak --model_type huggingface --model_name ibm-granite/granite-3.1-1b-a400m-instruct  -G ./garak-config.json --probes lmrc.Profanity
+python3 -m garak --target_type huggingface --target_name ibm-granite/granite-3.1-1b-a400m-instruct  -G ./garak-config.json --probes lmrc.Profanity
 
-python3 -m garak --model_type openai --model_name gpt-3.5-turbo -G ./garak-config.json --probes xss.MarkdownImageExfil
+python3 -m garak --target_type openai --target_name gpt-3.5-turbo -G ./garak-config.json --probes xss.MarkdownImageExfil
 
 # python3 -m garak --list_probes		-> shows test cases
 # To run all the tests within the plugin family, use -p <pluginFamilyName>
