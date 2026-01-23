@@ -6,7 +6,7 @@ virtualenv garak
 cd garak
 source bin/activate 
 
-pin install setuptools
+pip install setuptools
 pip install Cmake
 git clone https://github.com/google/sentencepiece.git 
 cd sentencepiece
@@ -76,6 +76,22 @@ python3 -m garak --target_type openai --target_name gpt-3.5-turbo -G ./garak-con
 
 #View Report:
 python3 -m garak.analyze --report /home/<username>/.local/share/garak/garak_runs/garak.YOUR_REPORT_ID.report.jsonl
+
+
+
+# Garak is installed in Linux VM, Burp is running on Host OS
+# This will allow you to run Garak through burp and not have to worry about SSL errors 
+# since ollama is running locally in Linux
+# In Linux, Install ollama:
+curl -fsSL https://ollama.com/install.sh | sh
+ollama pull tinylama
+
+# run ollama and garak:
+ollama run tinylama &
+export HTTPS_PROXY="HTTP://192.168.1.251:8080"
+export HTTP_PROXY="HTTP://192.168.1.251:8080"
+export NO_PROXY="localhost,127.0.0.1"
+python3 -m garak --target_type ollama --target_name tinyllama -G ./garak-config.json --probes ansiescape.AnsiEscaped
 
 
 Proxy - add to garak-config.json file?:
