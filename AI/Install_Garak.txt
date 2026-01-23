@@ -105,3 +105,13 @@ Proxy - add to garak-config.json file?:
   }
 }
 python3 -m garak --target_type rest -G ./garak-config.json --probes ansiescape.AnsiEscaped
+
+In the event that the response field is in an arrary the following syntax can be used:
+"response_json_field":"$.generic[0].text"
+# the response parameter is called "text" put it is an arrary
+# "generic":[
+#	 "text": "LLM response here",
+#	 "response_type": "text",
+#	 "repeat_on_reprompt": true
+#
+# if the "text" parameter was listed 2nd, the [0] would be [1]
