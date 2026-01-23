@@ -80,13 +80,13 @@ python3 -m garak.analyze --report /home/<username>/.local/share/garak/garak_runs
 
 Proxy - add to garak-config.json file?:
 {
-    "rest": {
-        "RestGenerator": {
-           "uri": "http://my_internal_llm_endpoint",
-           "proxies": {
-              "http": "http://localhost:8080",
-              "https": "https://localhost:8443",
-           }
-        }
-    }
+  "rest.RestGenerator": {
+    "uri": "https://your-internal-llm.com/v1/chat",
+    "method": "post",
+    "proxies": {
+      "http": "http://10.10.1.10:3128",
+      "https": "http://10.10.1.10:1080"
+    },
+    "verify_ssl": false
+  }
 }
