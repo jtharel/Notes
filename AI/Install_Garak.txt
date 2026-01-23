@@ -38,7 +38,7 @@ Create file garak-config.json:
         "method": "post",
         "headers":{
             "X-Authorization": "$KEY",
-	    "Content-Type": "application/json"
+	    	"Content-Type": "application/json"
         },
         "req_template_json_object":{
             "text":"$INPUT"
@@ -79,30 +79,29 @@ python3 -m garak.analyze --report /home/<username>/.local/share/garak/garak_runs
 
 
 
-# Garak is installed in Linux VM, Burp is running on Host OS
-# This will allow you to run Garak through burp and not have to worry about SSL errors 
-# since ollama is running locally in Linux
-# In Linux, Install ollama:
-curl -fsSL https://ollama.com/install.sh | sh
-ollama pull tinylama
-
-# run ollama and garak:
-ollama run tinylama &
-export HTTPS_PROXY="HTTP://192.168.1.251:8080"
-export HTTP_PROXY="HTTP://192.168.1.251:8080"
-export NO_PROXY="localhost,127.0.0.1"
-python3 -m garak --target_type ollama --target_name tinyllama -G ./garak-config.json --probes ansiescape.AnsiEscaped
 
 
 Proxy - add to garak-config.json file?:
 {
-  "rest.RestGenerator": {
-    "uri": "https://your-internal-llm.com/v1/chat",
-    "method": "post",
-    "proxies": {
-      "http": "http://10.10.1.10:3128",
-      "https": "http://10.10.1.10:1080"
-    },
-    "verify_ssl": false
+  "rest":{
+  	"RestGenerator": {
+  	  "uri": "https://your-internal-llm.com/v1/chat",
+  	  "method": "post",
+	  "headers": {
+		"X-Authorization": "$KEY",
+		"Content-Type": "application/json"
+	  },
+	  "req_template_json_object": {
+		"text": "$INPUT"
+	  {,
+	  "response_json": true,
+	  "response_json_field": "text"
+  	  "proxies": {
+  	    "http": "http://10.10.1.10:3128",
+  	    "https": "http://10.10.1.10:1080"
+  	  },
+  	  "verify_ssl": false
+  	}
   }
 }
+python3 -m garak --target_type rest -G ./garak-config.json --probes ansiescape.AnsiEscaped
