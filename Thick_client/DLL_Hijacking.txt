@@ -66,9 +66,13 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 __attribute__((dllexport)) void CALLBACK LaunchCalc(HWND hwnd, HINSTANCE hinst, LPSTR lpszCmdLine, int nCmdShow)
 {
 	WinExec("calc.exe", SW_SHOWNORMAL);
-}}
+}
 
-32bit:
+
+Compile:
+i686-w64-mingw32-gcc ./hijack.c -o hijack.dll -shared -Wl,--kill-at
+
+32bit test launch:
 c:\windows\SysWOW64\rundll32.exe hackjack4.dll,LaunchCalc
 
 
