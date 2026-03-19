@@ -1,0 +1,40 @@
+https://servicesessentials.ibm.com/curatorai/apps/ui/settings/user/api-keys
+goto settings and generate API key
+
+
+curl -X 'GET' \
+  'https://servicesessentials.ibm.com/apis/v3/models' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer $CLINE_API_KEY' |jq
+
+|jq pretties it up -> jq JSON formater
+
+
+Get VS Code for linux:
+https://code.visualstudio.com/thank-you?dv=linuxarm64_deb
+
+Install Cline in VS Code:
+code --install-extension saoudrizwan.claude-dev
+
+
+https://pages.github.ibm.com/guild-of-coding-agents-at-consulting/documentation/docs/coding-agents/cline/getting-started
+
+To start VS Code on Linux:
+	code .
+
+# hextrike-ai config:
+{
+  "mcpServers": {
+    "hexstrike-ai": {
+      "command": "/home/jtharel/AI_PT/bin/python", 
+      "args": [
+        "/home/jtharel/AI_PT/hextrike-ai/hexstrike_mcp.py",
+        "--server",
+        "http://127.0.0.1:8888"
+      ],
+      "env": {},
+      "disabled": false,
+      "timeout": 600
+    }
+  }
+}
