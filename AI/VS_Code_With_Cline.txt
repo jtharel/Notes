@@ -22,7 +22,7 @@ https://pages.github.ibm.com/guild-of-coding-agents-at-consulting/documentation/
 To start VS Code on Linux:
 	code .
 
-# hextrike-ai config:
+# hextrike-ai config inside Cline:
 {
   "mcpServers": {
     "hexstrike-ai": {
