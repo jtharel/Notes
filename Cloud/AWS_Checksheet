@@ -1,0 +1,106 @@
+* * *
+
+## SCOPE
+
+* * *
+
+role_arn = arn:aws:iam::123456:role/role1  
+User arn =
+
+### Accounts
+
+| **Account Name** | **Account ID** | **Role arn** |
+| --- | --- | --- |
+
+```
+> cat ./accounts.txt
+<accountId1>
+<accountsId2>
+```
+
+* * *
+
+### Recon
+
+- [ ] Subdomains and public S3 buckets - bbot, cloud_enum
+- [ ] Public resources - [awseye](https://awseye.com/)
+
+### Enumeration
+
+- [ ] PMapper + CloudFox
+- [ ] Nuclei on websites for cloud/web basic enum
+- [ ] External Enum on public IPs of EC2/endpoints identified by Cloudfox
+    - [ ] Nmap
+    - [ ] Nessus
+    - [ ] sslcan
+
+### Config Review
+
+- [ ] Security Hub / AWS Config
+- [ ] ScoutSuite
+- [ ] Prowler
+
+### EC2
+
+- [ ] Public IP external scanning (Nmap, Nessus, SSLScan)
+- [ ] User Data analysis for sensitive information
+- [ ] Public EBS snapshots (EC2 -> Snapshots -> Public Snapshots)
+- [ ] Unencrypted EBS Volumes identification
+- [ ] Check for overly permissive security groups
+- [ ] Instance metadata service (IMDSv1/v2)
+
+### Lambda
+
+- [ ] Look for secrets at env vars
+- [ ] Source code analysis for hardcoded credentials
+- [ ] Check Lambda execution role for excessive privs
+
+### S3
+
+- [ ] Public read/write access verification
+- [ ] IAM Access Analyzer for S3
+- [ ] List all files on s3 buckets
+- [ ] Look for interesting filenames that may contain sensitive content
+- [ ] Verify any .tf or .tfstate for Credentials/Keys - check if resource still exists
+
+### IAM
+
+- [ ] Review Groups, Roles and policies of provided user
+- [ ] Check if user can list account details through aws organizations
+- [ ] Look for privilege escalation paths using PMapper + CloudFox
+- [ ] Cloudsplaining for overly permissive policies
+- [ ] Brute force assume role attacks on existing roles
+- [ ] MFA enforcement verification
+- [ ] Cross-account trust relationship analysis
+    - [ ] Look for Trust Policies allowing AssumeRole across accounts without External ID
+- [ ] Check for Access Keys that have not been rotated within 90 days
+- [ ] Search Access Keys on google, pastebin and github to test for key public exposure
+- [ ] Check for Weak Password Policy
+- [ ] Check roles assigned to workloads (EC2, Lambda,...) for excessive privileges (Cloudfox's workloads)
+
+### AWS Identity Center (SSO)
+
+- [ ] Permission set configuration analysis
+- [ ] Session duration and policies
+- [ ] MFA enforcement verification
+
+### RDS
+
+- [ ] Public accessibility verification
+- [ ] Security group and subnet group analysis
+- [ ] rds.force_ssl = 0 - Insecure Network Communication
+
+### CloudFormation
+
+- [ ] Template security analysis for hardcoded secrets - output/parameters
+
+### Secrets Manager
+
+- [ ] List Secrets
+    - [ ] cloudfox pull-secrets-commands.txt
+- [ ] Secret rotation configuration
+
+### ECR
+
+- [ ] Attempt to dump public container templates for clear text
+- [ ] check if it has pull perms and check images for clear text passwords
