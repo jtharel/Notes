@@ -1,0 +1,19 @@
+cd AI_PT
+source bin/activate
+sudo apt install gemini-cli
+  or
+sudo npm install -g @google/gemini-cli
+
+#make sure tooling is installed from Claude_MCP_PenTesting.txt file
+
+export COLORTERM=truecolor	#if sshing into Kali from Mac
+gemini --yolo
+
+	/model	
+		select gemini-2.5-flash
+
+	read GEMINI.md file
+	who are you?
+
+	here is your target: http://juicebox.fun.com
+
