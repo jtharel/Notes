@@ -422,6 +422,8 @@ Create a new instance (virtual host):
 
 		chmod 040 private-key-file.pem 
 		ssh ec2-user@<ip> -i ./private-key-file.pem
+		ssh ubuntu@<iP> -i ./private-key-file.pem
+		ssh admin@...
 
  	
 		If Windows -> Instances -> Connect -> RDP Client -> Get  Password -> upload PEM file -> Decrypt Password
