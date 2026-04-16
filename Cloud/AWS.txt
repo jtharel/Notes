@@ -267,7 +267,7 @@ Regions
 
 
 need access key to use cli tools
-	AWS -> Security credentials -> Access keys
+	AWS (In upper right corner) -> Security credentials -> Access keys
 		lists access keys you can use and/or create new ones
 		You need the "Secret Access Key" which is presented when creating a new Access Key. 
 			if the secret access key value is lost, new key must be created and old one
