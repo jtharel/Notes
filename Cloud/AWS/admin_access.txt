@@ -1,0 +1,60 @@
+#
+#Confirm AdministratorAccess returns * for Action and Resource to ensure full admin
+aws iam get-policy-version --profile jtharel --policy-arn arn:aws:iam::aws:policy/AdministratorAccess --version-id v1
+
+
+Step 1 — Get the role's trust policy (who can assume it) (get role name from pmapper.txt in cloudfox):                                                          
+  aws iam get-role --profile <PROFILE_NAME> --role-name <ROLE-NAME> --query 'Role.AssumeRolePolicyDocument'   
+
+	If "access.managedservices.amazonaws.com" is the service returned with "AssumeRole" this is by design where
+	AWS manages your AWS infrastructure on your behalf (patching, monitoring, backups, etc.)
+
+	if "sms.amazonaws.com" is the service returned it is an escalation path as this is used to run command on EC2 instances    
+		check which instances have SSM agent active:
+			  aws ssm describe-instance-information --profile jtharel --query 'InstanceInformationList[*].{InstanceId:InstanceId,PingStatus:PingStatus,LastPing:LastPingDateTime}' --output table  
+
+		Check which polices have ssm:StartSession:      
+			aws iam get-account-authorization-details --profile jtharel --output json | grep -B 50 "ssm:StartSession" | grep -E "UserName|RoleName|GroupName|PolicyName|ssm:StartSession"      
+
+		Find which roles these polices that were returned in the command above are attached to:
+			aws iam get-account-authorization-details --profile jtharel --output json > /tmp/iam_details.json
+		Use python to parse the json file:
+			python3 -c "import json; data = json.load(open('/tmp/iam_details.json')); [print(f'Role: {role[\"RoleName\"]} - Policy: {policy[\"PolicyName\"]}') for role in data.get('RoleDetailList', []) for policy in role.get('RolePolicyList', []) if 'ssm' in policy['PolicyName'].lower()] or [print(f'User: {user[\"UserName\"]} - Policy: {policy[\"PolicyName\"]}') for user in data.get('UserDetailList', []) for policy in user.get('UserPolicyList', []) if 'ssm' in policy['PolicyName'].lower()]"
+				This returns the role that has an inline policy that grants ssm:StartSession
+
+		See full permissions on the policy that was returned by the python command:
+			aws iam get-role-policy --profile jtharel --role-name ams_resource_scheduler_ssm_automation_role --policy-name ams_resource_scheduler_ssm_automation_role_policy
+
+
+	Goto step 2 if sms.amazonaws.com doesn't apply 
+python3 -c "import json; data=json.load(open('/tmp/iam_details.json')); [print(f'Role: {r[\"RoleName\"]} - Policy: {p[\"PolicyName\"]}') for r in data.get('RoleDetailList',[]) for p in r.get('AttachedManagedPolicies',[]) if 'ams-ops-ssm-start-port-forwarding-session' in p['PolicyName']]"  
+
+python3 -c "import json; data=json.load(open('/tmp/iam_details.json')); [print(f'User: {u[\"UserName\"]} - Policy: {p[\"PolicyName\"]}') for u in data.get('UserDetailList',[]) for p in u.get('AttachedManagedPolicies',[]) if 'ams-ops-ssm-start-port-forwarding-session' in p['PolicyName']]; [print(f'Group: {g[\"GroupName\"]} - Policy: {p[\"PolicyName\"]}') for g in data.get('GroupDetailList',[]) for p in g.get('AttachedManagedPolicies',[]) if 'ams-ops-ssm-start-port-forwarding-session' in p['PolicyName']]"                                                   
+                                                                       
+		                                                                                                    
+  Step 2 — Check attached MANAGED policies:                                                                          
+  aws iam list-attached-role-policies --profile jtharel --role-name <role-name>
+                                                                                                                     
+  Step 3 — Check INLINE policies:                                                                                    
+  aws iam list-role-policies --profile jtharel --role-name <role-name>                                               
+                                                                                                                     
+  Step 4 — View inline policy contents:                                                                              
+  aws iam get-role-policy --profile jtharel --role-name <role-name> --policy-name <policy-name>
+  aws iam get-role-policy --profile jtharel --role-name OrganizationAccountAccessRole --policy-name AdministratorAccess 
+
+
+  What to look for:                                                                                                  
+  - Attached policy AdministratorAccess — full admin
+  - Inline policy with "Action": "*" and "Resource": "*" — full admin                                                
+  - Inline policy with "Action": "iam:*" — can manage IAM, effectively admin                                         
+  - Inline policy with sts:AssumeRole on * — can assume any role, privilege escalation path
+
+
+aws sts assume-role --role-arn arn:aws:iam::<account-id>:role/<role-name> --role-session-name test-session
+	# test-session can be any name, it's just what get's logged 
+
+
+
+#List who can assume the role:
+aws iam list-role-policies --profile jtharel --role-name ams-access-management 
+
