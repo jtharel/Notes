@@ -1,0 +1,44 @@
+ECR Elastic Container Registry
+
+
+Attempt to dump public container templates for clear text:
+
+check if it has pull perms and check images for clear text passwords
+
+
+List all repositories:
+  aws ecr describe-repositories --query "repositories[*].repositoryName" --output table --profile <PROFILE_NAME>
+		
+
+Check for public repositories:
+  aws ecr-public describe-repositories --profile <PROFILE_NAME>
+
+
+Check if repository can "pull an image" / download it:
+  aws ecr get-repository-policy --repository-name <REPO_NAME> --profile ncdhhs
+		RepositoryPolicyNotFoundException -> means no repository policy is set. This is the secure configuration
+		"Principal": "*" -> means anyone can pull, no authentication required -> This is a finding
+
+
+Authenticate Docker to private ECR:
+  aws ecr get-login-password --profile <PROFILE_NAME> |podman login --username AWS --password-stdin <ACCOUNT>.dkr.ecr.us-east-1.amazonaws.com
+
+	# can use docker in place of podman
+	# if login successful run this to get the tag for each repository
+		aws ecr describe-images --repository-name <REPO_NAME> --query "imageDetails[*].{Tag:imageTags,Pushed:imagePushedAt}" --output table --profile <PROFILE_NAME>
+
+	# then run this to pull the docker image:
+		podman pull <ACCOUNT>.dkr.ecr.us-east-1.amazonaws.com/<REPO_NAME>:<TAG>
+
+	# then search for environment variables baked into the image:
+		podman inspect <REPO_NAME>:<TAG>  |grep -i env
+
+	# then search the docker image for environment variables:
+		podman run --rm <ACCOUNT>.dkr.ecr.<region>.amazonaws.com/<REPO_NAME>:<TAG> env
+
+	# then search for secrets:
+		podman run --rm <ACCOUNT>.dkr.ecr.<region>.amazonaws.com/<REPO_NAME>:<TAG> grep -ir "password\|secret\|key\|token\|credential" /etc /app /var 2>/dev/null
+			\.pem|\.key|\.config|\.env|credential|cred|secret|token|pass|backup|\.xlsx|\.sql|\.tfstate
+
+
+      
