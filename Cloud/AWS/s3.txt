@@ -1,0 +1,78 @@
+S3 stuff
+
+
+#Check if S3 bucket is publicly accessible:
+aws s3api get-bucket-acl --bucket <bucket-name>    
+	# if there is a "URI":"http://acs.amazonaws.com/groups/global/AllUsers" the S3 bucket is publicly accessible  
+
+# check for publicly accessible S3 buckets:
+#!/bin/bash                                                                                                        
+for bucket in $(aws s3api list-buckets --query "Buckets[].Name" --output text --profile <PROFILE_NAME> | tr '\t' '\n'); do
+	status=$(aws s3api get-bucket-policy-status --bucket "$bucket" --profile <PROFILE_NAME> 2>/dev/null)                                      
+	if echo "$status" | grep -q '"IsPublic": true'; then                                                             
+		echo "PUBLIC: $bucket"
+		else                                                                                                             
+		echo "private: $bucket"                           
+	  fi                                                                                                               
+done  
+
+
+
+# List files on s3 bucket
+aws s3 ls s3://<BUCKET_NAME> --recursive --human-readable --summarize --profile <PROFILE_NAME>
+
+#copy contents of s3 bucket:
+aws s3 cp s3://<BUCKET_NAME>/ . --recursive 
+
+
+#get size of all S3 Buckets:
+for bucket in $(aws s3 ls --profile <PROFILE_NAME> | awk '{print $3}'); do                                              
+    echo "=== $bucket ==="
+    aws s3 ls s3://$bucket --recursive --human-readable --summarize --profile <PROFILE_NAME> 2>/dev/null | tail -2
+done
+
+
+
+copy file from S3 bucket:
+aws s3 cp s3://bucket-name/filename.txt . --profile <PROFILE_NAME>
+aws s3 cp s3://<bucket-name>/ . --recursive --exclude "*.png" --exclude "*.PNG" 
+
+
+grep -Ei '\.pem|\.key|\.config|\.env|credential|cred|secret|token|pass|backup|\.xlsx|\.sql|\.tfstate' <bucket-listing-file>
+
+grep -EiR '\.pem|\.key|\.config|\.env|credential|cred|secret|token|pass|backup|\.xlsx|\.sql|\.tfstate' *
+
+find . -name "*.pem"
+
+
+#Search for sensitive info in S3 buckets or downloaded files. Use environment variables for keys
+trufflehog s3 --bucket=<bucket_name> --key=<key> --secret=<secret>
+trufflehog filesystem .
+
+	--only-verified is a "verified" option to help with information overload
+
+
+gitleaks detect --source . --no-git --verbose
+gitleaks detect --source . --no-git --report-path ./gitleaks-report.json
+	cat ./gitleaks-report.json | python3 -m json.tool 
+
+gitleaks detect --source . --no-git --report-path ./gitleaks-report.csv --report-format csv
+	open in Excel
+   
+
+
+or access via url:
+https://<bucket-name>.s3.amazonaws.com
+	or
+https://s3.amazonaws.com/<bucket-name>
+
+
+#View if EC2 snapshots are Encrypted:
+aws ec2 describe-snapshots --profile <PROFILE_NAME> --owner-ids self --query 'Snapshots[*].{ID:SnapshotId,Encrypted:Encrypted,Description:Description,VolumeSize:VolumeSize}' --output table  
+
+#View if EC2 snapshots are publicly accessible
+aws ec2 describe-snapshots --profile <PROFILE_NAME> --owner-ids self --query 'Snapshots[?Public==`true`].{ID:SnapshotId,Description:Description,VolumeSize:VolumeSize}' --output table  
+
+	an empty response means all snapshots are private. Change Public==`false` to see the snapshots.
+
+ 
