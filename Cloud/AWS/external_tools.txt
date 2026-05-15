@@ -40,3 +40,16 @@ cloudfox aws --profile jtharel pmapper --pmapper-data-basepath ./output
 
 
 
+
+Scoutsuite:
+aws configure sso 
+	SSO session name (Recommended): blahsso
+	SSO start URL [None]: https://identitycenter.amazonaws.com/ssoins-7223ae7b79f760d3
+	SSO region [None]: us-east-1
+	SSO registration scopes [sso:account:access]:
+aws sso login --profile <profile_name>
+
+./scout aws --profile <PROFILE_NAME> --ruleset detailed.json --report-dir /home/jtharel/scoutreport/
+
+
+
