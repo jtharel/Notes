@@ -1,0 +1,4 @@
+#list of Stale users in and environment (inactive or disabled for more than 100 days)
+aws iam generate-credential-report --profile <PROFILE_NAME>
+
+aws iam get-credential-report --profile <PROFILE_NAME> --output text --query 'Content' | base64 --decode | gawk -F',' 'NR>1 { if ($4 != "true" && $9 != "true" && $14 != "true") { print $1, "- Password enabled:", $4, "- Key1 active:", $9, "- Key2 active:", $14 } }'
