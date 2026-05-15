@@ -1,0 +1,60 @@
+How to Find 'Cross-Account AssumeRole Policy Lacks External ID' in Your Environment                                                              
+   
+  aws iam list-roles --output json | grep -B5 -A15 "AssumeRole" | grep -v "<your-account-id>"                        
+      
+	#Script to show all AssumeRoles that do not have an ExternalID
+	#!/bin/bash                                                                                                        
+	for role in $(aws iam list-roles --query "Roles[].RoleName" --output text --profile <PROFILE_NAME> | tr '\t' '\n'); do                      
+  		policy=$(aws iam get-role --role-name "$role" --query "Role.AssumeRolePolicyDocument" --output json --profile <PROFILE_NAME>)             
+  		if echo "$policy" | grep -q "AssumeRole" && ! echo "$policy" | grep -q "<ACCOUNT NUMBER>" && ! echo "$policy" | grep -q "ExternalId"; then 
+                	echo "CROSS-ACCOUNT, MISSING ExternalId: $role"                                                                
+			echo "$policy"                                                                                                 
+    			echo "---"                                        
+  		fi                                                                                                               
+	done   
+	
+
+	#Script to show all AssumeRoles that have the ExternalID set
+	#!/bin/bash
+	for role in $(aws iam list-roles --query "Roles[].RoleName" --output text --profile <PROFILE_NAME> | tr '\t' '\n'); do                      
+		policy=$(aws iam get-role --role-name "$role" --query "Role.AssumeRolePolicyDocument" --output json --profile <PROFILE_NAME>)             
+		if echo "$policy" | grep -q "ExternalId"; then                                                                   
+			echo "HAS ExternalId: $role"                                                                                   
+			echo "$policy"                                                                                                 
+			echo "---"                                                                                                     
+	  	fi
+	done  
+
+
+Vulnerable (no External ID):                                                                                       
+  {                                                     
+    "Effect": "Allow",                                                                                               
+    "Principal": {"AWS": "arn:aws:iam::<other-account>:root"},
+    "Action": "sts:AssumeRole"
+  }                                                                                                                  
+   
+  Secure (has External ID):                                                                                          
+  {                                                     
+    "Effect": "Allow",
+    "Principal": {"AWS": "arn:aws:iam::<other-account>:root"},
+    "Action": "sts:AssumeRole",                                                                                      
+    "Condition": {             
+      "StringEquals": {"sts:ExternalId": "unique-id-here"}                                                           
+    }                                                                                                                
+  }  
+
+aws sts assume-role --role-arn arn:aws:iam::<account-id>:role/<role-name> --role-session-name test-session
+	# test-session can be any name, it's just what get's logged 
+
+	% awk '{print $6}' principals.txt > roles.txt
+		#principals.txt from Cloudfox
+	% for X in `cat roles.txt` ; do aws sts assume-role --role-arn $X --role-session-name test-session --profile <PROFILE_NAME> ; done
+		#will return temp access key and secret access key if successfully found an AssumeRole
+
+#Get Full ARN from the role name:
+aws iam get-role --role-name <role-name> --query "Role.Arn" --output text 
+
+
+#List who can assume the role:
+aws iam list-role-policies --profile <PROFILE_NAME> --role-name <ROLE_NAME> 
+
