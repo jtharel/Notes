@@ -1,0 +1,28 @@
+Full Picture for a User                                                                                            
+                                                                                                                     
+  # Inline policies                                     
+  aws iam list-user-policies --user-name <username>                                                                  
+   
+  # Attached managed policies                                                                                        
+  aws iam list-attached-user-policies --user-name <username>
+
+  # Groups (which may also grant permissions)                                                                        
+  aws iam list-groups-for-user --user-name <username>
+
+
+
+Full Picture for roles:
+
+
+  # List role policies (Permission set configuration analysis???):
+
+  aws iam list-attached-role-policies --role-name "<ROLE_NAME>" --region us-east-1 --profile <PROFILE_NAME>
+
+  # List actual policies for the assigned role:
+  for policy in `aws iam list-attached-role-policies --role-name "<ROLE_NAME>" --region us-east-1 --profile <PROFILE_NAME> |grep PolicyArn |awk '{print $2}' |tr -d '"'` ; do
+	echo "=== $policy ==="
+	aws iam get-policy-version --policy-arn $policy --version-id v1 --profile <PROFILE_NAME>
+	echo "=== $policy ==="
+	echo " "
+  done
+
