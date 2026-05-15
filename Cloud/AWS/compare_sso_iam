@@ -1,0 +1,39 @@
+Compare a SSO user to an IAM User:
+
+SSO User: 
+	# List SSO instances and get the instance ARN
+	aws sso-admin list-instances
+
+	# List permission sets assigned to a specific account
+	aws sso-admin list-permission-sets-provisioned-to-account --instance-arn <INSTANCE-ARN> --acount-id <ACCOUNT ID>
+
+	# Get the policies attached to a specific permission set
+  	aws sso-admin list-managed-policies-in-permission-set --instance-arn <INSTANCE-ARN> --permission-set-arn <PERMISSION-SET-ARN>
+                                                                                                                     
+	# Get inline policy for a permission set                                                                           
+  	aws sso-admin get-inline-policy-for-permission-set --instance-arn <INSTANCE-ARN> --permission-set-arn <PERMISSION-SET-ARN>
+
+IAM User:     
+	# List inline policies
+	aws iam list-user-policies --user-name <username>
+                                                                                                                     
+	# List attached managed policies
+	aws iam list-attached-user-policies --user-name <username>                                                         
+                                                        
+	# List groups the user belongs to (groups also grant permissions)                                                  
+	aws iam list-groups-for-user --user-name <username>
+                                                                                                                     
+	# Get policies attached to each group                                                                              
+	aws iam list-attached-group-policies --group-name <groupname>
+	aws iam list-group-policies --group-name <groupname>                                                               
+                                                                                                                     
+  
+Get Full Policy Details for Both                                                                                   
+                                                                                                                     
+	Once you have the policy ARNs, get the actual policy document:                                                     
+                                                        
+	aws iam get-policy --policy-arn <POLICY-ARN>
+	aws iam get-policy-version --policy-arn <POLICY-ARN> --version-id v1   
+
+
+
