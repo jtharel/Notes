@@ -1,0 +1,15 @@
+#Show security groups that allow access from the internet:
+aws ec2 describe-security-groups --profile <PROFILE_NAME> --filters Name=ip-permission.cidr,Values='0.0.0.0/0' --query 'SecurityGroups[*].{Name:GroupName,ID:GroupId,Rules:IpPermissions}' --output json 
+
+#any group returning 0.0.0.0/0 allows all from the internet. Get the sg-xxxxxxx value and put it in the following command to see what EC2 instances it applies to:
+aws ec2 describe-instances --profile <PROFILE_NAME> --filters Name=instance.group-id,Values='<SG-XXXXXXXXXXX Value from above command>' --query 'Reservations[*].Instances[*].{InstanceId:InstanceId, Name:Tags[?Key==`Name`].Value|[0], PrivateIP:PrivateIpAddress, PublicIP:PublicIpAddress}' --output json 
+
+#View Network ACLs that will block traffic before it reaches a security group:
+aws ec2 describe-network-acls --profile <PROFILE_NAME> --query 'NetworkAcls[*].{ID:NetworkAclId,VPC:VpcId,Entries:Entries[?RuleAction==`deny`]}' --output json 
+
+	rule number 32767 is the default deny rules if no others are matched
+
+#View Network ACLS that allow traffic:
+aws ec2 describe-network-acls --profile <PROFILE_NAME> --query 'NetworkAcls[*].{ID:NetworkAclId,VPC:VpcId,Entries:Entries[?RuleAction==`allow`]}' --output json 
+
+	rule number should be lower than the 32767 number as lower numbers are processed first.
