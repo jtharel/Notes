@@ -1,0 +1,11 @@
+# List all parameters
+aws ssm describe-parameters --profile <profile>
+ output this to list.txt
+
+# Search by path (if they're organized in a hierarchy)
+aws ssm get-parameters-by-path --path "/" --recursive --with-decryption --profile <profile>
+
+# Output Just the Value
+aws ssm get-parameter --name "/your/parameter/name" --with-decryption --query "Parameter.Value" --output text --profile <profile>
+
+for X in `cat list.txt` ; do aws ssm get-parameter --name "$X" --with-decryption --query "Parameter.Value" --output text --profile <PROFILE_NAME>; done
