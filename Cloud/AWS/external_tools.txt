@@ -1,0 +1,28 @@
+External tools:
+
+
+python3 -m pip install s3-account-search
+s3-account-search --profile <PROFILE_NAME> <arn of role to assume> <bucket path>
+s3-account-search arn:aws:iam::427648302155:role/LeakyBucket mega-big-tech
+returns account: 107513503799
+
+
+git clone https://github.com/initstring/cloud_enum.git
+cd cloud_enum
+pip3 install -r requirements.txt
+./cloud_enum.py -k somecompany -k comcompanywebsite.com -k othersearchterm
+	--disable-aws --disable-azure --disable-gcp
+
+
+nuclei -update
+nuclei -target example.com
+nuclei -list ips.txt
+
+#virtual env:
+pip3 install bbot
+bbot --install-all-deps
+bbot -t <domain, email, username or ip> -p kitchen-sink --alow-deadly
+
+
+
+https://github.com/shabarkin/aws-enumerator
