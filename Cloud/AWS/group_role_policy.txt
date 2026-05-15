@@ -1,0 +1,54 @@
+what is the different between an AWS policy, group and role?                                                       
+                                                               
+  Policy                                                                                                             
+                                                        
+  A document that defines permissions — what actions are allowed or denied on which resources.                       
+   
+  {                                                                                                                  
+    "Effect": "Allow",                                  
+    "Action": "s3:GetObject",                                                                                        
+    "Resource": "arn:aws:s3:::my-bucket/*"
+  }                                                                                                                  
+  Policies don't do anything on their own — they must be attached to something.
+                                                                                                                     
+  ---
+  Group                                                                                                              
+                                                        
+  A collection of IAM users. Policies attached to a group apply to all users in it.
+                                                                                                                     
+  - Only for IAM users (not roles or services)                                                                       
+  - Used to manage permissions for humans at scale                                                                   
+  - Example: Developers group with read access to S3                                                                 
+                                                                                                                     
+  Group: Developers
+    └── Policy: S3ReadOnly                                                                                           
+          └── Users: alice, bob, charlie                
+                                                                                                                     
+  ---
+  Role                                                                                                               
+                                                        
+  A temporary identity that can be assumed by users, services, or applications.
+                                                                                                                     
+  - Has no permanent credentials — generates temporary tokens
+  - Used by EC2 instances, Lambda functions, cross-account access, SSO                                               
+  - Example: An EC2 instance assumes a role to write to S3                                                           
+                                                                                                                     
+  Role: EC2-S3-Writer                                                                                                
+    └── Policy: S3WriteAccess                                                                                        
+          └── Assumed by: EC2 instance, Lambda, external account                                                     
+   
+  ---                                                                                                                
+  Summary                                               
+                                                                                                                     
+  ┌─────────────┬──────────────────────┬──────────────────────┬───────────────────────────┐
+  │             │        Policy        │        Group         │           Role            │                          
+  ├─────────────┼──────────────────────┼──────────────────────┼───────────────────────────┤
+  │ What it is  │ Permission document  │ Collection of users  │ Assumable identity        │
+  ├─────────────┼──────────────────────┼──────────────────────┼───────────────────────────┤
+  │ Attached to │ Users, groups, roles │ Users                │ Services, users, accounts │                          
+  ├─────────────┼──────────────────────┼──────────────────────┼───────────────────────────┤                          
+  │ Credentials │ N/A                  │ N/A                  │ Temporary                 │                          
+  ├─────────────┼──────────────────────┼──────────────────────┼───────────────────────────┤                          
+  │ Best for    │ Defining permissions │ Managing human users │ Services & cross-account  │
+  └─────────────┴──────────────────────┴──────────────────────┴───────────────────────────┘                          
+                               
