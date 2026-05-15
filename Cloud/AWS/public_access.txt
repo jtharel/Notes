@@ -1,0 +1,11 @@
+Public Access Enabled 
+
+To check this finding in the AWS Web Console: EC2 -> Settings (lower left column) -> Scroll to "Block public access for EVS Snapshots"
+Take a screenshot here for evidence
+
+S3: 
+prowler aws --checks s3_account_level_public_access_blocks
+
+EBS: 
+prowler aws --checks ec2_ebs_snapshot_account_block_public_access
+
