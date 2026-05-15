@@ -26,3 +26,17 @@ bbot -t <domain, email, username or ip> -p kitchen-sink --alow-deadly
 
 
 https://github.com/shabarkin/aws-enumerator
+
+
+brew install cloudfox
+cloudfox aws --profile read_only all-checks
+
+
+.aws/config -> lists profiles, etc. can add "AssumeRole"
+
+#cloudfox -> this make cloudfox read pmapper data: 
+
+cloudfox aws --profile jtharel pmapper --pmapper-data-basepath ./output
+
+
+
