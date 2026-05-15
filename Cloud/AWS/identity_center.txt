@@ -1,0 +1,38 @@
+# AWS Identity Center (SSO)
+
+Check SSO Session Duration                                                                                         
+                                                        
+# List SSO instances                                                                                               
+aws sso-admin list-instances --profile <PROFILE_NAME>
+
+                                                                                                                     
+# Get permission set details including session duration                                                           
+aws sso-admin list-permission-sets --instance-arn <instance-arn>          
+                                                                                                                     
+	# Look for SessionDuration in the output — it is in ISO 8601 format (e.g. PT8H = 8 hours).                           
+        # aws: [ERROR]: An error occurred (ValidationException) when calling the ListPermissionSets operation: This operation is not supported for account instances of IAM Identity Center.
+		This means they are using account-level IAM Identity Center instance which doesn't support all sso-admin calls. Session duration can be checked via roles:
+			aws sts get-caller-identity --profile <PROFILE_NAME>
+			aws iam get-role --role-name <role name from command above (not full arn)> --query "Role.{Name:RoleName,MaxSessionDuration:MaxSessionDuration}" --profile <PROFILE_NAME>
+				Number returned is in seconds:
+					3600	1 hour
+					14400	4 hours
+					28800	8 hours
+					43200	12 hours
+                                                            
+
+# Then describe each one
+aws sso-admin describe-permission-set --instance-arn <instance-arn> --permission-set-arn <permission-set-arn> --query "PermissionSet.{Name:Name,Duration:SessionDuration}"
+                                                                                                                     
+# Permission set configuration analysis
+Check Policies on a Permission Set                                                                                 
+   
+# Managed policies attached to permission set                                                                      
+aws sso-admin list-managed-policies-in-permission-set --instance-arn <instance-arn> --permission-set-arn <permission-set-arn>
+                                                                                                                     
+# Inline policy                                       
+aws sso-admin get-inline-policy-for-permission-set --instance-arn <instance-arn> --permission-set-arn <permission-set-arn>
+                                                   
+
+
+
