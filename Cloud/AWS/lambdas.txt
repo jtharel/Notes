@@ -1,0 +1,49 @@
+LAMBDAs:
+Look for Env Vars (used with Lamda's) in Secrets Manager (In AWS Web Console). This is the proper way to store environment variables
+Use Cloudfox lambda-get-function-commands.txt to get metadata on lambda function and URL to download it
+
+	
+
+	trufflehog filesystem .
+
+	gitleaks detect --source . --no-git --verbose
+
+	grep -EiR '\.pem|\.key|\.config|\.env|credential|cred|secret|token|pass|backup|\.xlsx|\.sql|\.tfstate' *
+
+
+#Check Lambda execution role for excessive privs:
+
+# Manually list Lambda functions:
+aws lambda list-functions --query "Functions[].FunctionName" --output table
+
+# Manually display what function does
+aws lambda get-function --function-name <FUNCTION NAME returned above>			#better to use cloudfox lambda-get-function-commands.txt
+
+# Manually list Lambda functions and their roles at once:
+aws lambda list-functions --query "Functions[*].{Name:FunctionName, Role:Role}" --output table
+
+	# From the role names returned (role name is after the arn), inspect its permissions
+	aws iam list-attached-role-policies --role-name "<ROLE-NAME>" --profile <PROFILE_NAME>
+
+	# automate checking all permissions:
+	for perms in `aws lambda list-functions --query "Functions[*].{Name:FunctionName, Role:Role}" --output json --profile <PROFILE_NAME> |jq -r '.[] | .Role | split("/") | last'` ; do
+		echo "=== $perms ==="
+		aws iam list-attached-role-policies --role-name $perms --profile <PROFILE_NAME>
+		echo "=== $perms ===" 
+		echo " "
+	done
+
+	# Also check Inline policies (may not work):
+	aws iam list-role-policies --role-name "<role-name>"                                                               
+                                                                                                                     
+		For any inline policies returned:                                                                                  
+                                                                                                                     
+  			aws iam get-role-policy --role-name "<role-name>" --policy-name "<policy-name>"
+
+
+	# Get the DefaultVersionId of the policy:
+	aws iam get-policy --policy-arn "<POLICY ARN FROM ABOVE>" 
+
+	# Get the actual policy document:
+	aws iam get-policy-version --policy-arn "<POLICY ARN FROM ABOVE>" --version-id <DefaultVersionID>
+
