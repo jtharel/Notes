@@ -1,0 +1,49 @@
+# Show IMDSv1 enabled Ec2 instances
+aws ec2 describe-instances --query "Reservations[].Instances[].[InstanceId,MetadataOptions.HttpTokens]" --output table
+	# 'required' means IMDSv2 is required.  'optional' means IMDSv1 will work.
+
+	# list the full Arn. (Some instances may come back with "None" as they don't have an instance profile:
+	  aws ec2 describe-instances --query "Reservations[].Instances[?MetadataOptions.HttpTokens=='optional'].[InstanceId,IamInstanceProfile.Arn,MetadataOptions.HttpTokens]" --output text | grep optional  
+
+aws ec2 describe-instances --query 'Reservations[].Instances[].{InstanceId:InstanceId,PrivateIp:PrivateIpAddress,PublicIp:PublicIpAddress,IamProfile:IamInstanceProfile.Arn,State:State.Name}'
+
+aws iam get-account-authorization-details --profile read_only --output json | jq '.RoleDetailList[] | select(.AssumeRolePolicyDocument.Statement[].Principal.AWS? != null) | {role: .RoleName, principals: .AssumeRolePolicyDocument.Statement[].Principal.AWS}' 
+
+
+
+#cloudfox -> this make cloudfox read pmapper data: 
+
+cloudfox aws --profile jtharel pmapper --pmapper-data-basepath ./output
+
+
+If you can launch or modify EC2 resources, check whether you can create an instance or attach an instance profile with higher privileges than your current user/role. This can result in privilege escalation if stronger roles are available for attachment and the instance can be accessed afterward.
+Prerequisite permissions needed:
+    ec2:CreateKeyPair
+    ec2:RunInstances
+    ec2:AssociateInstanceProfile
+    iam:PassRole
+
+Check if an accessible EC2 instance has a direct connection to other VPCs or on-prem that you don't already have access to
+For on prem connections, this is usually enabled through the use of AWS DirectConnect or an IKEv2 VPN server.
+
+Userdata reverse shell
+This is useful if you do not have inbound access to the EC2 instance due to network security groups. Note: Due to potential impact, client consent should probably be granted before exploitation.
+prerequisite permissions:
+    ec2:stopinstances
+    ec2:startinstances
+    ec2:ModifyUserData
+
+IMDS
+The EC2 Instance Metadata Service provides information to the running instance through the link-local address `169.254.169.254`, including instance details, networking data, IAM role information, and user data. This service is sensitive during pentests because exposed metadata can reveal temporary credentials, startup scripts, and internal configuration that may enable privilege escalation or deeper compromise.
+IMDSv2 is the more secure model because it requires session token usage, while IMDSv1 does not require a token and is more exposed to abuse in scenarios such as SSRF. AWS recommends requiring IMDSv2, and Prowler includes checks to identify instances and launch templates where IMDSv2 is not enforced.
+  
+  prowler aws --verbose -q --checks ec2_instance_imdsv2_enabled
+
+SSRF
+if SSRF is found in a Web Application, the following endpoints should be checked for sensitive data exposure:
+  http://169.254.169.254/latest/meta-data/iam/security-credentials/ 
+    grab the attached IAM role name
+  http://169.254.169.254/latest/meta-data/iam/security-credentials/<rolename> 
+    append the rolename discovered above to the end of the URL to obtain (usually temp) session credentials
+  http://169.254.169.254/latest/user-data/
+    startup scripts may reveal usernames, passwords, access tokens, application endpoints, webhooks, or more.
