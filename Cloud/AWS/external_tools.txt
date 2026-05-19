@@ -1,11 +1,14 @@
 External tools:
 
+**********************************************************************************************************
 
 python3 -m pip install s3-account-search
 s3-account-search --profile <PROFILE_NAME> <arn of role to assume> <bucket path>
 s3-account-search arn:aws:iam::427648302155:role/LeakyBucket mega-big-tech
 returns account: 107513503799
 
+**********************************************************************************************************
+Cloud Enum
 
 git clone https://github.com/initstring/cloud_enum.git
 cd cloud_enum
@@ -13,16 +16,24 @@ pip3 install -r requirements.txt
 ./cloud_enum.py -k somecompany -k comcompanywebsite.com -k othersearchterm
 	--disable-aws --disable-azure --disable-gcp
 
+**********************************************************************************************************
+
+Nuclei
 
 nuclei -update
 nuclei -target example.com
 nuclei -list ips.txt
 
+
+**********************************************************************************************************
+Bbot
+
 #virtual env:
 pip3 install bbot
 bbot --install-all-deps
-bbot -t <domain, email, username or ip> -p kitchen-sink --alow-deadly
+bbot -t <domain, email, username or ip> -p kitchen-sink --allow-deadly
 
+**********************************************************************************************************
 
 # AWS Enumerator
 https://github.com/shabarkin/aws-enumerator
@@ -32,6 +43,7 @@ This is a handy technique if Access Key/Secret is identified during the test. En
 	aws-enumerator dump
 	If the tool presents authentication errors, get temp creds with `aws sts get-session-token` and configure with `aws-enumerator cred` as in sts example
 
+**********************************************************************************************************
 
 brew install cloudfox
 cloudfox aws --profile read_only all-checks
@@ -44,7 +56,7 @@ cloudfox aws --profile read_only all-checks
 cloudfox aws --profile jtharel pmapper --pmapper-data-basepath ./output
 
 
-
+**********************************************************************************************************
 
 Scoutsuite:
 aws configure sso 
@@ -56,5 +68,40 @@ aws sso login --profile <profile_name>
 
 ./scout aws --profile <PROFILE_NAME> --ruleset detailed.json --report-dir /home/jtharel/scoutreport/
 
+**********************************************************************************************************
 
+Pmapper:
+#podman run --rm -v ~/.aws:/root/.aws:ro --profile read_only graph create 
+
+
+#limit it to the 4 regions, create svg visualization file for mapping admins/privescs/inter-principal access:
+podman run --rm -v ~/.aws:/root/.aws:ro -v ~/Documents/Cloud/PMapper/output:/storage --entrypoint /bin/bash pmapper -c "pmapper --profile <PROFILE_NAME> graph create --include-regions us-east-1,us-east-2,us-west-1,us-west-2 && pmapper --profile <PROFILE_NAME>  visualize --filetype svg && cp *.svg /storage/"
+
+
+# create the graph data that is used to create the svg visualization file but do not remove it so Cloudfox can use data
+#podman run --rm -v ~/.aws:/root/.aws:ro -v ~/Documents/Cloud/PMapper/output:/root/.local/share/principalmapper --entrypoint /bin/bash pmapper -c 'pmapper --profile <PROFILE_NAME> graph create --include-regions us-east-1,us-east-2,us-west-1,us-west-2' 
+
+
+
+#combining the two above commands into one:
+podman run --rm -v ~/.aws:/root/.aws:ro -v ~/Documents/Cloud/PMapper/output:/root/.local/share/principalmapper --entrypoint /bin/bash pmapper -c 'pmapper --profile <PROFILE_NAME> graph create --include-regions us-east-1,us-east-2,us-west-1,us-west-2 && pmapper --profile <PROFILE_NAME> visualize --filetype svg && cp *.svg /root/.local/share/principalmapper/' 
+
+# cloudfox command to read the pmapper output:
+cloudfox aws --profile <PROFILE_NAME> pmapper --pmapper-data-basepath ./output
+
+
+
+# create the graph data that is used to create the svg visualization file above but do not remove it, show which user's can create users
+#podman run --rm -v ~/.aws:/root/.aws:ro -v ~/Documents/Cloud/PMapper/output:/root/.local/share/principalmapper --entrypoint /bin/bash pmapper -c 'pmapper --profile read_only graph create --include-regions us-east-1,us-east-2,us-west-1,us-west-2 && pmapper --profile read_only query "who can do iam:CreateUser"'     
+
+
+# Run a query to see who can launch a big expensive EC2 instance, aside from "admin" users
+#podman run --rm -v ~/.aws:/root/.aws:ro -v ~/Documents/Cloud/PMapper/output:/root/.local/share/principalmapper --entrypoint /bin/bash pmapper -c "pmapper --profile read_only --account 799306026679 argquery -s --action 'ec2:RunInstances' --condition 'ec2:InstanceType=c6gd.16xlarge'"  
+
+
+# Run the privilege escalation preset query, skip reporting current "admin" users
+#podman run --rm -v ~/.aws:/root/.aws:ro -v ~/Documents/Cloud/PMapper/output:/root/.local/share/principalmapper --entrypoint /bin/bash pmapper -c "pmapper --profile read_only --account 799306026679 query -s 'preset privesc *'" 
+
+
+**********************************************************************************************************
 
