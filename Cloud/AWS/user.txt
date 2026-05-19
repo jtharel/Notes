@@ -9,6 +9,8 @@ Full Picture for a User
   # Groups (which may also grant permissions)                                                                        
   aws iam list-groups-for-user --user-name <username>
 
+  # Check if user has a password:
+  aws iam get-login-profile --user-name <user>
 
 
 Full Picture for roles:
