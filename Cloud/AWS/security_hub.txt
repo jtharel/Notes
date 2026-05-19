@@ -1,0 +1,14 @@
+AWS Security Hub is a centralized security posture and findings service that aggregates alerts from AWS services and other security solutions. During a cloud pentest, Security Hub is a good source to identify critical misconfigurations, affected resources, and priority areas that should be validated manually during the assessment.
+We only leverage this  service as a part of the test. If it is not enabled we do not record that as a finding.
+
+
+# Start by reviewing critical findings to identify issues that may require immediate validation. AWS Security Hub supports filtering findings by fields such as `SeverityLabel`, which makes it practical to focus first on the most impactful results.
+  aws securityhub get-findings --filters '{"SeverityLabel": [{"Value": "CRITICAL", "Comparison": "EQUALS"}]}' --query 'Findings[].[Id, Title, Resources[0].Id]'
+
+
+# After identifying a finding of interest, retrieve the full finding record:
+  aws securityhub get-findings --filters '{"AwsAccountId": [{"Value": "<accountId>", "Comparison": "EQUALS"}], "Id": [{"Value": "<findingArn>", "Comparison": "EQUALS"}]}'
+
+
+# Grouping findings by affected resource type can help prioritize where to spend manual review time.
+  aws securityhub get-findings --filters '{"SeverityLabel": [{"Value": "MEDIUM", "Comparison": "EQUALS"}, {"Value": "HIGH", "Comparison": "EQUALS"}, {"Value": "CRITICAL", "Comparison": "EQUALS"}]}' --query 'Findings[].[Resources[0].Type, Resources[0].Id]' | sort | uniq -c | sort -nr | grep <accountId> | grep -v "AWS::::Account"
