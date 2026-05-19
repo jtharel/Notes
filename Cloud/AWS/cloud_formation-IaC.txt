@@ -1,0 +1,20 @@
+AWS CloudFormation is an IaC (Infrastructure-as-Code) service to define and deploy AWS resources through templates. During a pentest, it is worth reviewing because templates can expose sensitive configuration plain-text in parameters, such as hardcoded secrets.
+
+Abusing `cloudformation:GetTemplate`
+
+CloudFormation templates may contain secrets. If you have read access such as `GetTemplate`, `GetTemplateSummary`, `DescribeStacks`, or related permissions, review stack templates and metadata carefully.
+
+# List stacks
+aws cloudformation list-stacks
+
+# List stacks with more useful details
+aws cloudformation describe-stacks
+
+# Review the resources in a specific stack to identify where sensitive data may be defined or referenced
+aws cloudformation describe-stack-resources --stack-name <stack-name-or-arn>
+
+# Retrieve a specific stack template for review
+aws cloudformation get-template --stack-name <stack-name-or-arn>
+
+# If needed, inspect change sets as well
+aws cloudformation list-change-sets --stack-name <stack-name-or-arn>
