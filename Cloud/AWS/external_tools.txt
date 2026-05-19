@@ -24,8 +24,13 @@ bbot --install-all-deps
 bbot -t <domain, email, username or ip> -p kitchen-sink --alow-deadly
 
 
-
+# AWS Enumerator
 https://github.com/shabarkin/aws-enumerator
+This is a handy technique if Access Key/Secret is identified during the test. Enumerate permissions through brute force with aws-enumerator
+	aws-enumerator cred -aws_access_key_id <AccessKey> -aws_secret_access_key <SecretAccesskey>
+	aws-enumerator enum -services all
+	aws-enumerator dump
+	If the tool presents authentication errors, get temp creds with `aws sts get-session-token` and configure with `aws-enumerator cred` as in sts example
 
 
 brew install cloudfox
