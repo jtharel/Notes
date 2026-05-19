@@ -1,0 +1,24 @@
+AWS SSM (Systems Manager) is a service that helps administrators automate operations, manage instances, store configuration data, and handle secrets through features such as Parameter Store, Run Command, and Session Manager.
+
+During a pentest, SSM is important because it often contains sensitive data in the Parameter Store, which should be reviewed for hardcoded credentials, API keys, tokens, database connection strings, internal hostnames, and any secrets that may support privilege escalation or lateral movement.
+
+# Abusing `ssm:GetParameter`
+
+If you have `ssm:GetParameter`, `ssm:GetParameters`, or related read permissions, you may be able to retrieve sensitive values from Parameter Store, including cleartext data or decrypted secure strings.
+
+# List accessible parameters
+aws ssm describe-parameters
+
+# Retrieve a specific parameter
+aws ssm get-parameter --name <parameter-name> --with-decryption
+
+# If the parameter uses a full path, include the entire name
+aws ssm get-parameter --name /path/to/parameter --with-decryption
+
+**Reviewing multiple parameters**  
+# Export parameter names to a file
+aws ssm describe-parameters --query 'Parameters[].Name' --output text | tr '\t' '\n' | tee <output-file>
+
+# Retrieve each parameter from the generated list
+for i in $(cat <parameters-list>); do aws ssm get-parameter --name "$i" --with-decryption; done
+
