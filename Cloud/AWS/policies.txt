@@ -1,0 +1,14 @@
+# List inline user policies:
+aws iam list-user-policies --user-name <user>
+
+# List attached user policies:
+aws iam list-attached-user-policies --user-name <user>
+
+# List policy versions:
+aws iam list-policy-versions --policy-arn arn:aws:iam::aws:policy/AmazonGuardDutyReadOnlyAccess
+
+# Show specific policy version:
+aws iam get-policy-version --policy-arn "arn:aws:iam::<accountID>:policy/<policyName>" --version-id v1
+
+# Get inline user policy:
+aws iam get-user-policy --user-name <user> --policy-name <policyName>
