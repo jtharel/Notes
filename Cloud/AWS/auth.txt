@@ -14,3 +14,8 @@ export AWS_PROFILE=<profile> #do this to set the default profile
 export AWS_ACCESS_KEY_ID=
 export AWS_SECRET_ACCESS_KEY=
 export AWS_SESSION_TOKEN=	#only needed for temp keys
+
+
+aws sts assume-role --role-arn <role ARN> --role-session-name <session name> --profile <base profile>
+
+Then export the returned temporary credentials or write them into a new AWS profile for convenience, and use it to interact with AWS services under the assumed role.
