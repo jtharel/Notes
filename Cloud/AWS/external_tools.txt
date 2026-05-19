@@ -95,12 +95,18 @@ cloudfox aws --profile <PROFILE_NAME> pmapper --pmapper-data-basepath ./output
 #podman run --rm -v ~/.aws:/root/.aws:ro -v ~/Documents/Cloud/PMapper/output:/root/.local/share/principalmapper --entrypoint /bin/bash pmapper -c 'pmapper --profile read_only graph create --include-regions us-east-1,us-east-2,us-west-1,us-west-2 && pmapper --profile read_only query "who can do iam:CreateUser"'     
 
 
+# pmapper queries:
+
 # Run a query to see who can launch a big expensive EC2 instance, aside from "admin" users
 #podman run --rm -v ~/.aws:/root/.aws:ro -v ~/Documents/Cloud/PMapper/output:/root/.local/share/principalmapper --entrypoint /bin/bash pmapper -c "pmapper --profile read_only --account 799306026679 argquery -s --action 'ec2:RunInstances' --condition 'ec2:InstanceType=c6gd.16xlarge'"  
 
 
 # Run the privilege escalation preset query, skip reporting current "admin" users
 #podman run --rm -v ~/.aws:/root/.aws:ro -v ~/Documents/Cloud/PMapper/output:/root/.local/share/principalmapper --entrypoint /bin/bash pmapper -c "pmapper --profile read_only --account 799306026679 query -s 'preset privesc *'" 
+
+
+pmapper --account <account_id> query -s 'preset privesc *'
+pmapper query -s 'who can do iam:PassRole'
 
 
 **********************************************************************************************************
