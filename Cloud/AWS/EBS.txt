@@ -1,0 +1,23 @@
+Amazon Elastic Block Store (EBS) provides persistent block storage for EC2 instances and is commonly used to hold operating system disks, application data, databases, and backups. During a cloud pentest, EBS is important because snapshots can expose sensitive data if they are shared too broadly and exposed on Internet.
+
+
+EBS Resources Lack Encryption
+Identifies EBS volumes or snapshots that are not encrypted at rest, increasing the risk of unauthorized data exposure if the storage is accessed.
+
+Public EBS Snapshots
+Identifies EBS snapshots that are publicly accessible, which may allow unauthorized users to create volumes from them and access sensitive data stored in the snapshot.
+
+Common vulnerabilities include:
+
+- Publicly shared EBS snapshots.
+- Sensitive data in private snapshots that the current principal can access.
+- Unencrypted volumes or snapshots where encryption would be expected.
+
+# Enumeration
+ec2:DescribeSnapshots perms needed
+  snapshots are unique to a region, might need to check all regions
+
+Enumerate ebs snapshots using account id
+aws ec2 describe-snapshots --owner-ids <ACCOUNTNUMBER> --region us-east-1
+
+For automatic verification, use Prowler
