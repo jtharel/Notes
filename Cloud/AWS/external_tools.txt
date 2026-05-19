@@ -35,6 +35,33 @@ bbot -t <domain, email, username or ip> -p kitchen-sink --allow-deadly
 
 **********************************************************************************************************
 
+Prowler
+
+Due to python compatibility issues, to get the latest release through pip it is necessary to setup through pyenv in order to use version 3.12:
+
+mkdir prowler_venv
+cd prowler_venv
+pyenv local 3.12.9
+python --version
+python -m venv .
+source /usr/local/bin/prowler_venv/bin/activate
+pip install prowler
+
+# one time pyenv setup for zsh: (not sure if this is needed)
+echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.zshrc
+echo '[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.zshrc
+echo 'eval "$(pyenv init - zsh)"' >> ~/.zshrc
+
+# confirm version is the latest
+prowler -v
+
+prowler aws -p <PROFILE_NAME> -o <output_folder>
+
+
+**********************************************************************************************************
+
+
+
 # AWS Enumerator
 https://github.com/shabarkin/aws-enumerator
 This is a handy technique if Access Key/Secret is identified during the test. Enumerate permissions through brute force with aws-enumerator
@@ -45,8 +72,10 @@ This is a handy technique if Access Key/Secret is identified during the test. En
 
 **********************************************************************************************************
 
+# Cloudfox
+
 brew install cloudfox
-cloudfox aws --profile read_only all-checks
+cloudfox aws --profile <PROFILE_NAME> all-checks
 
 
 .aws/config -> lists profiles, etc. can add "AssumeRole"
