@@ -1,25 +1,3 @@
-* * *
-
-## SCOPE
-
-* * *
-
-role_arn = arn:aws:iam::123456:role/role1  
-User arn =
-
-### Accounts
-
-| **Account Name** | **Account ID** | **Role arn** |
-| --- | --- | --- |
-
-```
-> cat ./accounts.txt
-<accountId1>
-<accountsId2>
-```
-
-* * *
-
 ### Recon
 
 - [ ] Subdomains and public S3 buckets - bbot, cloud_enum
