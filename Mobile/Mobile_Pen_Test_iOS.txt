@@ -249,15 +249,16 @@ Disable Cert Pinning:
 	SSL Kill Switch 2 - Disables certificate pinning.  ** use this one, supports ios13
 	Install:
 		Download from:
-		https://github.com/nabla-c0d3/ssl-kill-switch2/releases
+		https://github.com/NyaMisty/ssl-kill-switch3/releases
 			copy to iOS device
-		dpkg -i com.nablac0d3.sslkillswitch2_0.14.deb
+				wget https://github.com/NyaMisty/ssl-kill-switch3/releases/download/v1.5.1/moe.misty.sslkillswitch3_1.5.1+rootless_iphoneos-arm64.deb
+		dpkg -i moe.misty.sslkillswitch3_1.5.1+rootless_iphoneos-arm64.deb
 		killall -HUP SpringBoard
-		Settings -> SSL Kill Switch 2 -> Enable
+		Settings -> SSL Kill Switch 3 -> Disable Certificate Validation
 		Terminate victim app and relaunch
 
 	Uninstall:
-		dpkg -r com.nablac0d3.SSLKillSwitch2
+		dpkg -r moe.misty.sslkillswitch3_1.5.1+rootless_iphoneos-arm64.deb
 
 	iOS Trustme - Disables certificate pinning
 		https://github.com/intrepidusgroup/trustme
