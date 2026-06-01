@@ -101,6 +101,7 @@ Cert Pinning:
 		On emulator 
 			cd /data
 			./frida-server &
+			./frida-server -l 0.0.0.0:12345 	#start frida-server on a different TCP port
 
 		On kali linux on main Mac:
 			objection -N --host 127.0.0.1 --gadget="com.app.name" explore —-startup-command “android root disable”
