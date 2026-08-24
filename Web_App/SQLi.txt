@@ -367,6 +367,8 @@ SQLMap	Tool for Blind and Normal SQL injection.  Will provide an OS
 		stuff is the DB name
 		items is the Table name
 
+	./sqlmap.py -u "https://target.com/endpoint?param=value" --prefix="')" --suffix="--" --dbms=mssql --proxy=http://127.0.0.1:8080
+
 	Tamper Scripts:
 		MSSQL 
 --tamper=between,charencode,charunicodeencode,equaltolike,greatest,multiplespaces,percentage,randomcase,sp_password,space2comment,space2dash,space2mssqlblank,space2plus,space2randomblank,unionalltounion,unmagicquotes
