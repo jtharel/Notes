@@ -9,3 +9,27 @@ curl "https://maps.googleapis.com/maps/api/directions/json?origin=Seattle&destin
 
 # Specific Address
 curl -s "https://maps.googleapis.com/maps/api/geocode/json?address=123+Main+Ave,+Bailey,+CO&key=YOUR_API_KEY_HERE"
+
+If any of these work the endpoint is misconfigured as it should only work from specific origins.
+
+
+# Other Google APIs:
+
+# Custom Search API
+  curl "https://www.googleapis.com/customsearch/v1?q=test&key=YOUR_API_KEY_HERE"
+
+# YouTube Data API
+  curl "https://www.googleapis.com/youtube/v3/search?part=snippet&q=test&key=YOUR_API_KEY_HERE"
+
+# Cloud Translation API
+  curl -X POST "https://translation.googleapis.com/language/translate/v2?key=YOUR_API_KEY_HERE" -H "Content-Type: 
+  application/json" -d '{"q":"hello","target":"es"}'
+
+# Cloud Vision API
+  curl -X POST "https://vision.googleapis.com/v1/images:annotate?key=YOUR_API_KEY_HERE" -H "Content-Type: 
+  application/json" -d '{"requests":[{"image":{"source":{"imageUri":"https://example.com/image.jpg"}},"features":[{"t
+  ype":"LABEL_DETECTION"}]}]}'
+
+# Cloud Natural Language API
+  curl -X POST "https://language.googleapis.com/v1/documents:analyzeSentiment?key=YOUR_API_KEY_HERE" -H
+  "Content-Type: application/json" -d '{"document":{"type":"PLAIN_TEXT","content":"hello world"}}'
