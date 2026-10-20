@@ -95,6 +95,11 @@ aws configure sso
 	SSO registration scopes [sso:account:access]:
 aws sso login --profile <profile_name>
 
+Install:
+	virtualenv -p python3 scoutsuite_venv
+	source scoutsuite_venv/bin/activate
+	pip install scoutsuite
+
 ./scout aws --profile <PROFILE_NAME> --ruleset detailed.json --report-dir /home/jtharel/scoutreport/
 
 **********************************************************************************************************
