@@ -1,6 +1,6 @@
 import json, subprocess, base64, re
 
-PROFILE = "risk_prod"
+PROFILE = "XXXXXXXXXXXX"
 
 # Patterns that suggest sensitive data in user-data scripts
 SECRET_PATTERNS = [
