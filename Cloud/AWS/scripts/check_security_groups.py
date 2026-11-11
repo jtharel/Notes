@@ -1,6 +1,6 @@
 import json, subprocess, os
 
-PROFILE = "risk_prod"
+PROFILE = "XXXXXXXXXXX"
 
 os.makedirs(PROFILE, exist_ok=True)
 
