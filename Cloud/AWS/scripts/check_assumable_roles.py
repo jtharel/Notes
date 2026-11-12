@@ -1,6 +1,6 @@
 import json, subprocess, os
 
-PROFILE = "XXXXXXXXXXX"
+PROFILE = "XXXXXXXXX"
 
 os.makedirs(PROFILE, exist_ok=True)
 
@@ -200,6 +200,89 @@ if cross_account:
 else:
     print("  None found.")
 
+# Step 4: Actually attempt to assume each candidate role
+candidates = assumable + wildcard
+if candidates:
+    print()
+    print("=" * 70)
+    print(f"4. ATTEMPTING ROLE ASSUMPTION — {len(candidates)} candidate(s)")
+    print("=" * 70)
+    print()
+
+    succeeded = []
+    failed = []
+
+    for i, r in enumerate(candidates, 1):
+        role_arn = r["role_arn"]
+        role_name = r["role_name"]
+        print(f"  [{i}/{len(candidates)}] Trying {role_name}...", end=" ")
+
+        result = subprocess.run(
+            ["aws", "sts", "assume-role",
+             "--role-arn", role_arn,
+             "--role-session-name", "audit-test",
+             "--duration-seconds", "900",
+             "--profile", PROFILE,
+             "--output", "json"],
+            capture_output=True, text=True
+        )
+
+        if result.returncode == 0:
+            creds = json.loads(result.stdout).get("Credentials", {})
+            print("SUCCESS")
+            succeeded.append({
+                "role_name": role_name,
+                "role_arn": role_arn,
+                "access_key": creds.get("AccessKeyId", ""),
+                "secret_key": creds.get("SecretAccessKey", ""),
+                "session_token": creds.get("SessionToken", ""),
+                "expiration": creds.get("Expiration", ""),
+            })
+        else:
+            err_msg = result.stderr.strip()
+            short_err = err_msg.split(":")[-1].strip() if ":" in err_msg else err_msg
+            if len(short_err) > 80:
+                short_err = short_err[:80] + "..."
+            print(f"DENIED — {short_err}")
+            failed.append({
+                "role_name": role_name,
+                "role_arn": role_arn,
+                "error": short_err,
+            })
+
+    # Report successful assumptions
+    print()
+    print("=" * 70)
+    print(f"5. SUCCESSFULLY ASSUMED ROLES — {len(succeeded)}")
+    print("=" * 70)
+    print()
+
+    if succeeded:
+        for r in succeeded:
+            print(f"  {r['role_name']}")
+            print(f"    ARN: {r['role_arn']}")
+            print(f"    Access Key:     {r['access_key']}")
+            print(f"    Expiration:     {r['expiration']}")
+            print()
+            print(f"    To use this role:")
+            print(f"      set AWS_ACCESS_KEY_ID={r['access_key']}")
+            print(f"      set AWS_SECRET_ACCESS_KEY={r['secret_key']}")
+            print(f"      set AWS_SESSION_TOKEN=<REDACTED>")
+            print()
+
+        # Save successful credentials
+        outfile = os.path.join(PROFILE, "assumed_roles.json")
+        with open(outfile, "w") as f:
+            json.dump(succeeded, f, indent=2, default=str)
+        print(f"  Credentials saved to: {outfile}")
+    else:
+        print("  No roles could be assumed.")
+
+    print()
+    print(f"  Failed: {len(failed)}")
+    for r in failed:
+        print(f"    {r['role_name']} — {r['error']}")
+
 # Summary
 print()
 print("=" * 70)
@@ -207,18 +290,12 @@ print("SUMMARY")
 print("=" * 70)
 print(f"  Current principal:         {my_arn}")
 print(f"  Total roles in account:    {len(all_roles)}")
-print(f"  Assumable by you:          {len(assumable)}")
+print(f"  Trust policy match:        {len(assumable)}")
 print(f"  Wildcard trust (* ):       {len(wildcard)}")
 print(f"  Cross-account trust:       {len(cross_account)}")
+if candidates:
+    print(f"  Assumption attempted:      {len(candidates)}")
+    print(f"  Assumption succeeded:      {len(succeeded)}")
+    print(f"  Assumption denied:         {len(failed)}")
 print()
-
-# Save assumable roles for easy use
-if assumable:
-    outfile = os.path.join(PROFILE, "assumable_roles.json")
-    with open(outfile, "w") as f:
-        json.dump(assumable, f, indent=2, default=str)
-    print(f"  Assumable roles saved to: {outfile}")
-    print()
-    print("  To assume a role:")
-    print(f'    aws sts assume-role --role-arn "ROLE_ARN" --role-session-name "test" --profile {PROFILE}')
-    print()
+           
