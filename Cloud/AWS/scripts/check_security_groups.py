@@ -1,6 +1,6 @@
 import json, subprocess, os
 
-PROFILE = "XXXXXXXXX"
+PROFILE = "XXXXXXXXXXXX"
 
 os.makedirs(PROFILE, exist_ok=True)
 
@@ -132,19 +132,21 @@ else:
             print(f"    {f['source']}  →  {f['port']}{desc}")
         print()
 
-# Check which instances use these security groups
+# Check which resources use these security groups
 if findings:
-    print()
-    print("=" * 70)
-    print("INSTANCES USING OPEN SECURITY GROUPS")
-    print("=" * 70)
-    print()
-
     open_sg_ids = set(f["sg_id"] for f in findings)
+    found_any = False
+
+    # EC2 Instances
+    print()
+    print("=" * 70)
+    print("EC2 INSTANCES USING OPEN SECURITY GROUPS")
+    print("=" * 70)
+    print()
 
     ec2_data = run_aws(["ec2", "describe-instances"])
+    found_ec2 = False
     if ec2_data:
-        found_instance = False
         for res in ec2_data.get("Reservations", []):
             for inst in res.get("Instances", []):
                 if inst.get("State", {}).get("Name") not in ("running", "stopped"):
@@ -155,7 +157,8 @@ if findings:
                 inst_sgs = [sg["GroupId"] for sg in inst.get("SecurityGroups", [])]
                 matched = [sg for sg in inst_sgs if sg in open_sg_ids]
                 if matched:
-                    found_instance = True
+                    found_ec2 = True
+                    found_any = True
                     print(f"  {iid}  {name}")
                     print(f"    State: {inst.get('State', {}).get('Name')}")
                     print(f"    Public IP: {inst.get('PublicIpAddress', 'None')}")
@@ -164,8 +167,111 @@ if findings:
                         for r in sg_rules:
                             print(f"    >> {sg} — {r['source']} → {r['port']}")
                     print()
-        if not found_instance:
-            print("  No running/stopped instances are using these security groups.")
+    if not found_ec2:
+        print("  None")
+
+    # Load Balancers (ALB/NLB - ELBv2)
+    print()
+    print("=" * 70)
+    print("LOAD BALANCERS USING OPEN SECURITY GROUPS")
+    print("=" * 70)
+    print()
+
+    found_lb = False
+    lbs = run_aws(["elbv2", "describe-load-balancers"])
+    if lbs:
+        for lb in lbs.get("LoadBalancers", []):
+            lb_sgs = lb.get("SecurityGroups", [])
+            matched = [sg for sg in lb_sgs if sg in open_sg_ids]
+            if matched:
+                found_lb = True
+                found_any = True
+                lb_name = lb.get("LoadBalancerName", "unnamed")
+                lb_type = lb.get("Type", "unknown")
+                lb_scheme = lb.get("Scheme", "unknown")
+                lb_dns = lb.get("DNSName", "N/A")
+                print(f"  {lb_name}")
+                print(f"    Type: {lb_type}  |  Scheme: {lb_scheme}")
+                print(f"    DNS: {lb_dns}")
+                print(f"    ARN: {lb.get('LoadBalancerArn', 'N/A')}")
+                for sg in matched:
+                    sg_rules = [f for f in findings if f["sg_id"] == sg]
+                    for r in sg_rules:
+                        print(f"    >> {sg} — {r['source']} → {r['port']}")
+                print()
+    if not found_lb:
+        print("  None")
+
+    # Classic Load Balancers (ELBv1)
+    classic_lbs = run_aws(["elb", "describe-load-balancers"])
+    if classic_lbs:
+        for lb in classic_lbs.get("LoadBalancerDescriptions", []):
+            lb_sgs = lb.get("SecurityGroups", [])
+            matched = [sg for sg in lb_sgs if sg in open_sg_ids]
+            if matched:
+                found_lb = True
+                found_any = True
+                print(f"  [Classic] {lb.get('LoadBalancerName', 'unnamed')}")
+                print(f"    DNS: {lb.get('DNSName', 'N/A')}")
+                for sg in matched:
+                    sg_rules = [f for f in findings if f["sg_id"] == sg]
+                    for r in sg_rules:
+                        print(f"    >> {sg} — {r['source']} → {r['port']}")
+                print()
+
+    # RDS Instances
+    print()
+    print("=" * 70)
+    print("RDS INSTANCES USING OPEN SECURITY GROUPS")
+    print("=" * 70)
+    print()
+
+    found_rds = False
+    rds_data = run_aws(["rds", "describe-db-instances"])
+    if rds_data:
+        for db in rds_data.get("DBInstances", []):
+            db_sgs = [sg["VpcSecurityGroupId"] for sg in db.get("VpcSecurityGroups", [])]
+            matched = [sg for sg in db_sgs if sg in open_sg_ids]
+            if matched:
+                found_rds = True
+                found_any = True
+                print(f"  {db.get('DBInstanceIdentifier', 'unnamed')}")
+                print(f"    Engine: {db.get('Engine', 'N/A')} {db.get('EngineVersion', '')}")
+                print(f"    Endpoint: {db.get('Endpoint', {}).get('Address', 'N/A')}:{db.get('Endpoint', {}).get('Port', 'N/A')}")
+                print(f"    Public: {db.get('PubliclyAccessible', False)}")
+                for sg in matched:
+                    sg_rules = [f for f in findings if f["sg_id"] == sg]
+                    for r in sg_rules:
+                        print(f"    >> {sg} — {r['source']} → {r['port']}")
+                print()
+    if not found_rds:
+        print("  None")
+
+    # ElastiCache
+    print()
+    print("=" * 70)
+    print("ELASTICACHE USING OPEN SECURITY GROUPS")
+    print("=" * 70)
+    print()
+
+    found_cache = False
+    cache_data = run_aws(["elasticache", "describe-cache-clusters", "--show-cache-node-info"])
+    if cache_data:
+        for cluster in cache_data.get("CacheClusters", []):
+            cache_sgs = [sg["SecurityGroupId"] for sg in cluster.get("SecurityGroups", [])]
+            matched = [sg for sg in cache_sgs if sg in open_sg_ids]
+            if matched:
+                found_cache = True
+                found_any = True
+                print(f"  {cluster.get('CacheClusterId', 'unnamed')}")
+                print(f"    Engine: {cluster.get('Engine', 'N/A')} {cluster.get('EngineVersion', '')}")
+                for sg in matched:
+                    sg_rules = [f for f in findings if f["sg_id"] == sg]
+                    for r in sg_rules:
+                        print(f"    >> {sg} — {r['source']} → {r['port']}")
+                print()
+    if not found_cache:
+        print("  None")
 
 # Summary
 unique_sgs = set(f["sg_id"] for f in findings)
@@ -178,4 +284,3 @@ print(f"  Total security groups:           {len(groups)}")
 print(f"  Groups with public rules:        {len(unique_sgs)}")
 print(f"  Total open rules:                {len(findings)}")
 print()
-          
