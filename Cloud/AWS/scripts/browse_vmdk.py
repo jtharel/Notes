@@ -1,9 +1,8 @@
 from dissect.hypervisor.disk.vmdk import VMDK
 from dissect.volume import disk
-from dissect.ntfs import NTFS
 import sys
 
-vmdk_file = "XXXXXXXXX.vmdk"
+vmdk_file = "system.vmdk"
 cmd = sys.argv[1] if len(sys.argv) > 1 else "ls"
 path = sys.argv[2] if len(sys.argv) > 2 else "/"
 
@@ -11,38 +10,73 @@ fh = open(vmdk_file, "rb")
 vmdk = VMDK(fh)
 d = disk.Disk(vmdk)
 
-# Find the NTFS partition
-ntfs = None
-for part in d.partitions:
+# Try to detect filesystem type on each partition
+fs = None
+fs_type = None
+
+for i, part in enumerate(d.partitions):
+    vol = part.open()
+
+    # Try NTFS
     try:
-        vol = part.open()
+        from dissect.ntfs import NTFS
         ntfs = NTFS(vol)
-        # Test if it works
         _ = ntfs.mft.root
-        print(f"Partition: offset={part.offset}, size={part.size}")
+        fs = ntfs
+        fs_type = "NTFS"
+        print(f"Found NTFS partition {i}: offset={part.offset}, size={part.size}")
         break
     except Exception:
-        continue
+        pass
 
-if ntfs is None:
-    print("Could not find an NTFS partition. Listing all partitions:")
+    # Reset volume position
+    vol.seek(0)
+
+    # Try ext4
+    try:
+        from dissect.extfs import ExtFS
+        extfs = ExtFS(vol)
+        _ = extfs.root
+        fs = extfs
+        fs_type = "ext4"
+        print(f"Found ext4 partition {i}: offset={part.offset}, size={part.size}")
+        break
+    except Exception:
+        pass
+
+if fs is None:
+    print("Could not find an NTFS or ext4 partition. Listing all partitions:")
     for i, part in enumerate(d.partitions):
         print(f"  Partition {i}: offset={part.offset}, size={part.size}")
     exit(1)
 
 
+def get_root():
+    if fs_type == "NTFS":
+        return fs.mft.root
+    else:
+        return fs.root
+
+
 def resolve(path):
-    entry = ntfs.mft.root
+    entry = get_root()
     if path in ("", "/", "\\"):
         return entry
     parts = path.replace("\\", "/").strip("/").split("/")
     for p in parts:
         found = False
-        for child in entry.listdir():
-            if str(child).lower() == p.lower():
-                entry = entry.get(str(child))
-                found = True
-                break
+        if fs_type == "NTFS":
+            for child in entry.listdir():
+                if str(child).lower() == p.lower():
+                    entry = entry.get(str(child))
+                    found = True
+                    break
+        else:
+            for name, child_entry in entry.listdir():
+                if name.lower() == p.lower():
+                    entry = child_entry
+                    found = True
+                    break
         if not found:
             return None
     return entry
@@ -53,10 +87,14 @@ def listdir(path):
     if entry is None:
         print(f"  Path not found: {path}")
         return
-    print(f"\n  Contents of: {path}\n")
+    print(f"\n  Contents of: {path}  [{fs_type}]\n")
     try:
-        for child in entry.listdir():
-            print(f"    {child}")
+        if fs_type == "NTFS":
+            for child in entry.listdir():
+                print(f"    {child}")
+        else:
+            for name, child_entry in entry.listdir():
+                print(f"    {name}")
     except Exception as e:
         print(f"  Not a directory or error: {e}")
 
@@ -98,3 +136,4 @@ else:
     print("  python browse_vmdk.py ls /")
     print("  python browse_vmdk.py cat /path/to/file")
     print("  python browse_vmdk.py save /path/to/file output.txt")
+                                                                     
