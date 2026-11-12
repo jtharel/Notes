@@ -2,7 +2,7 @@ from dissect.hypervisor.disk.vmdk import VMDK
 from dissect.volume import disk
 import sys
 
-vmdk_file = "XXXXXXXX.vmdk"
+vmdk_file = "XXXXXXX.vmdk"
 cmd = sys.argv[1] if len(sys.argv) > 1 else "ls"
 path = sys.argv[2] if len(sys.argv) > 2 else "/"
 
@@ -73,13 +73,16 @@ def resolve(path):
                     break
         else:
             for item in entry.listdir():
-                if hasattr(item, '__iter__') and not isinstance(item, str) and len(item) == 2:
+                try:
                     name, child_entry = item
-                else:
+                except (TypeError, ValueError):
                     name = str(item)
-                    child_entry = entry.get(name) if hasattr(entry, 'get') else None
+                    child_entry = None
                 if name.lower() == p.lower():
-                    entry = child_entry if child_entry is not None else entry.get(name)
+                    if child_entry is not None:
+                        entry = child_entry
+                    else:
+                        entry = fs.get(name, entry)
                     found = True
                     break
         if not found:
@@ -145,4 +148,3 @@ else:
     print("  python browse_vmdk.py ls /")
     print("  python browse_vmdk.py cat /path/to/file")
     print("  python browse_vmdk.py save /path/to/file output.txt")
-                                                                   
